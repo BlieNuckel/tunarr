@@ -1,136 +1,70 @@
-# Music Request App - Lidarr Integration
+# Getting Started with Create React App
 
-A web interface for searching MusicBrainz and managing music requests through Lidarr, similar to Overseerr but for music.
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Features
+## Available Scripts
 
-- 🔍 **Search MusicBrainz** for artists, albums, and releases
-- ➕ **Add artists to Lidarr** with one click
-- 📊 **Monitor wanted releases** and missing albums
-- 📥 **View download queue** with progress and status
-- ⚠️ **Track failed imports** and download errors
-- ⚙️ **Easy configuration** via web interface
+In the project directory, you can run:
 
-## Quick Start
+### `npm start`
 
-### Option 1: Using Docker Compose (Recommended)
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-1. Create a directory for the app:
-```bash
-mkdir music-request && cd music-request
-```
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-2. Download all files to this directory:
-   - `Dockerfile`
-   - `docker-compose.yml`
-   - `index.html`
-   - `music-request-app.jsx`
-   - `nginx.conf`
+### `npm test`
 
-3. Edit `docker-compose.yml` if needed:
-   - Change port `3000:80` if port 3000 is already in use
-   - Update the network name to match your Lidarr network
-   - Set your timezone
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-4. Start the container:
-```bash
-docker-compose up -d
-```
+### `npm run build`
 
-5. Access at `http://your-server-ip:3000`
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-### Option 2: Add to Existing Docker Compose Stack
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-Add this to your existing `docker-compose.yml`:
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-```yaml
-  music-request:
-    build: ./music-request  # Path to the directory with the Dockerfile
-    container_name: music-request
-    ports:
-      - "3000:80"
-    restart: unless-stopped
-    networks:
-      - media  # Same network as Lidarr
-    environment:
-      - TZ=America/New_York
-```
+### `npm run eject`
 
-## Configuration
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-1. **Open the app** in your browser (http://your-server-ip:3000)
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-2. **Go to Settings** and configure:
-   - **Lidarr URL**: Your Lidarr address (e.g., `http://lidarr:8686` or `http://192.168.1.100:8686`)
-   - **API Key**: Found in Lidarr → Settings → General → Security
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-3. **Save settings** - they'll persist in your browser's localStorage
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
-## Usage
+## Learn More
 
-### Searching for Music
-1. Go to the **Search** page
-2. Select search type (Artists, Albums, or Releases)
-3. Enter your search query
-4. Click on "Add to Lidarr" for any result
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-### Monitoring Status
-1. Go to the **Status** page
-2. View **Wanted Releases** - albums Lidarr is looking for
-3. View **Download Queue** - active downloads with:
-   - Progress bars
-   - Status indicators (downloading, completed, error, warning)
-   - Error messages for failed imports
+To learn React, check out the [React documentation](https://reactjs.org/).
 
-## Network Configuration
+### Code Splitting
 
-The app needs to communicate with:
-- **MusicBrainz API** (external, port 443)
-- **Your Lidarr instance** (internal network)
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-If Lidarr and music-request are on the same Docker network, you can use the container name as the hostname (e.g., `http://lidarr:8686`).
+### Analyzing the Bundle Size
 
-## Troubleshooting
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
 
-### Can't connect to Lidarr
-- Make sure both containers are on the same Docker network
-- Verify the Lidarr URL is correct (include http://)
-- Check that the API key is correct
-- Try using IP address instead of hostname
+### Making a Progressive Web App
 
-### CORS errors
-- If you see CORS errors, make sure you're accessing Lidarr from the same network
-- Use the container hostname if on the same Docker network
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-### Port conflicts
-- Change the external port in docker-compose.yml (e.g., `8080:80` instead of `3000:80`)
+### Advanced Configuration
 
-## Building from Source
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
 
-```bash
-docker build -t music-request .
-docker run -d -p 3000:80 --name music-request music-request
-```
+### Deployment
 
-## Environment Variables
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-Currently, all configuration is done through the web UI. The app stores:
-- Lidarr URL
-- Lidarr API Key
+### `npm run build` fails to minify
 
-These are saved to browser localStorage, so each browser/device needs to be configured separately.
-
-## Future Enhancements
-
-Potential features to add:
-- User authentication and permissions
-- Request approval workflow
-- Multiple quality profile support
-- Album-specific requests (not just artists)
-- Notification system
-- Request history
-- Mobile-responsive improvements
-
-## License
-
-MIT License - feel free to modify and use as needed!
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
