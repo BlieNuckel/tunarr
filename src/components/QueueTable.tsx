@@ -1,9 +1,11 @@
 import StatusBadge from "./StatusBadge";
+import { QueueItem } from "../types";
 
-/**
- * @param {{ items: Array<object> }} props
- */
-export default function QueueTable({ items }) {
+interface QueueTableProps {
+  items: QueueItem[];
+}
+
+export default function QueueTable({ items }: QueueTableProps) {
   if (items.length === 0) {
     return <p className="text-gray-500 text-sm">No active downloads.</p>;
   }
@@ -21,25 +23,25 @@ export default function QueueTable({ items }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-800">
-          {items.map((item) => (
+          {items.map((item: QueueItem) => (
             <tr key={item.id}>
               <td className="py-2 text-gray-300">
-                {item.artist?.artistName || "Unknown"}
+                {(item as any).artist?.artistName || "Unknown"}
               </td>
               <td className="py-2 text-white">
-                {item.album?.title || item.title || "Unknown"}
+                {(item as any).album?.title || (item as any).title || "Unknown"}
               </td>
               <td className="py-2 text-gray-400">
-                {item.quality?.quality?.name || "—"}
+                {(item as any).quality?.quality?.name || "—"}
               </td>
               <td className="py-2 text-gray-300">
-                {item.sizeleft != null && item.size
-                  ? `${Math.round(((item.size - item.sizeleft) / item.size) * 100)}%`
+                {(item as any).sizeleft != null && (item as any).size
+                  ? `${Math.round((((item as any).size - (item as any).sizeleft) / (item as any).size) * 100)}%`
                   : "—"}
               </td>
               <td className="py-2">
                 <StatusBadge
-                  status={item.trackedDownloadStatus?.toLowerCase() || "downloading"}
+                  status={(item as any).trackedDownloadStatus?.toLowerCase() || "downloading"}
                 />
               </td>
             </tr>

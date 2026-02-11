@@ -1,11 +1,16 @@
 import { useState, useCallback } from "react";
 
-export default function useSearch() {
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+interface ReleaseGroup {
+  id: string;
+  [key: string]: unknown;
+}
 
-  const search = useCallback(async (query) => {
+export default function useSearch() {
+  const [results, setResults] = useState<ReleaseGroup[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const search = useCallback(async (query: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -19,7 +24,7 @@ export default function useSearch() {
       const data = await res.json();
       setResults(data["release-groups"] || []);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "Search failed");
       setResults([]);
     } finally {
       setLoading(false);

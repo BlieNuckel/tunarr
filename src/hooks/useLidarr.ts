@@ -1,14 +1,12 @@
 import { useState, useCallback } from "react";
 
-/**
- * Hook to add an album to Lidarr via the backend.
- * @returns {{ state: string, errorMsg: string|null, addToLidarr: (params: {albumMbid: string}) => Promise<void> }}
- */
-export default function useLidarr() {
-  const [state, setState] = useState("idle");
-  const [errorMsg, setErrorMsg] = useState(null);
+type LidarrState = "idle" | "adding" | "success" | "already_monitored" | "error";
 
-  const addToLidarr = useCallback(async ({ albumMbid }) => {
+export default function useLidarr() {
+  const [state, setState] = useState<LidarrState>("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const addToLidarr = useCallback(async ({ albumMbid }: { albumMbid: string }) => {
     setState("adding");
     setErrorMsg(null);
 
@@ -36,7 +34,7 @@ export default function useLidarr() {
       }
     } catch (err) {
       setState("error");
-      setErrorMsg(err.message);
+      setErrorMsg(err instanceof Error ? err.message : "Failed to add album");
     }
   }, []);
 

@@ -1,12 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 
+interface Settings {
+  lidarrUrl: string;
+  lidarrApiKey: string;
+}
+
+interface TestResult {
+  success: boolean;
+  version?: string;
+  error?: string;
+}
+
 export default function useSettings() {
-  const [settings, setSettings] = useState({ lidarrUrl: "", lidarrApiKey: "" });
+  const [settings, setSettings] = useState<Settings>({ lidarrUrl: "", lidarrApiKey: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -16,7 +27,7 @@ export default function useSettings() {
       .finally(() => setLoading(false));
   }, []);
 
-  const save = useCallback(async (values) => {
+  const save = useCallback(async (values: Settings) => {
     setSaving(true);
     setError(null);
     try {
@@ -31,13 +42,13 @@ export default function useSettings() {
       }
       setSettings({ lidarrUrl: values.lidarrUrl, lidarrApiKey: "••••" + values.lidarrApiKey.slice(-4) });
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
     }
   }, []);
 
-  const testConnection = useCallback(async (values) => {
+  const testConnection = useCallback(async (values: Settings) => {
     setTesting(true);
     setTestResult(null);
     try {
@@ -50,7 +61,7 @@ export default function useSettings() {
       if (!res.ok) throw new Error(data.error || "Connection failed");
       setTestResult({ success: true, version: data.version });
     } catch (err) {
-      setTestResult({ success: false, error: err.message });
+      setTestResult({ success: false, error: err instanceof Error ? err.message : "Connection failed" });
     } finally {
       setTesting(false);
     }

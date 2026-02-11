@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import QueueTable from "../components/QueueTable";
 import WantedList from "../components/WantedList";
 import RecentImports from "../components/RecentImports";
+import { QueueItem, WantedItem, RecentImport } from "../types";
 
 export default function StatusPage() {
-  const [queue, setQueue] = useState([]);
-  const [wanted, setWanted] = useState([]);
-  const [history, setHistory] = useState([]);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [wanted, setWanted] = useState<WantedItem[]>([]);
+  const [history, setHistory] = useState<RecentImport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -31,7 +32,7 @@ export default function StatusPage() {
         setHistory(data.records || []);
       }
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ export default function StatusPage() {
     return () => clearInterval(interval);
   }, [fetchAll]);
 
-  const handleAlbumSearch = async (albumId) => {
+  const handleAlbumSearch = async (albumId: number) => {
     try {
       await fetch("/api/lidarr/command", {
         method: "POST",

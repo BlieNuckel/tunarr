@@ -1,4 +1,4 @@
-const COLORS = {
+const COLORS: Record<string, string> = {
   downloading: "bg-blue-500/20 text-blue-400",
   imported: "bg-green-500/20 text-green-400",
   missing: "bg-yellow-500/20 text-yellow-400",
@@ -7,10 +7,11 @@ const COLORS = {
   monitored: "bg-indigo-500/20 text-indigo-400",
 };
 
-/**
- * @param {{ status: string }} props
- */
-export default function StatusBadge({ status }) {
+interface StatusBadgeProps {
+  status: string;
+}
+
+export default function StatusBadge({ status }: StatusBadgeProps) {
   const colorClass = COLORS[status] || COLORS.queued;
   return (
     <span

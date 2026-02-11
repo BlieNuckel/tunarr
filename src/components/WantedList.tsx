@@ -1,22 +1,26 @@
-/**
- * @param {{ items: Array<object>, onSearch: (albumId: number) => void }} props
- */
-export default function WantedList({ items, onSearch }) {
+import { WantedItem } from "../types";
+
+interface WantedListProps {
+  items: WantedItem[];
+  onSearch: (albumId: number) => void;
+}
+
+export default function WantedList({ items, onSearch }: WantedListProps) {
   if (items.length === 0) {
     return <p className="text-gray-500 text-sm">No missing albums.</p>;
   }
 
   return (
     <div className="space-y-2">
-      {items.map((item) => (
+      {items.map((item: WantedItem) => (
         <div
           key={item.id}
           className="flex items-center justify-between bg-gray-800 rounded-lg px-4 py-3 border border-gray-700"
         >
           <div>
-            <p className="text-white font-medium">{item.title}</p>
+            <p className="text-white font-medium">{(item as any).title}</p>
             <p className="text-gray-400 text-sm">
-              {item.artist?.artistName || "Unknown Artist"}
+              {(item as any).artist?.artistName || "Unknown Artist"}
             </p>
           </div>
           <button

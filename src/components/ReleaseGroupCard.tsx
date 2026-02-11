@@ -1,10 +1,12 @@
 import MonitorButton from "./MonitorButton";
 import useLidarr from "../hooks/useLidarr";
+import { ReleaseGroup } from "../types";
 
-/**
- * @param {{ releaseGroup: object }} props
- */
-export default function ReleaseGroupCard({ releaseGroup }) {
+interface ReleaseGroupCardProps {
+  releaseGroup: ReleaseGroup;
+}
+
+export default function ReleaseGroupCard({ releaseGroup }: ReleaseGroupCardProps) {
   const artistName =
     releaseGroup["artist-credit"]?.[0]?.artist?.name || "Unknown Artist";
   const albumTitle = releaseGroup.title;
@@ -28,7 +30,7 @@ export default function ReleaseGroupCard({ releaseGroup }) {
         alt={`${albumTitle} cover`}
         className="w-24 h-24 rounded object-cover bg-gray-700 flex-shrink-0"
         onError={(e) => {
-          e.target.style.display = "none";
+          (e.target as HTMLImageElement).style.display = "none";
         }}
       />
       <div className="flex-1 min-w-0">
@@ -38,7 +40,7 @@ export default function ReleaseGroupCard({ releaseGroup }) {
         <p className="text-gray-600 text-xs mt-1 truncate">{albumMbid}</p>
       </div>
       <div className="flex items-start">
-        <MonitorButton state={state} onClick={handleClick} errorMsg={errorMsg} />
+        <MonitorButton state={state} onClick={handleClick} errorMsg={errorMsg ?? undefined} />
       </div>
     </div>
   );

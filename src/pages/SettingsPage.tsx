@@ -15,12 +15,12 @@ export default function SettingsPage() {
     return <p className="text-gray-400">Loading settings...</p>;
   }
 
-  const handleTest = (e) => {
+  const handleTest = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     testConnection({ lidarrUrl: url, lidarrApiKey: apiKey });
   };
 
-  const handleSave = (e) => {
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     save({ lidarrUrl: url, lidarrApiKey: apiKey });
   };
@@ -38,7 +38,7 @@ export default function SettingsPage() {
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="http://192.168.1.50:8686"
+            placeholder="http://localhost:8686"
             className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
           />
         </div>

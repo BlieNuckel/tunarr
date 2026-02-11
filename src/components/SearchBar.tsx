@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 
-/**
- * @param {{ onSearch: (query: string) => void, debounceMs?: number }} props
- */
-export default function SearchBar({ onSearch, debounceMs = 500 }) {
+interface SearchBarProps {
+  onSearch: (query: string) => void;
+  debounceMs?: number;
+}
+
+export default function SearchBar({ onSearch, debounceMs = 500 }: SearchBarProps) {
   const [value, setValue] = useState("");
 
   useEffect(() => {
