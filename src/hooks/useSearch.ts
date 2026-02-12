@@ -10,13 +10,18 @@ export default function useSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const search = useCallback(async (query: string) => {
+  const search = useCallback(async (query: string, searchType: string) => {
+    if (!query.trim()) return;
+    
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `/api/musicbrainz/search?q=${encodeURIComponent(query)}`
-      );
+      const params = new URLSearchParams({ 
+        q: query,
+        searchType 
+      });
+      
+      const res = await fetch(`/api/musicbrainz/search?${params.toString()}`);
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Search failed");
