@@ -6,14 +6,15 @@ interface LidarrConfig {
 }
 
 const getLidarrConfig = (): LidarrConfig => {
+  const { lidarrUrl, lidarrApiKey } = config.get();
 
-  if (!config.get().lidarrUrl || !config.get().lidarrApiKey) {
+  if (!lidarrUrl || !lidarrApiKey) {
     throw new Error("Lidarr not configured");
   }
   return {
-    url: config.get().lidarrUrl,
+    url: lidarrUrl,
     headers: {
-      "X-Api-Key": config.get().lidarrApiKey,
+      "X-Api-Key": lidarrApiKey,
       "Content-Type": "application/json",
     },
   };
