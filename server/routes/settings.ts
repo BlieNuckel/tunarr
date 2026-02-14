@@ -1,28 +1,23 @@
 import type { Request, Response } from "express";
 import express from "express";
-import { config } from "../config";
+import { getConfig, setConfig } from "../config";
 
 const router = express.Router();
 
 router.get("/", (_req: Request, res: Response) => {
-  const lidarrApiKey = config.get().lidarrApiKey;
-  const lidarrUrl = config.get().lidarrUrl;
+  const fullConfig = getConfig();
 
   res.json({
-    lidarrUrl,
-    lidarrApiKey: lidarrApiKey
-      ? "••••" + config.get().lidarrApiKey.slice(-4)
-      : "",
+    ...fullConfig,
+    lidarrApiKey: fullConfig.lidarrApiKey.slice(0, 4) + "****",
   });
 });
 
 router.put("/", (req: Request, res: Response) => {
-  const { lidarrUrl, lidarrApiKey } = req.body;
-  if (!lidarrUrl || !lidarrApiKey) {
-    return res.status(400).json({ error: "URL and API key are required" });
-  }
-  const url = lidarrUrl.replace(/\/+$/, "");
-  config.set({ lidarrUrl: url, lidarrApiKey });
+  const partialConfig = req.body;
+
+  setConfig(partialConfig);
+
   res.json({ success: true });
 });
 

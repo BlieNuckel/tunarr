@@ -1,4 +1,4 @@
-import { config } from "../config";
+import { getConfig } from "../config";
 
 interface LidarrConfig {
   url: string;
@@ -6,7 +6,7 @@ interface LidarrConfig {
 }
 
 const getLidarrConfig = (): LidarrConfig => {
-  const { lidarrUrl, lidarrApiKey } = config.get();
+  const { lidarrUrl, lidarrApiKey } = getConfig();
 
   if (!lidarrUrl || !lidarrApiKey) {
     throw new Error("Lidarr not configured");

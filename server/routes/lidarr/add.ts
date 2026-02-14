@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { config } from "../../config";
+import { getConfigValue } from "../../config";
 import { lidarrGet } from "../../lidarrApi/get";
 import { lidarrPost } from "../../lidarrApi/post";
 import { lidarrPut } from "../../lidarrApi/put";
@@ -64,9 +64,9 @@ const addAlbumToLidarr = async (albumMbid: string, artist: LidarrArtist) => {
 };
 
 const addArtistToLidarr = async (artistMbid: string) => {
-  const qualityProfileId = config.get("lidarrQualityProfileId");
-  const metadataProfileId = config.get("lidarrMetadataProfileId");
-  const rootFolderPath = config.get("lidarrRootFolderPath");
+  const qualityProfileId = getConfigValue("lidarrQualityProfileId");
+  const metadataProfileId = getConfigValue("lidarrMetadataProfileId");
+  const rootFolderPath = getConfigValue("lidarrRootFolderPath");
 
   const artistLookup = await lidarrGet<LidarrArtist[]>("/artist/lookup", {
     term: `lidarr:${artistMbid}`,
