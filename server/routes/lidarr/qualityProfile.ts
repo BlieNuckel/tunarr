@@ -4,17 +4,14 @@ import { lidarrGet } from "../../lidarrApi/get.js";
 
 const router = express.Router();
 
-router.get(
-  "/lidarrconfig/qualityprofile",
-  async (_req: Request, res: Response) => {
-    try {
-      const result = await lidarrGet("/qualityprofile");
-      res.status(result.status).json(result.data);
-    } catch (err) {
-      const error = err as Error;
-      res.status(500).json({ error: error.message });
-    }
-  },
-);
+router.get("/qualityprofiles", async (_req: Request, res: Response) => {
+  try {
+    const result = await lidarrGet("/qualityprofile");
+    res.status(result.status).json(result.data);
+  } catch (err) {
+    const error = err as Error;
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;

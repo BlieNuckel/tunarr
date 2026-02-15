@@ -9,6 +9,9 @@ import {
 interface LidarrSettings {
   lidarrUrl: string;
   lidarrApiKey: string;
+  lidarrQualityProfileId: number;
+  lidarrRootFolderPath: string;
+  lidarrMetadataProfileId: number;
 }
 
 interface LidarrContextValue {
@@ -33,6 +36,9 @@ export const LidarrContextProvider = ({
   const [settings, setSettings] = useState<LidarrSettings>({
     lidarrUrl: "",
     lidarrApiKey: "",
+    lidarrQualityProfileId: 1,
+    lidarrRootFolderPath: "",
+    lidarrMetadataProfileId: 1,
   });
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +52,9 @@ export const LidarrContextProvider = ({
           setSettings({
             lidarrUrl: data.lidarrUrl || "",
             lidarrApiKey: data.lidarrApiKey || "",
+            lidarrQualityProfileId: data.lidarrQualityProfileId || 1,
+            lidarrRootFolderPath: data.lidarrRootFolderPath || "",
+            lidarrMetadataProfileId: data.lidarrMetadataProfileId || 1,
           });
 
           if (data.lidarrUrl && data.lidarrApiKey) {
@@ -86,6 +95,9 @@ export const LidarrContextProvider = ({
     setSettings({
       lidarrUrl: newSettings.lidarrUrl,
       lidarrApiKey: "••••" + newSettings.lidarrApiKey.slice(-4),
+      lidarrQualityProfileId: newSettings.lidarrQualityProfileId,
+      lidarrRootFolderPath: newSettings.lidarrRootFolderPath,
+      lidarrMetadataProfileId: newSettings.lidarrMetadataProfileId,
     });
 
     const testResult = await testConnection(newSettings);

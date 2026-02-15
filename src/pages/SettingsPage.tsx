@@ -4,8 +4,14 @@ import { useLidarrContext } from "../context/LidarrContext";
 export default function SettingsPage() {
   const { settings, isLoading, saveSettings, testConnection } =
     useLidarrContext();
+  const [qualityProfiles, setQualityProfiles] = useState<{ id: number; name: string }[]>([]);
+  const [metadataProfiles, setMetadataProfiles] = useState<{ id: number; name: string }[]>([]);
+  const [rootFolders, setRootFolders] = useState<{ id: number; path: string }[]>([]);
   const [url, setUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
+  const [qualityProfileId, setQualityProfileId] = useState(1);
+  const [rootFolderPath, setRootFolderPath] = useState("");
+  const [metadataProfileId, setMetadataProfileId] = useState(1);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{
@@ -16,7 +22,41 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchLidarrOptions = async () => {
+      try {
+        const [qualityRes, metadataRes, rootRes] = await Promise.all([
+          fetch("/api/lidarr/qualityprofiles"),
+          fetch("/api/lidarr/metadataprofiles"),
+          fetch("/api/lidarr/rootfolders"),
+        ]);
+
+        if (qualityRes.ok) {
+          const data = await qualityRes.json();
+          setQualityProfiles(data);
+        }
+        if (metadataRes.ok) {
+          const data = await metadataRes.json();
+          setMetadataProfiles(data);
+        }
+        if (rootRes.ok) {
+          const data = await rootRes.json();
+          setRootFolders(data);
+        }
+      } catch (err) {
+        // Silently fail - user can still save settings manually
+      }
+    };
+
+    fetchLidarrOptions();
+  }, []);
+
+  useEffect(() => {
     if (settings.lidarrUrl) setUrl(settings.lidarrUrl);
+    if (settings.lidarrQualityProfileId)
+      setQualityProfileId(settings.lidarrQualityProfileId);
+    if (settings.lidarrRootFolderPath) setRootFolderPath(settings.lidarrRootFolderPath);
+    if (settings.lidarrMetadataProfileId)
+      setMetadataProfileId(settings.lidarrMetadataProfileId);
   }, [settings.lidarrUrl]);
 
   if (isLoading) {
@@ -33,6 +73,9 @@ export default function SettingsPage() {
       const result = await testConnection({
         lidarrUrl: url,
         lidarrApiKey: apiKey,
+        lidarrQualityProfileId: settings.lidarrQualityProfileId,
+        lidarrRootFolderPath: settings.lidarrRootFolderPath,
+        lidarrMetadataProfileId: settings.lidarrMetadataProfileId,
       });
       setTestResult(result);
     } catch (err) {
@@ -48,7 +91,7 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      await saveSettings({ lidarrUrl: url, lidarrApiKey: apiKey });
+      await saveSettings({ lidarrUrl: url, lidarrApiKey: apiKey, lidarrQualityProfileId: settings.lidarrQualityProfileId, lidarrRootFolderPath: settings.lidarrRootFolderPath, lidarrMetadataProfileId: settings.lidarrMetadataProfileId });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -57,62 +100,114 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-lg">
+    <div className="max-w-lg space-y-6">
       <h1 className="text-2xl font-bold text-white mb-6">Settings</h1>
 
-      <form className="space-y-4" onSubmit={handleSave}>
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Lidarr URL
-          </label>
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="http://localhost:8686"
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-          />
+      <form className="space-y-6" onSubmit={handleSave}>
+        <div className="space-y-4">
+          <h1 className="text-xl text-gray">Lidarr Connection</h1>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Lidarr URL
+            </label>
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="http://localhost:8686"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              API Key
+            </label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={settings.lidarrApiKey || "Enter API key"}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handleTest}
+              disabled={testing || !url || !apiKey}
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-md text-sm transition-colors"
+            >
+              {testing ? "Testing..." : "Test Connection"}
+            </button>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            API Key
-          </label>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder={settings.lidarrApiKey || "Enter API key"}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
-          />
+        <div className="space-y-4">
+          <h1 className="text-xl text-gray mb-6"></h1>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Lidarr Root Path</label>
+            <select
+              key={rootFolders.length} // Force re-render when root folders change
+              value={rootFolderPath}
+              onChange={(e) => setRootFolderPath(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            >
+              {rootFolders.map((folder) => (
+                <option key={folder.id} value={folder.path}>
+                  {folder.path}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Quality Profile</label>
+            <select
+              key={qualityProfiles.length} // Force re-render when quality profiles change
+              value={qualityProfileId}
+              onChange={(e) => setQualityProfileId(Number(e.target.value))}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            >
+              {qualityProfiles.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Metadata Profile</label>
+            <select
+              key={metadataProfiles.length} // Force re-render when metadata profiles change
+              value={metadataProfileId}
+              onChange={(e) => setMetadataProfileId(Number(e.target.value))}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            >
+              {metadataProfiles.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="flex gap-3 pt-2">
-          <button
-            type="button"
-            onClick={handleTest}
-            disabled={testing || !url || !apiKey}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-md text-sm transition-colors"
-          >
-            {testing ? "Testing..." : "Test Connection"}
-          </button>
-          <button
-            type="submit"
-            disabled={saving || !url || !apiKey}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-md text-sm transition-colors"
-          >
-            {saving ? "Saving..." : "Save"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={saving || !url || !apiKey}
+          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-md text-sm transition-colors"
+        >
+          {saving ? "Saving..." : "Save"}
+        </button>
       </form>
 
       {testResult && (
         <div
-          className={`mt-4 p-3 rounded-md text-sm ${
-            testResult.success
-              ? "bg-green-900/30 text-green-400 border border-green-800"
-              : "bg-red-900/30 text-red-400 border border-red-800"
-          }`}
+          className={`mt-4 p-3 rounded-md text-sm ${testResult.success
+            ? "bg-green-900/30 text-green-400 border border-green-800"
+            : "bg-red-900/30 text-red-400 border border-red-800"
+            }`}
         >
           {testResult.success
             ? `Connected! Lidarr v${testResult.version}`

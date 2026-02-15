@@ -4,7 +4,7 @@ import { lidarrGet } from "../../lidarrApi/get.js";
 
 const router = express.Router();
 
-router.get("/lidarrconfig/rootfolder", async (_req: Request, res: Response) => {
+router.get("/rootfolders", async (_req: Request, res: Response) => {
   try {
     const result = await lidarrGet("/rootfolder");
     res.status(result.status).json(result.data);
