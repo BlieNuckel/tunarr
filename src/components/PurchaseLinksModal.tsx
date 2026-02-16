@@ -22,12 +22,12 @@ export default function PurchaseLinksModal({
     {
       platform: "Bandcamp",
       url: `https://bandcamp.com/search?q=${query}`,
-      icon: "🎵",
+      icon: "bandcamp.png",
     },
     {
       platform: "Qobuz",
       url: `https://www.qobuz.com/us-en/search?q=${query}`,
-      icon: "🎧",
+      icon: "qobuz.png",
     },
   ];
 
@@ -58,7 +58,7 @@ export default function PurchaseLinksModal({
               rel="noopener noreferrer"
               className="flex items-center gap-3 p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors border border-gray-600 hover:border-gray-500"
             >
-              <span className="text-2xl">{link.icon}</span>
+              <img src={link.icon} className="h-12" />
               <div className="flex-1">
                 <p className="text-white font-medium">{link.platform}</p>
                 <p className="text-gray-400 text-xs">
