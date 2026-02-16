@@ -141,17 +141,19 @@ export const LidarrContextProvider = ({
         fetch("/api/lidarr/rootfolders"),
       ]);
 
+      const opts = { ...options };
+
       if (qualityRes.ok) {
         const data = await qualityRes.json();
-        setOptions((prev) => ({ ...prev, qualityProfiles: data }));
+        opts.qualityProfiles = data;
       }
       if (metadataRes.ok) {
         const data = await metadataRes.json();
-        setOptions((prev) => ({ ...prev, metadataProfiles: data }));
+        opts.metadataProfiles = data;
       }
       if (rootRes.ok) {
         const data = await rootRes.json();
-        setOptions((prev) => ({ ...prev, rootFolderPaths: data }));
+        opts.rootFolderPaths = data;
       }
     } catch (err) {
       // Silently fail - user can still save settings manually

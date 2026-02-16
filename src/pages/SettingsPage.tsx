@@ -4,6 +4,9 @@ import { useLidarrContext } from "../context/LidarrContext";
 export default function SettingsPage() {
   const { options, settings, isLoading, saveSettings, testConnection, loadLidarrOptionValues } =
     useLidarrContext();
+  const [qualityProfiles, setQualityProfiles] = useState<{ id: number; name: string }[]>([]);
+  const [metadataProfiles, setMetadataProfiles] = useState<{ id: number; name: string }[]>([]);
+  const [rootFolders, setRootFolders] = useState<{ id: number; path: string }[]>([]);
   const [url, setUrl] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [qualityProfileId, setQualityProfileId] = useState(1);
@@ -32,6 +35,12 @@ export default function SettingsPage() {
     if (settings.lidarrApiKey) setApiKey(settings.lidarrApiKey);
   }, [settings.lidarrUrl]);
 
+  useEffect(() => {
+    setQualityProfiles(options.qualityProfiles || []);
+    setMetadataProfiles(options.metadataProfiles || []);
+    setRootFolders(options.rootFolderPaths || []);
+  }, [options]);
+
   if (isLoading) {
     return <p className="text-gray-400">Loading settings...</p>;
   }
@@ -51,6 +60,9 @@ export default function SettingsPage() {
         lidarrMetadataProfileId: settings.lidarrMetadataProfileId,
       });
       setTestResult(result);
+      if (result.success) {
+        await loadLidarrOptionValues();
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : "Test failed");
@@ -123,12 +135,12 @@ export default function SettingsPage() {
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Lidarr Root Path</label>
             <select
-              key={options.rootFolderPaths.length} // Force re-render when root folders change
+              key={rootFolders.length} // Force re-render when root folders change
               value={rootFolderPath}
               onChange={(e) => setRootFolderPath(e.target.value)}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
             >
-              {options.rootFolderPaths.map((folder) => (
+              {rootFolders.map((folder) => (
                 <option key={folder.id} value={folder.path}>
                   {folder.path}
                 </option>
@@ -138,12 +150,12 @@ export default function SettingsPage() {
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Quality Profile</label>
             <select
-              key={options.qualityProfiles.length} // Force re-render when quality profiles change
+              key={qualityProfiles.length} // Force re-render when quality profiles change
               value={qualityProfileId}
               onChange={(e) => setQualityProfileId(Number(e.target.value))}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
             >
-              {options.qualityProfiles.map((profile) => (
+              {qualityProfiles.map((profile) => (
                 <option key={profile.id} value={profile.id}>
                   {profile.name}
                 </option>
@@ -153,12 +165,12 @@ export default function SettingsPage() {
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Metadata Profile</label>
             <select
-              key={options.metadataProfiles.length} // Force re-render when metadata profiles change
+              key={metadataProfiles.length} // Force re-render when metadata profiles change
               value={metadataProfileId}
               onChange={(e) => setMetadataProfileId(Number(e.target.value))}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
             >
-              {options.metadataProfiles.map((profile) => (
+              {metadataProfiles.map((profile) => (
                 <option key={profile.id} value={profile.id}>
                   {profile.name}
                 </option>
