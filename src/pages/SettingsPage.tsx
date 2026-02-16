@@ -57,6 +57,7 @@ export default function SettingsPage() {
     if (settings.lidarrRootFolderPath) setRootFolderPath(settings.lidarrRootFolderPath);
     if (settings.lidarrMetadataProfileId)
       setMetadataProfileId(settings.lidarrMetadataProfileId);
+    if (settings.lidarrApiKey) setApiKey(settings.lidarrApiKey);
   }, [settings.lidarrUrl]);
 
   if (isLoading) {
@@ -127,7 +128,7 @@ export default function SettingsPage() {
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder={settings.lidarrApiKey || "Enter API key"}
+              placeholder={"Enter API key"}
               className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
             />
           </div>
