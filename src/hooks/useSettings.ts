@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Settings {
   lidarrUrl: string;
@@ -12,7 +12,10 @@ interface TestResult {
 }
 
 export default function useSettings() {
-  const [settings, setSettings] = useState<Settings>({ lidarrUrl: "", lidarrApiKey: "" });
+  const [settings, setSettings] = useState<Settings>({
+    lidarrUrl: "",
+    lidarrApiKey: "",
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -40,7 +43,7 @@ export default function useSettings() {
         const data = await res.json();
         throw new Error(data.error || "Failed to save");
       }
-      setSettings({ lidarrUrl: values.lidarrUrl, lidarrApiKey: "••••" + values.lidarrApiKey.slice(-4) });
+      setSettings(values);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -61,11 +64,23 @@ export default function useSettings() {
       if (!res.ok) throw new Error(data.error || "Connection failed");
       setTestResult({ success: true, version: data.version });
     } catch (err) {
-      setTestResult({ success: false, error: err instanceof Error ? err.message : "Connection failed" });
+      setTestResult({
+        success: false,
+        error: err instanceof Error ? err.message : "Connection failed",
+      });
     } finally {
       setTesting(false);
     }
   }, []);
 
-  return { settings, loading, saving, testing, testResult, error, save, testConnection };
+  return {
+    settings,
+    loading,
+    saving,
+    testing,
+    testResult,
+    error,
+    save,
+    testConnection,
+  };
 }

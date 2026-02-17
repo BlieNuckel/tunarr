@@ -58,9 +58,9 @@ export default function SettingsPage() {
       const result = await testConnection({
         lidarrUrl: url,
         lidarrApiKey: apiKey,
-        lidarrQualityProfileId: settings.lidarrQualityProfileId,
-        lidarrRootFolderPath: settings.lidarrRootFolderPath,
-        lidarrMetadataProfileId: settings.lidarrMetadataProfileId,
+        lidarrQualityProfileId: qualityProfileId,
+        lidarrRootFolderPath: rootFolderPath,
+        lidarrMetadataProfileId: metadataProfileId,
       });
       setTestResult(result);
       if (result.success) {
@@ -80,7 +80,7 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      await saveSettings({ lidarrUrl: url, lidarrApiKey: apiKey, lidarrQualityProfileId: settings.lidarrQualityProfileId, lidarrRootFolderPath: settings.lidarrRootFolderPath, lidarrMetadataProfileId: settings.lidarrMetadataProfileId });
+      await saveSettings({ lidarrUrl: url, lidarrApiKey: apiKey, lidarrQualityProfileId: qualityProfileId, lidarrRootFolderPath: rootFolderPath, lidarrMetadataProfileId: metadataProfileId });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -113,7 +113,7 @@ export default function SettingsPage() {
               API Key
             </label>
             <input
-              type="password"
+              type="text"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={

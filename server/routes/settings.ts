@@ -7,15 +7,11 @@ const router = express.Router();
 router.get("/", (_req: Request, res: Response) => {
   const fullConfig = getConfig();
 
-  res.json({
-    ...fullConfig,
-    lidarrApiKey: fullConfig.lidarrApiKey.slice(0, 4) + "****",
-  });
+  res.json(fullConfig);
 });
 
 router.put("/", (req: Request, res: Response) => {
   const partialConfig = req.body;
-
   setConfig(partialConfig);
 
   res.json({ success: true });
