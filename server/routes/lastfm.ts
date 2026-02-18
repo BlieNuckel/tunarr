@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { getConfigValue } from "../config";
+import { enrichWithImages } from "../deezerImages";
 
 const router = express.Router();
 
@@ -20,14 +21,6 @@ const buildUrl = (method: string, params: Record<string, string>) => {
   return `${LASTFM_BASE}?${searchParams.toString()}`;
 };
 
-/** Last.fm returns images as an array with a `#text` key — extract the largest */
-const extractImage = (
-  images: Array<{ "#text": string; size: string }> | undefined,
-): string => {
-  if (!images?.length) return "";
-  const preferred = images.find((i) => i.size === "extralarge") || images[images.length - 1];
-  return preferred?.["#text"] || "";
-};
 
 router.get("/similar", async (req: Request, res: Response) => {
   const { artist } = req.query;
@@ -52,9 +45,11 @@ router.get("/similar", async (req: Request, res: Response) => {
         name: a.name as string,
         mbid: (a.mbid as string) || "",
         match: parseFloat(a.match as string),
-        imageUrl: extractImage(a.image as Array<{ "#text": string; size: string }>),
+        imageUrl: "",
       }),
     );
+
+    await enrichWithImages(artists);
 
     res.json({ artists });
   } catch (err) {
@@ -118,10 +113,12 @@ router.get("/tag/artists", async (req: Request, res: Response) => {
       (a: Record<string, unknown>, index: number) => ({
         name: a.name as string,
         mbid: (a.mbid as string) || "",
-        imageUrl: extractImage(a.image as Array<{ "#text": string; size: string }>),
+        imageUrl: "",
         rank: index + 1,
       }),
     );
+
+    await enrichWithImages(artists);
 
     const attr = topartists?.["@attr"] || {};
     res.json({
