@@ -21,7 +21,7 @@ export default function SearchPage() {
     (newQuery: string, newSearchType: string) => {
       setSearchParams({ q: newQuery, searchType: newSearchType });
     },
-    [setSearchParams],
+    [setSearchParams]
   );
 
   return (
