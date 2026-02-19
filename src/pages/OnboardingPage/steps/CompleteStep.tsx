@@ -3,10 +3,7 @@ interface CompleteStepProps {
   onFinish: () => void;
 }
 
-export default function CompleteStep({
-  saving,
-  onFinish,
-}: CompleteStepProps) {
+export default function CompleteStep({ saving, onFinish }: CompleteStepProps) {
   return (
     <div className="text-center py-4">
       <div className="text-4xl mb-4">&#10003;</div>

@@ -47,19 +47,22 @@ router.post("/test", async (req: Request, res: Response) => {
   ]);
 
   const qualityProfiles = qualityRes?.ok
-    ? (await qualityRes.json()).map(
-        (p: { id: number; name: string }) => ({ id: p.id, name: p.name })
-      )
+    ? (await qualityRes.json()).map((p: { id: number; name: string }) => ({
+        id: p.id,
+        name: p.name,
+      }))
     : [];
   const metadataProfiles = metadataRes?.ok
-    ? (await metadataRes.json()).map(
-        (p: { id: number; name: string }) => ({ id: p.id, name: p.name })
-      )
+    ? (await metadataRes.json()).map((p: { id: number; name: string }) => ({
+        id: p.id,
+        name: p.name,
+      }))
     : [];
   const rootFolderPaths = rootRes?.ok
-    ? (await rootRes.json()).map(
-        (f: { id: number; path: string }) => ({ id: f.id, path: f.path })
-      )
+    ? (await rootRes.json()).map((f: { id: number; path: string }) => ({
+        id: f.id,
+        path: f.path,
+      }))
     : [];
 
   res.json({

@@ -80,7 +80,9 @@ describe("OnboardingPage", () => {
     renderOnboarding();
     fireEvent.click(screen.getByText("Get Started"));
     expect(screen.getByText("Lidarr Connection")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("http://localhost:8686")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("http://localhost:8686")
+    ).toBeInTheDocument();
   });
 
   it("tests connection and advances to options step", async () => {
