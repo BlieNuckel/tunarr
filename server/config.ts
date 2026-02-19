@@ -14,6 +14,7 @@ export type IConfig = {
   lastfmApiKey: string;
   plexUrl: string;
   plexToken: string;
+  importPath: string;
 };
 
 const DEFAULT_CONFIG: IConfig = {
@@ -25,6 +26,7 @@ const DEFAULT_CONFIG: IConfig = {
   lastfmApiKey: "",
   plexUrl: "",
   plexToken: "",
+  importPath: "",
 };
 
 const CONFIG_DIR =
@@ -55,6 +57,9 @@ const validateConfig = (config: Partial<IConfig>) => {
   }
   if (config.plexToken !== undefined && typeof config.plexToken !== "string") {
     throw new Error("plexToken must be a string");
+  }
+  if (config.importPath !== undefined && typeof config.importPath !== "string") {
+    throw new Error("importPath must be a string");
   }
 };
 

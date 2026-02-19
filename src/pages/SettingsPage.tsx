@@ -15,6 +15,7 @@ export default function SettingsPage() {
   const [lastfmApiKey, setLastfmApiKey] = useState("");
   const [plexUrl, setPlexUrl] = useState("");
   const [plexToken, setPlexToken] = useState("");
+  const [importPath, setImportPath] = useState("");
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{
@@ -39,6 +40,7 @@ export default function SettingsPage() {
     if (settings.lastfmApiKey) setLastfmApiKey(settings.lastfmApiKey);
     if (settings.plexUrl) setPlexUrl(settings.plexUrl);
     if (settings.plexToken) setPlexToken(settings.plexToken);
+    if (settings.importPath) setImportPath(settings.importPath);
   }, [settings.lidarrUrl]);
 
   useEffect(() => {
@@ -70,6 +72,7 @@ export default function SettingsPage() {
         lastfmApiKey,
         plexUrl,
         plexToken,
+        importPath,
       });
       setTestResult(result);
       if (result.success) {
@@ -89,7 +92,7 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      await saveSettings({ lidarrUrl: url, lidarrApiKey: apiKey, lidarrQualityProfileId: qualityProfileId, lidarrRootFolderPath: rootFolderPath, lidarrMetadataProfileId: metadataProfileId, lastfmApiKey, plexUrl, plexToken });
+      await saveSettings({ lidarrUrl: url, lidarrApiKey: apiKey, lidarrQualityProfileId: qualityProfileId, lidarrRootFolderPath: rootFolderPath, lidarrMetadataProfileId: metadataProfileId, lastfmApiKey, plexUrl, plexToken, importPath });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -238,6 +241,25 @@ export default function SettingsPage() {
             />
             <p className="text-gray-500 text-xs mt-1">
               Used to show your most-played artists on the Discover page
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h1 className="text-xl text-gray">Manual Import</h1>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Import Path
+            </label>
+            <input
+              type="text"
+              value={importPath}
+              onChange={(e) => setImportPath(e.target.value)}
+              placeholder="/imports"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+            />
+            <p className="text-gray-500 text-xs mt-1">
+              Shared volume path accessible by both this app and Lidarr for file uploads
             </p>
           </div>
         </div>

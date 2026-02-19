@@ -13,7 +13,7 @@ export default function ReleaseGroupCard({ releaseGroup }: ReleaseGroupCardProps
 
   const artistName =
     releaseGroup["artist-credit"]?.[0]?.artist?.name || "Unknown Artist";
-  const albumTitle = releaseGroup.title;
+  const albumTitle = releaseGroup.title || "";
   const albumMbid = releaseGroup.id;
   const year = releaseGroup["first-release-date"]?.slice(0, 4) || "";
   const coverUrl = `https://coverartarchive.org/release-group/${albumMbid}/front-250`;
@@ -66,6 +66,7 @@ export default function ReleaseGroupCard({ releaseGroup }: ReleaseGroupCardProps
         onClose={() => setIsModalOpen(false)}
         artistName={artistName}
         albumTitle={albumTitle}
+        albumMbid={albumMbid}
         onAddToLibrary={handleAddToLibrary}
       />
     </>

@@ -15,6 +15,7 @@ interface LidarrSettings {
   lastfmApiKey: string;
   plexUrl: string;
   plexToken: string;
+  importPath: string;
 }
 
 type LidarrOptions = {
@@ -54,6 +55,7 @@ export const LidarrContextProvider = ({
     lastfmApiKey: "",
     plexUrl: "",
     plexToken: "",
+    importPath: "",
   });
   const [options, setOptions] = useState<LidarrOptions>({
     qualityProfiles: [],
@@ -77,6 +79,7 @@ export const LidarrContextProvider = ({
           lastfmApiKey: data.lastfmApiKey || "",
           plexUrl: data.plexUrl || "",
           plexToken: data.plexToken || "",
+          importPath: data.importPath || "",
         });
 
         if (data.lidarrUrl && data.lidarrApiKey) {
@@ -152,6 +155,7 @@ export const LidarrContextProvider = ({
       lastfmApiKey: newSettings.lastfmApiKey || "",
       plexUrl: newSettings.plexUrl || "",
       plexToken: newSettings.plexToken || "",
+      importPath: newSettings.importPath || "",
     });
 
     await loadLidarrOptionValues();
