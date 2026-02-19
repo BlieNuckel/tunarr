@@ -1,3 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="#818cf8">
-  <path d="M26 4a1 1 0 0 0-.78-.38 1 1 0 0 0-.22 0l-14 3A1 1 0 0 0 10 7.62V22a5 5 0 1 0 2 4V13.38l12-2.57V18a5 5 0 1 0 2 4ZM7 28a3 3 0 1 1 3-3 3 3 0 0 1-3 3Zm17-4a3 3 0 1 1 3-3 3 3 0 0 1-3 3Zm2-15.19-12 2.57V8.81l12-2.57Z" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <circle cx="16" cy="16" r="14" fill="#FCD34D" stroke="black" stroke-width="2" />
+  <circle cx="16" cy="16" r="10" fill="none" stroke="black" stroke-width="1.5" />
+  <circle cx="16" cy="16" r="6" fill="#F472B6" stroke="black" stroke-width="2" />
+  <circle cx="16" cy="16" r="2" fill="white" stroke="black" stroke-width="1.5" />
 </svg>
