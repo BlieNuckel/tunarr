@@ -148,7 +148,7 @@ export const LidarrContextProvider = ({
 
     setSettings({
       lidarrUrl: newSettings.lidarrUrl,
-      lidarrApiKey: "••••" + newSettings.lidarrApiKey.slice(-4),
+      lidarrApiKey: newSettings.lidarrApiKey,
       lidarrQualityProfileId: newSettings.lidarrQualityProfileId,
       lidarrRootFolderPath: newSettings.lidarrRootFolderPath,
       lidarrMetadataProfileId: newSettings.lidarrMetadataProfileId,
