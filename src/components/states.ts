@@ -21,8 +21,7 @@ const states = {
   },
   error: {
     label: "Error",
-    className:
-      "bg-rose-400 text-white border-2 border-black shadow-cartoon-sm",
+    className: "bg-rose-400 text-white border-2 border-black shadow-cartoon-sm",
   },
 };
 

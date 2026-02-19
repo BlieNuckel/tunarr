@@ -63,13 +63,21 @@ export default function SearchPage() {
           </svg>
           {query ? (
             <>
-              <p className="text-lg font-medium text-gray-500">No results found</p>
-              <p className="mt-1">Try a different search term or change the search type.</p>
+              <p className="text-lg font-medium text-gray-500">
+                No results found
+              </p>
+              <p className="mt-1">
+                Try a different search term or change the search type.
+              </p>
             </>
           ) : (
             <>
-              <p className="text-lg font-medium text-gray-500">Search for music</p>
-              <p className="mt-1">Find albums or artists by name to add to your library.</p>
+              <p className="text-lg font-medium text-gray-500">
+                Search for music
+              </p>
+              <p className="mt-1">
+                Find albums or artists by name to add to your library.
+              </p>
             </>
           )}
         </div>

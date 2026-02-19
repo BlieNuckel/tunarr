@@ -41,7 +41,7 @@ export default function Dropdown({
   const filteredOptions =
     searchable && filter
       ? options.filter((o) =>
-          o.label.toLowerCase().includes(filter.toLowerCase()),
+          o.label.toLowerCase().includes(filter.toLowerCase())
         )
       : options;
 
@@ -54,7 +54,7 @@ export default function Dropdown({
         <input
           ref={inputRef}
           type="text"
-          value={open ? filter : selectedLabel ?? ""}
+          value={open ? filter : (selectedLabel ?? "")}
           onChange={(e) => setFilter(e.target.value)}
           onFocus={() => {
             setOpen(true);
@@ -69,9 +69,7 @@ export default function Dropdown({
           onClick={() => setOpen(!open)}
           className={`${triggerClasses} flex items-center justify-between`}
         >
-          <span
-            className={selectedLabel ? "text-gray-900" : "text-gray-400"}
-          >
+          <span className={selectedLabel ? "text-gray-900" : "text-gray-400"}>
             {selectedLabel || placeholder}
           </span>
           <svg

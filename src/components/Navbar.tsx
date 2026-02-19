@@ -17,10 +17,38 @@ export default function Navbar() {
             viewBox="0 0 32 32"
             className="w-7 h-7"
           >
-            <circle cx="16" cy="16" r="14" fill="#FCD34D" stroke="black" strokeWidth="2" />
-            <circle cx="16" cy="16" r="10" fill="none" stroke="black" strokeWidth="1.5" />
-            <circle cx="16" cy="16" r="6" fill="#F472B6" stroke="black" strokeWidth="2" />
-            <circle cx="16" cy="16" r="2" fill="white" stroke="black" strokeWidth="1.5" />
+            <circle
+              cx="16"
+              cy="16"
+              r="14"
+              fill="#FCD34D"
+              stroke="black"
+              strokeWidth="2"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              r="10"
+              fill="none"
+              stroke="black"
+              strokeWidth="1.5"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              r="6"
+              fill="#F472B6"
+              stroke="black"
+              strokeWidth="2"
+            />
+            <circle
+              cx="16"
+              cy="16"
+              r="2"
+              fill="white"
+              stroke="black"
+              strokeWidth="1.5"
+            />
           </svg>
           <span className="text-lg font-bold text-gray-900 group-hover:text-amber-500 transition-colors">
             Music Requester

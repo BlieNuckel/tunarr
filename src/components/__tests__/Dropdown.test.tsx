@@ -10,7 +10,12 @@ const options = [
 describe("Dropdown", () => {
   it("shows placeholder when no value is selected", () => {
     render(
-      <Dropdown options={options} value="" onChange={vi.fn()} placeholder="Pick a fruit" />,
+      <Dropdown
+        options={options}
+        value=""
+        onChange={vi.fn()}
+        placeholder="Pick a fruit"
+      />
     );
     expect(screen.getByText("Pick a fruit")).toBeInTheDocument();
   });
@@ -55,7 +60,7 @@ describe("Dropdown", () => {
       <div>
         <span>Outside</span>
         <Dropdown options={options} value="" onChange={vi.fn()} />
-      </div>,
+      </div>
     );
 
     fireEvent.click(screen.getByRole("button"));
@@ -79,7 +84,13 @@ describe("Dropdown", () => {
   describe("searchable", () => {
     it("renders an input as the trigger", () => {
       render(
-        <Dropdown options={options} value="" onChange={vi.fn()} searchable placeholder="Search..." />,
+        <Dropdown
+          options={options}
+          value=""
+          onChange={vi.fn()}
+          searchable
+          placeholder="Search..."
+        />
       );
       expect(screen.getByPlaceholderText("Search...")).toBeInTheDocument();
       expect(screen.queryByRole("button")).not.toBeInTheDocument();
@@ -87,14 +98,24 @@ describe("Dropdown", () => {
 
     it("shows selected value in the input when closed", () => {
       render(
-        <Dropdown options={options} value="banana" onChange={vi.fn()} searchable />,
+        <Dropdown
+          options={options}
+          value="banana"
+          onChange={vi.fn()}
+          searchable
+        />
       );
       expect(screen.getByDisplayValue("Banana")).toBeInTheDocument();
     });
 
     it("opens dropdown and clears input on focus", () => {
       render(
-        <Dropdown options={options} value="banana" onChange={vi.fn()} searchable />,
+        <Dropdown
+          options={options}
+          value="banana"
+          onChange={vi.fn()}
+          searchable
+        />
       );
 
       fireEvent.focus(screen.getByDisplayValue("Banana"));
@@ -107,7 +128,13 @@ describe("Dropdown", () => {
 
     it("filters options by search text", () => {
       render(
-        <Dropdown options={options} value="" onChange={vi.fn()} searchable placeholder="Search..." />,
+        <Dropdown
+          options={options}
+          value=""
+          onChange={vi.fn()}
+          searchable
+          placeholder="Search..."
+        />
       );
 
       const input = screen.getByPlaceholderText("Search...");
@@ -121,7 +148,13 @@ describe("Dropdown", () => {
 
     it("shows no matches message when filter has no results", () => {
       render(
-        <Dropdown options={options} value="" onChange={vi.fn()} searchable placeholder="Search..." />,
+        <Dropdown
+          options={options}
+          value=""
+          onChange={vi.fn()}
+          searchable
+          placeholder="Search..."
+        />
       );
 
       const input = screen.getByPlaceholderText("Search...");
@@ -134,7 +167,13 @@ describe("Dropdown", () => {
     it("resets filter and shows selected label after selection", () => {
       const onChange = vi.fn();
       render(
-        <Dropdown options={options} value="" onChange={onChange} searchable placeholder="Search..." />,
+        <Dropdown
+          options={options}
+          value=""
+          onChange={onChange}
+          searchable
+          placeholder="Search..."
+        />
       );
 
       const input = screen.getByPlaceholderText("Search...");
@@ -148,7 +187,13 @@ describe("Dropdown", () => {
 
     it("filters case-insensitively", () => {
       render(
-        <Dropdown options={options} value="" onChange={vi.fn()} searchable placeholder="Search..." />,
+        <Dropdown
+          options={options}
+          value=""
+          onChange={vi.fn()}
+          searchable
+          placeholder="Search..."
+        />
       );
 
       const input = screen.getByPlaceholderText("Search...");
@@ -162,8 +207,13 @@ describe("Dropdown", () => {
       render(
         <div>
           <span>Outside</span>
-          <Dropdown options={options} value="cherry" onChange={vi.fn()} searchable />
-        </div>,
+          <Dropdown
+            options={options}
+            value="cherry"
+            onChange={vi.fn()}
+            searchable
+          />
+        </div>
       );
 
       const input = screen.getByDisplayValue("Cherry");

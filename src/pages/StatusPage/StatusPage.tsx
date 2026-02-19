@@ -81,7 +81,9 @@ export default function StatusPage() {
       </section>
 
       <section>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Wanted / Missing</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
+          Wanted / Missing
+        </h2>
         <WantedList items={wanted} onSearch={handleAlbumSearch} />
       </section>
 
