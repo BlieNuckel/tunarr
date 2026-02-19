@@ -1,0 +1,265 @@
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+import OnboardingPage from "../OnboardingPage";
+import {
+  LidarrContext,
+  type LidarrContextValue,
+} from "@/context/lidarrContextDef";
+
+const mockTestConnection = vi.fn();
+const mockSaveSettings = vi.fn();
+
+function renderOnboarding(overrides: Partial<LidarrContextValue> = {}) {
+  const defaultContext: LidarrContextValue = {
+    options: { qualityProfiles: [], metadataProfiles: [], rootFolderPaths: [] },
+    settings: {
+      lidarrUrl: "",
+      lidarrApiKey: "",
+      lidarrQualityProfileId: 1,
+      lidarrRootFolderPath: "",
+      lidarrMetadataProfileId: 1,
+      lastfmApiKey: "",
+      plexUrl: "",
+      plexToken: "",
+      importPath: "",
+    },
+    isConnected: false,
+    isLoading: false,
+    saveSettings: mockSaveSettings,
+    testConnection: mockTestConnection,
+    loadLidarrOptionValues: vi.fn(),
+    ...overrides,
+  };
+
+  return render(
+    <LidarrContext.Provider value={defaultContext}>
+      <MemoryRouter initialEntries={["/onboarding"]}>
+        <Routes>
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/" element={<div>Home Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    </LidarrContext.Provider>
+  );
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe("OnboardingPage", () => {
+  it("renders nothing while loading", () => {
+    const { container } = renderOnboarding({ isLoading: true });
+    expect(container.textContent).toBe("");
+  });
+
+  it("redirects to home if already configured", () => {
+    renderOnboarding({
+      settings: {
+        lidarrUrl: "http://lidarr:8686",
+        lidarrApiKey: "key",
+        lidarrQualityProfileId: 1,
+        lidarrRootFolderPath: "/music",
+        lidarrMetadataProfileId: 1,
+        lastfmApiKey: "",
+        plexUrl: "",
+        plexToken: "",
+        importPath: "",
+      },
+    });
+    expect(screen.getByText("Home Page")).toBeInTheDocument();
+  });
+
+  it("shows welcome step initially", () => {
+    renderOnboarding();
+    expect(screen.getByText("Welcome to Music Requester")).toBeInTheDocument();
+    expect(screen.getByText("Get Started")).toBeInTheDocument();
+  });
+
+  it("navigates from welcome to lidarr connection", () => {
+    renderOnboarding();
+    fireEvent.click(screen.getByText("Get Started"));
+    expect(screen.getByText("Lidarr Connection")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("http://localhost:8686")).toBeInTheDocument();
+  });
+
+  it("tests connection and advances to options step", async () => {
+    mockTestConnection.mockResolvedValue({
+      success: true,
+      version: "2.0.0",
+      qualityProfiles: [{ id: 1, name: "Any" }],
+      metadataProfiles: [{ id: 1, name: "Standard" }],
+      rootFolderPaths: [{ id: 1, path: "/music" }],
+    });
+
+    renderOnboarding();
+    fireEvent.click(screen.getByText("Get Started"));
+
+    fireEvent.change(screen.getByPlaceholderText("http://localhost:8686"), {
+      target: { value: "http://lidarr:8686" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Enter API key"), {
+      target: { value: "testkey" },
+    });
+    fireEvent.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Connected! Lidarr v2.0.0")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Next"));
+    expect(screen.getByText("Lidarr Options")).toBeInTheDocument();
+  });
+
+  it("shows optional steps with skip button", async () => {
+    mockTestConnection.mockResolvedValue({
+      success: true,
+      version: "2.0.0",
+      qualityProfiles: [{ id: 1, name: "Any" }],
+      metadataProfiles: [{ id: 1, name: "Standard" }],
+      rootFolderPaths: [{ id: 1, path: "/music" }],
+    });
+
+    renderOnboarding();
+
+    fireEvent.click(screen.getByText("Get Started"));
+
+    fireEvent.change(screen.getByPlaceholderText("http://localhost:8686"), {
+      target: { value: "http://lidarr:8686" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Enter API key"), {
+      target: { value: "testkey" },
+    });
+    fireEvent.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Connected! Lidarr v2.0.0")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Next"));
+
+    expect(screen.getByText("Last.fm")).toBeInTheDocument();
+    expect(screen.getByText(/\(Optional\)/)).toBeInTheDocument();
+    expect(screen.getByText("Skip")).toBeInTheDocument();
+  });
+
+  it("can skip through optional steps to complete", async () => {
+    mockTestConnection.mockResolvedValue({
+      success: true,
+      version: "2.0.0",
+      qualityProfiles: [{ id: 1, name: "Any" }],
+      metadataProfiles: [{ id: 1, name: "Standard" }],
+      rootFolderPaths: [{ id: 1, path: "/music" }],
+    });
+
+    renderOnboarding();
+
+    fireEvent.click(screen.getByText("Get Started"));
+
+    fireEvent.change(screen.getByPlaceholderText("http://localhost:8686"), {
+      target: { value: "http://lidarr:8686" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Enter API key"), {
+      target: { value: "testkey" },
+    });
+    fireEvent.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Connected! Lidarr v2.0.0")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Next"));
+
+    fireEvent.click(screen.getByText("Skip"));
+    fireEvent.click(screen.getByText("Skip"));
+    fireEvent.click(screen.getByText("Skip"));
+
+    expect(screen.getByText("You're all set!")).toBeInTheDocument();
+    expect(screen.getByText("Go to App")).toBeInTheDocument();
+  });
+
+  it("saves settings and navigates home on finish", async () => {
+    mockTestConnection.mockResolvedValue({
+      success: true,
+      version: "2.0.0",
+      qualityProfiles: [{ id: 1, name: "Any" }],
+      metadataProfiles: [{ id: 1, name: "Standard" }],
+      rootFolderPaths: [{ id: 1, path: "/music" }],
+    });
+    mockSaveSettings.mockResolvedValue(undefined);
+
+    renderOnboarding();
+
+    fireEvent.click(screen.getByText("Get Started"));
+
+    fireEvent.change(screen.getByPlaceholderText("http://localhost:8686"), {
+      target: { value: "http://lidarr:8686" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Enter API key"), {
+      target: { value: "testkey" },
+    });
+    fireEvent.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Connected! Lidarr v2.0.0")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Next"));
+    fireEvent.click(screen.getByText("Skip"));
+    fireEvent.click(screen.getByText("Skip"));
+    fireEvent.click(screen.getByText("Skip"));
+    fireEvent.click(screen.getByText("Go to App"));
+
+    await waitFor(() => {
+      expect(mockSaveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lidarrUrl: "http://lidarr:8686",
+          lidarrApiKey: "testkey",
+          lidarrRootFolderPath: "/music",
+        })
+      );
+    });
+  });
+
+  it("shows connection failure message", async () => {
+    mockTestConnection.mockResolvedValue({
+      success: false,
+      error: "Connection refused",
+    });
+
+    renderOnboarding();
+    fireEvent.click(screen.getByText("Get Started"));
+
+    fireEvent.change(screen.getByPlaceholderText("http://localhost:8686"), {
+      target: { value: "http://bad:8686" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Enter API key"), {
+      target: { value: "testkey" },
+    });
+    fireEvent.click(screen.getByText("Test Connection"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Connection failed: Connection refused")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("disables next on connection step until test succeeds", () => {
+    renderOnboarding();
+    fireEvent.click(screen.getByText("Get Started"));
+    expect(screen.getByText("Next")).toBeDisabled();
+  });
+
+  it("can navigate back from connection step", () => {
+    renderOnboarding();
+    fireEvent.click(screen.getByText("Get Started"));
+    expect(screen.getByText("Lidarr Connection")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Back"));
+    expect(screen.getByText("Welcome to Music Requester")).toBeInTheDocument();
+  });
+});

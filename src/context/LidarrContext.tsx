@@ -144,7 +144,13 @@ export const LidarrContextProvider = ({
       return { success: false, error: data.error || "Connection failed" };
     }
 
-    return { success: true, version: data.version };
+    return {
+      success: true,
+      version: data.version,
+      qualityProfiles: data.qualityProfiles,
+      metadataProfiles: data.metadataProfiles,
+      rootFolderPaths: data.rootFolderPaths,
+    };
   };
 
   const value: LidarrContextValue = {

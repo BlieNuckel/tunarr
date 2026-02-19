@@ -26,7 +26,14 @@ export interface LidarrContextValue {
   saveSettings: (newSettings: LidarrSettings) => Promise<void>;
   testConnection: (
     testSettings: LidarrSettings
-  ) => Promise<{ success: boolean; version?: string; error?: string }>;
+  ) => Promise<{
+    success: boolean;
+    version?: string;
+    error?: string;
+    qualityProfiles?: { id: number; name: string }[];
+    metadataProfiles?: { id: number; name: string }[];
+    rootFolderPaths?: { id: number; path: string }[];
+  }>;
   loadLidarrOptionValues: () => Promise<void>;
 }
 

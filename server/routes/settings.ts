@@ -31,16 +31,44 @@ router.post("/test", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "URL and API key are required" });
   }
   const url = lidarrUrl.replace(/\/+$/, "");
-  const response = await fetch(`${url}/api/v1/system/status`, {
-    headers: { "X-Api-Key": lidarrApiKey },
-  });
+  const headers = { "X-Api-Key": lidarrApiKey };
+  const response = await fetch(`${url}/api/v1/system/status`, { headers });
   if (!response.ok) {
     return res
       .status(response.status)
       .json({ error: `Lidarr returned ${response.status}` });
   }
   const data = await response.json();
-  res.json({ success: true, version: data.version });
+
+  const [qualityRes, metadataRes, rootRes] = await Promise.all([
+    fetch(`${url}/api/v1/qualityprofile`, { headers }).catch(() => null),
+    fetch(`${url}/api/v1/metadataprofile`, { headers }).catch(() => null),
+    fetch(`${url}/api/v1/rootfolder`, { headers }).catch(() => null),
+  ]);
+
+  const qualityProfiles = qualityRes?.ok
+    ? (await qualityRes.json()).map(
+        (p: { id: number; name: string }) => ({ id: p.id, name: p.name })
+      )
+    : [];
+  const metadataProfiles = metadataRes?.ok
+    ? (await metadataRes.json()).map(
+        (p: { id: number; name: string }) => ({ id: p.id, name: p.name })
+      )
+    : [];
+  const rootFolderPaths = rootRes?.ok
+    ? (await rootRes.json()).map(
+        (f: { id: number; path: string }) => ({ id: f.id, path: f.path })
+      )
+    : [];
+
+  res.json({
+    success: true,
+    version: data.version,
+    qualityProfiles,
+    metadataProfiles,
+    rootFolderPaths,
+  });
 });
 
 export default router;
