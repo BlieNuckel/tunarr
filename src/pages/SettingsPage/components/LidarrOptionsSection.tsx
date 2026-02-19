@@ -1,3 +1,5 @@
+import Dropdown from "@/components/Dropdown";
+
 interface LidarrOptionsSectionProps {
   rootFolders: { id: number; path: string }[];
   rootFolderPath: string;
@@ -27,52 +29,40 @@ export default function LidarrOptionsSection({
         <label className="block text-sm font-medium text-gray-600 mb-1">
           Lidarr Root Path
         </label>
-        <select
-          key={rootFolders.length}
+        <Dropdown
+          options={rootFolders.map((f) => ({
+            value: f.path,
+            label: f.path,
+          }))}
           value={rootFolderPath}
-          onChange={(e) => onRootFolderChange(e.target.value)}
-          className="w-full px-3 py-2 bg-white border-2 border-black rounded-lg text-gray-900 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
-        >
-          {rootFolders.map((folder) => (
-            <option key={folder.id} value={folder.path}>
-              {folder.path}
-            </option>
-          ))}
-        </select>
+          onChange={onRootFolderChange}
+        />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-1">
           Quality Profile
         </label>
-        <select
-          key={qualityProfiles.length}
-          value={qualityProfileId}
-          onChange={(e) => onQualityProfileChange(Number(e.target.value))}
-          className="w-full px-3 py-2 bg-white border-2 border-black rounded-lg text-gray-900 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
-        >
-          {qualityProfiles.map((profile) => (
-            <option key={profile.id} value={profile.id}>
-              {profile.name}
-            </option>
-          ))}
-        </select>
+        <Dropdown
+          options={qualityProfiles.map((p) => ({
+            value: String(p.id),
+            label: p.name,
+          }))}
+          value={String(qualityProfileId)}
+          onChange={(v) => onQualityProfileChange(Number(v))}
+        />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-1">
           Metadata Profile
         </label>
-        <select
-          key={metadataProfiles.length}
-          value={metadataProfileId}
-          onChange={(e) => onMetadataProfileChange(Number(e.target.value))}
-          className="w-full px-3 py-2 bg-white border-2 border-black rounded-lg text-gray-900 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
-        >
-          {metadataProfiles.map((profile) => (
-            <option key={profile.id} value={profile.id}>
-              {profile.name}
-            </option>
-          ))}
-        </select>
+        <Dropdown
+          options={metadataProfiles.map((p) => ({
+            value: String(p.id),
+            label: p.name,
+          }))}
+          value={String(metadataProfileId)}
+          onChange={(v) => onMetadataProfileChange(Number(v))}
+        />
       </div>
     </div>
   );

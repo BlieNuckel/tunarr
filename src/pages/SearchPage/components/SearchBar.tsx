@@ -1,4 +1,5 @@
 import { useState, SubmitEvent } from "react";
+import Dropdown from "@/components/Dropdown";
 
 interface SearchBarProps {
   onSearch: (query: string, searchType: string) => void;
@@ -27,14 +28,14 @@ export default function SearchBar({
         <label className="block text-sm font-medium text-gray-600 mb-2">
           Search by
         </label>
-        <select
+        <Dropdown
+          options={[
+            { value: "album", label: "Album" },
+            { value: "artist", label: "Artist" },
+          ]}
           value={searchType}
-          onChange={(e) => setSearchType(e.target.value)}
-          className="w-full px-4 py-2 bg-white border-2 border-black rounded-lg text-gray-900 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
-        >
-          <option value="album">Album</option>
-          <option value="artist">Artist</option>
-        </select>
+          onChange={setSearchType}
+        />
       </div>
 
       <div className="flex gap-2">
