@@ -28,12 +28,7 @@ export default function DiscoverPage() {
   const [libraryDropdownOpen, setLibraryDropdownOpen] = useState(false);
   const libraryDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Sync auto-selected artist from Plex into local state
-  useEffect(() => {
-    if (autoSelectedArtist && !selectedArtist) {
-      setSelectedArtist(autoSelectedArtist);
-    }
-  }, [autoSelectedArtist, selectedArtist]);
+  const effectiveSelectedArtist = selectedArtist ?? autoSelectedArtist;
 
   const libraryMbids = useMemo(
     () => new Set(libraryArtists.map((a) => a.foreignArtistId)),
@@ -100,7 +95,7 @@ export default function DiscoverPage() {
                 key={artist.name}
                 onClick={() => handleArtistSelect(artist.name)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors ${
-                  selectedArtist === artist.name
+                  effectiveSelectedArtist === artist.name
                     ? "bg-indigo-600 text-white"
                     : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 }`}
@@ -155,7 +150,7 @@ export default function DiscoverPage() {
                           setLibraryDropdownOpen(false);
                         }}
                         className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                          selectedArtist === artist.name
+                          effectiveSelectedArtist === artist.name
                             ? "bg-indigo-600 text-white"
                             : "text-gray-300 hover:bg-gray-700"
                         }`}
@@ -193,13 +188,13 @@ export default function DiscoverPage() {
       </div>
 
       {/* Selected artist heading + tags */}
-      {selectedArtist && (
+      {effectiveSelectedArtist && (
         <div className="mb-4">
           <div className="flex items-center flex-wrap gap-2 mb-2">
             <h2 className="text-lg font-semibold text-white">
               {showingTagResults
                 ? `Top artists for "${activeTag}"`
-                : `Similar to "${selectedArtist}"`}
+                : `Similar to "${effectiveSelectedArtist}"`}
             </h2>
           </div>
 
@@ -288,7 +283,7 @@ export default function DiscoverPage() {
       )}
 
       {/* Empty state */}
-      {!selectedArtist && !similarLoading && (
+      {!effectiveSelectedArtist && !similarLoading && (
         <p className="text-gray-500 mt-6 text-center">
           {plexLoading
             ? "Loading your listening data..."

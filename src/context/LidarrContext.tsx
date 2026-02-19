@@ -1,47 +1,14 @@
+import { ReactNode, useState, useEffect } from "react";
 import {
-  createContext,
-  ReactNode,
-  useState,
-  useEffect,
-  useContext,
-} from "react";
-
-interface LidarrSettings {
-  lidarrUrl: string;
-  lidarrApiKey: string;
-  lidarrQualityProfileId: number;
-  lidarrRootFolderPath: string;
-  lidarrMetadataProfileId: number;
-  lastfmApiKey: string;
-  plexUrl: string;
-  plexToken: string;
-  importPath: string;
-}
-
-type LidarrOptions = {
-  qualityProfiles: { id: number; name: string }[];
-  metadataProfiles: { id: number; name: string }[];
-  rootFolderPaths: { id: number; path: string }[];
-};
-
-interface LidarrContextValue {
-  options: LidarrOptions;
-  settings: LidarrSettings;
-  isConnected: boolean;
-  isLoading: boolean;
-  saveSettings: (newSettings: LidarrSettings) => Promise<void>;
-  testConnection: (
-    testSettings: LidarrSettings,
-  ) => Promise<{ success: boolean; version?: string; error?: string }>;
-  loadLidarrOptionValues: () => Promise<void>;
-}
-
-const LidarrContext = createContext<LidarrContextValue | undefined>(undefined);
+  LidarrContext,
+  type LidarrSettings,
+  type LidarrOptions,
+  type LidarrContextValue,
+} from "./lidarrContextDef";
 
 interface LidarrContextProviderProps {
   children: ReactNode;
 }
-
 
 export const LidarrContextProvider = ({
   children,
@@ -125,7 +92,7 @@ export const LidarrContextProvider = ({
         opts.rootFolderPaths = data;
       }
       setOptions(opts);
-    } catch (err) {
+    } catch {
       // Silently fail - user can still save settings manually
     }
   };
@@ -180,7 +147,6 @@ export const LidarrContextProvider = ({
     return { success: true, version: data.version };
   };
 
-
   const value: LidarrContextValue = {
     options,
     settings,
@@ -194,14 +160,4 @@ export const LidarrContextProvider = ({
   return (
     <LidarrContext.Provider value={value}>{children}</LidarrContext.Provider>
   );
-};
-
-export const useLidarrContext = () => {
-  const context = useContext(LidarrContext);
-  if (!context) {
-    throw new Error(
-      "useLidarrContext must be used within LidarrContextProvider",
-    );
-  }
-  return context;
 };

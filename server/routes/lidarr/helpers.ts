@@ -78,7 +78,7 @@ export const getOrAddAlbum = async (albumMbid: string, artist: LidarrArtist) => 
   const albumsResult = await lidarrGet<LidarrAlbum[]>("/album", {
     artistId: artist.id,
   });
-  let album = albumsResult.data.find((a) => a.foreignAlbumId === albumMbid);
+  const album = albumsResult.data.find((a) => a.foreignAlbumId === albumMbid);
 
   if (album) {
     return { wasAdded: false, album };

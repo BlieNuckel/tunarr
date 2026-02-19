@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLidarrContext } from "../context/LidarrContext";
+import { useLidarrContext } from "../context/useLidarrContext";
 
 export default function SettingsPage() {
   const { options, settings, isLoading, saveSettings, testConnection, loadLidarrOptionValues } =
@@ -27,6 +27,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadLidarrOptionValues();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function SettingsPage() {
     if (settings.plexUrl) setPlexUrl(settings.plexUrl);
     if (settings.plexToken) setPlexToken(settings.plexToken);
     if (settings.importPath) setImportPath(settings.importPath);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.lidarrUrl]);
 
   useEffect(() => {
@@ -50,6 +52,7 @@ export default function SettingsPage() {
       setMetadataProfiles(options.metadataProfiles || []);
     if (options.rootFolderPaths.length)
       setRootFolders(options.rootFolderPaths || []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.metadataProfiles.length, options.qualityProfiles.length, options.rootFolderPaths.length]);
 
   if (isLoading) {
