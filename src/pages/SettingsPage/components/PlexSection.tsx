@@ -23,7 +23,7 @@ export default function PlexSection({
           value={url}
           onChange={(e) => onUrlChange(e.target.value)}
           placeholder="http://localhost:32400"
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
         />
       </div>
       <div>
@@ -35,7 +35,7 @@ export default function PlexSection({
           value={token}
           onChange={(e) => onTokenChange(e.target.value)}
           placeholder="Enter Plex token"
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
         />
         <p className="text-gray-500 text-xs mt-1">
           Used to show your most-played artists on the Discover page

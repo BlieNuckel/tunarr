@@ -21,7 +21,7 @@ export default function ImportStep({
           value={importPath}
           onChange={(e) => onImportPathChange(e.target.value)}
           placeholder="/imports"
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
         />
       </div>
       <div className="bg-gray-900 rounded-md p-4 border border-gray-700">

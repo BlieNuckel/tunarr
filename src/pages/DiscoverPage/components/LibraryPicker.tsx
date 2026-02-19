@@ -57,7 +57,7 @@ export default function LibraryPicker({
             onChange={(e) => setFilter(e.target.value)}
             onFocus={() => setDropdownOpen(true)}
             placeholder="Search library..."
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500 text-sm"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm"
           />
           {dropdownOpen && (
             <div className="absolute z-10 w-full mt-1 max-h-64 overflow-y-auto space-y-1 bg-gray-800 rounded-lg border border-gray-700 p-2 shadow-lg">

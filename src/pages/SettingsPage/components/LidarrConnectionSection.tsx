@@ -27,7 +27,7 @@ export default function LidarrConnectionSection({
           value={url}
           onChange={(e) => onUrlChange(e.target.value)}
           placeholder="http://localhost:8686"
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
         />
       </div>
 
@@ -40,7 +40,7 @@ export default function LidarrConnectionSection({
           value={apiKey}
           onChange={(e) => onApiKeyChange(e.target.value)}
           placeholder="Enter API key"
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
         />
       </div>
 
