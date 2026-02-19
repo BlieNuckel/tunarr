@@ -9,15 +9,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run start:server` — Express server only (via tsx)
 - `npm run build` — Vite production build to `/build`
 - `npm run lint` — ESLint (flat config, TypeScript + React)
-- `npm run typecheck:server` — TypeScript type checking for server code
+- `npm run typecheck:server` — TypeScript type checking for server code (`cd server && tsc --noEmit`)
 
 ## Architecture
 
-Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `/api/*` to the Express server in development.
+Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `/api/*` to the Express server in development. In production, Express serves the built frontend as static files from `/build`.
 
-**Frontend (`/src`):** React with React Router DOM, Tailwind CSS for styling, Context API for global state (Lidarr settings). Pages: Search, Discover, Status, Settings. Custom hooks handle async operations and state. Path alias `@/*` maps to `./src/*`.
+**Frontend (`/src`):** React with React Router DOM, Tailwind CSS for styling. Path alias `@/*` maps to `./src/*`. Pages live under `src/pages/` (Search, Discover, Status, Settings), each with co-located sub-components. Shared components in `src/components/`. Frontend uses plain `fetch()` to relative `/api/...` paths — no shared HTTP client.
 
-**Backend (`/server`):** Express with modular API integrations — each external service (Lidarr, Last.fm, MusicBrainz, Plex, Deezer) has its own directory with `types.ts`, `config.ts`, and function files. Routes are organized under `/routes`. Configuration is persisted to JSON files in `APP_CONFIG_DIR` (default: `./config`). SQLite3 for data storage.
+**State management:** Single `LidarrContext` holds global settings, connection status, and Lidarr options (profiles, root paths). All other state is page-local via custom hooks in `src/hooks/` — each hook owns its own loading/error/data lifecycle.
+
+**Backend (`/server`):** Express with two layers:
+- **Service layer** — each external API (Lidarr, Last.fm, MusicBrainz, Plex, Deezer) has its own directory with `types.ts`, `config.ts`, and function files. Service configs read from `getConfig()` lazily at request time (no restart needed after settings change).
+- **Route layer** (`/server/routes/`) — maps Express routes to service functions. The Lidarr router is an aggregator that mounts 8 sub-routers (add, artists, history, import, queue, wanted, etc.) plus a shared `helpers.ts` for upsert logic.
+
+**Config system** (`server/config.ts`): Persisted as JSON at `APP_CONFIG_DIR/config.json`. `getConfig()` reads from disk and merges with defaults on every call. `setConfig()` validates and writes. `getConfigValue<K>(key)` provides typed single-field access.
 
 **Key patterns:**
 - Type-safe generic API helpers per service (e.g., `lidarrGet<T>(path, query)`)
@@ -30,7 +36,7 @@ Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `
 ## Environment Variables
 
 - `APP_DATA_DIR` — Host path for persistent data
-- `APP_CONFIG_DIR` — Host path for runtime config JSON
+- `APP_CONFIG_DIR` — Host path for runtime config JSON (default: `./config`)
 - `PORT` — Server port (default: 3001)
 
 ## Code Style
@@ -39,3 +45,8 @@ Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `
 - No other comments unless logic has non-obvious outliers
 - TypeScript strict mode enabled with `noUnusedLocals` and `noUnusedParameters`
 - ESLint flat config with separate rules for client (`src/`), server (`server/`), and CJS files
+- Separate tsconfig for server (`server/tsconfig.json`) using Node module resolution vs root tsconfig using bundler resolution for frontend
+
+## Deployment
+
+Multi-stage Dockerfile: builds frontend with Vite, then runs server with `npx tsx server/index.ts` in a `node:22-alpine` image. `APP_CONFIG_DIR=/config` is intended to be bind-mounted for persistence.
