@@ -22,7 +22,7 @@ const getMusicSectionKey = async (
 
 /** Fetch the most-played artists from the Plex music library */
 export async function getTopArtists(limit: number): Promise<PlexTopArtist[]> {
-  const { baseUrl, headers, token } = getPlexConfig();
+  const { baseUrl, headers } = getPlexConfig();
   const sectionKey = await getMusicSectionKey(baseUrl, headers);
 
   const url = `${baseUrl}/library/sections/${sectionKey}/all?type=8&sort=viewCount:desc&X-Plex-Container-Start=0&X-Plex-Container-Size=${limit}`;
@@ -40,7 +40,7 @@ export async function getTopArtists(limit: number): Promise<PlexTopArtist[]> {
     .map((a) => ({
       name: a.title,
       viewCount: a.viewCount || 0,
-      thumb: a.thumb ? `${baseUrl}${a.thumb}?X-Plex-Token=${token}` : "",
+      thumb: a.thumb ? `/api/plex/thumb?path=${encodeURIComponent(a.thumb)}` : "",
       genres: (a.Genre || []).map((g) => g.tag),
     }));
 }
