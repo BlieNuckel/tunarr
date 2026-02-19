@@ -6,6 +6,19 @@ export interface ReleaseGroup {
   [key: string]: unknown;
 }
 
+export interface Track {
+  position: number;
+  title: string;
+  length: number | null;
+}
+
+export interface Medium {
+  position: number;
+  format: string;
+  title: string;
+  tracks: Track[];
+}
+
 export interface QueueItem {
   id: number;
   artist: string;

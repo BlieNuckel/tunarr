@@ -82,4 +82,42 @@ router.get("/search", rateLimiter, async (req: Request, res: Response) => {
   }
 });
 
+router.get("/tracks/:releaseGroupId", rateLimiter, async (req: Request, res: Response) => {
+  const { releaseGroupId } = req.params;
+
+  try {
+    const url = `${MB_BASE}/release?release-group=${releaseGroupId}&inc=recordings+media&limit=1&fmt=json`;
+    const response = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: `MusicBrainz returned ${response.status}` });
+    }
+
+    const data = await response.json();
+    const release = data.releases?.[0];
+
+    if (!release) {
+      return res.json({ media: [] });
+    }
+
+    const media = (release.media || []).map((m: { position: number; format: string; title: string; tracks: Array<{ position: number; title: string; recording: { title: string }; length: number | null }> }) => ({
+      position: m.position,
+      format: m.format || "",
+      title: m.title || "",
+      tracks: (m.tracks || []).map((t) => ({
+        position: t.position,
+        title: t.recording?.title || t.title,
+        length: t.length,
+      })),
+    }));
+
+    res.json({ media });
+  } catch (err) {
+    const error = err as Error;
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
