@@ -23,7 +23,11 @@ export default function SearchBar({
   };
 
   return (
-    <form data-testid="search-form" onSubmit={handleSubmit} className="space-y-3">
+    <form
+      data-testid="search-form"
+      onSubmit={handleSubmit}
+      className="space-y-3"
+    >
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-2">
           Search by
