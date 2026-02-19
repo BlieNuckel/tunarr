@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import QueueTable from "../components/QueueTable";
-import WantedList from "../components/WantedList";
-import RecentImports from "../components/RecentImports";
-import { QueueItem, WantedItem, RecentImport } from "../types";
+import QueueTable from "./components/QueueTable";
+import WantedList from "./components/WantedList";
+import RecentImports from "./components/RecentImports";
+import { QueueItem, WantedItem, RecentImport } from "@/types";
 
 export default function StatusPage() {
   const [queue, setQueue] = useState<QueueItem[]>([]);

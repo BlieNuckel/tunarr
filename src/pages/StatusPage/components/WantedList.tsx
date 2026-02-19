@@ -1,4 +1,4 @@
-import { WantedItem } from "../types";
+import { WantedItem } from "@/types";
 
 interface WantedListProps {
   items: WantedItem[];

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import useDiscover from "../hooks/useDiscover";
-import ArtistCard from "../components/ArtistCard";
+import useDiscover from "@/hooks/useDiscover";
+import ArtistCard from "./components/ArtistCard";
 
 export default function DiscoverPage() {
   const {

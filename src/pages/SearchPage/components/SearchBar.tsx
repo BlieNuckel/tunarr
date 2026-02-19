@@ -30,7 +30,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           <option value="artist">Artist</option>
         </select>
       </div>
-      
+
       <div className="flex gap-2">
         <input
           type="text"

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import useArtistAlbums from "../hooks/useArtistAlbums";
-import ReleaseGroupCard from "./ReleaseGroupCard";
+import useArtistAlbums from "@/hooks/useArtistAlbums";
+import ReleaseGroupCard from "@/components/ReleaseGroupCard";
 
 interface ArtistCardProps {
   name: string;

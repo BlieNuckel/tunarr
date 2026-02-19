@@ -1,6 +1,6 @@
-import SearchBar from "../components/SearchBar";
-import ReleaseGroupCard from "../components/ReleaseGroupCard";
-import useSearch from "../hooks/useSearch.ts";
+import SearchBar from "./components/SearchBar";
+import ReleaseGroupCard from "@/components/ReleaseGroupCard";
+import useSearch from "@/hooks/useSearch";
 
 export default function SearchPage() {
   const { results, loading, error, search } = useSearch();
@@ -12,7 +12,7 @@ export default function SearchPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-6">Search Albums</h1>
-      
+
       <SearchBar onSearch={handleSearch} />
 
       {loading && <p className="text-gray-400 mt-4">Searching...</p>}

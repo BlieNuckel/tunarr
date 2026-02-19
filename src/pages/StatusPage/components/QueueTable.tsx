@@ -1,5 +1,5 @@
-import StatusBadge from "./StatusBadge";
-import { QueueItem } from "../types";
+import StatusBadge from "@/components/StatusBadge";
+import { QueueItem } from "@/types";
 
 interface QueueTableProps {
   items: QueueItem[];

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import StatusBadge from "./StatusBadge";
-import { RecentImport } from "../types";
+import StatusBadge from "@/components/StatusBadge";
+import { RecentImport } from "@/types";
 
 interface RecentImportsProps {
   items: RecentImport[];

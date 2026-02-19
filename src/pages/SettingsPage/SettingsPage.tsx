@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLidarrContext } from "../context/useLidarrContext";
+import { useLidarrContext } from "@/context/useLidarrContext";
 
 export default function SettingsPage() {
   const { options, settings, isLoading, saveSettings, testConnection, loadLidarrOptionValues } =
