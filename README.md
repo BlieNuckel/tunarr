@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# Music Requester
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A self-hosted web application for discovering, searching, and requesting music through Lidarr. It combines data from multiple music services (Last.fm, MusicBrainz, Plex, Deezer) into a single interface for browsing new artists, searching albums, importing purchased music, and monitoring your library.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+**Discover** -- Browse artists similar to ones you already listen to. Pulls your top artists from Plex, finds similar artists via Last.fm, and lets you explore by genre tags. Artists can be added to Lidarr directly from the discovery view.
 
-### `npm start`
+**Search** -- Search the MusicBrainz database for albums by title or artist. View track listings, see purchase links for various platforms (Spotify, Apple Music, Amazon, etc.), and add albums to your Lidarr library.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Manual Import** -- Upload purchased music files through the web interface. Preview and review files before importing them into Lidarr.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+**Status** -- Monitor your Lidarr download queue, see which albums are missing from your library, trigger searches for wanted albums, and view recent imports.
 
-### `npm test`
+**Settings** -- Configure connections to Lidarr, Last.fm, Plex, and the manual import directory. Test connections and manage quality/metadata profiles.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Running with Docker Compose
 
-### `npm run build`
+### Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Docker and Docker Compose installed
+- A running Lidarr instance
+- (Optional) Last.fm API key, Plex server with token
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Setup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. Create a `docker-compose.yml` file:
 
-### `npm run eject`
+```yaml
+services:
+  music-requester:
+    image: ghcr.io/blienuckel/music-requester:latest
+    # Or build from source:
+    # build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./config:/config
+    restart: unless-stopped
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+If you want to use the manual import feature, also mount the directory where your music files will be uploaded:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```yaml
+services:
+  music-requester:
+    image: ghcr.io/blienuckel/music-requester:latest
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./config:/config
+      - /path/to/your/music/imports:/imports
+    restart: unless-stopped
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+2. Start the container:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```sh
+docker compose up -d
+```
 
-## Learn More
+3. Open `http://localhost:3001` in your browser.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+4. Go to Settings and configure your Lidarr URL, API key, and any other services you want to use.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Building from source
 
-### Code Splitting
+If you prefer to build the image yourself:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```sh
+git clone git@github.com:BlieNuckel/music-requester.git
+cd music-requester
+docker compose up -d --build
+```
 
-### Analyzing the Bundle Size
+### Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+All configuration is stored in `/config/config.json` inside the container. The `./config` volume mount ensures settings persist across container restarts.
 
-### Making a Progressive Web App
+The following services can be configured through the Settings page:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+| Service     | Required | Purpose                                    |
+| ----------- | -------- | ------------------------------------------ |
+| Lidarr      | Yes      | Music library management                   |
+| Last.fm     | No       | Artist discovery and genre tags            |
+| Plex        | No       | Top artists from your listening history    |
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MusicBrainz and Deezer are used automatically and do not require configuration.
