@@ -1,0 +1,48 @@
+import { render, screen, fireEvent } from "@testing-library/react";
+import SearchBar from "../SearchBar";
+
+describe("SearchBar", () => {
+  it("defaults to album search type", () => {
+    render(<SearchBar onSearch={vi.fn()} />);
+    expect(screen.getByRole("combobox")).toHaveValue("album");
+  });
+
+  it("calls onSearch with query and search type on submit", () => {
+    const onSearch = vi.fn();
+    render(<SearchBar onSearch={onSearch} />);
+
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "Radiohead" },
+    });
+    fireEvent.submit(screen.getByPlaceholderText("Search...").closest("form")!);
+
+    expect(onSearch).toHaveBeenCalledWith("Radiohead", "album");
+  });
+
+  it("does not call onSearch for whitespace-only query", () => {
+    const onSearch = vi.fn();
+    render(<SearchBar onSearch={onSearch} />);
+
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "   " },
+    });
+    fireEvent.submit(screen.getByPlaceholderText("Search...").closest("form")!);
+
+    expect(onSearch).not.toHaveBeenCalled();
+  });
+
+  it("allows changing search type", () => {
+    const onSearch = vi.fn();
+    render(<SearchBar onSearch={onSearch} />);
+
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: "artist" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Search..."), {
+      target: { value: "Bjork" },
+    });
+    fireEvent.submit(screen.getByPlaceholderText("Search...").closest("form")!);
+
+    expect(onSearch).toHaveBeenCalledWith("Bjork", "artist");
+  });
+});

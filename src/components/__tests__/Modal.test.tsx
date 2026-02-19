@@ -1,0 +1,46 @@
+import { render, screen, fireEvent } from "@testing-library/react";
+import Modal from "../Modal";
+
+describe("Modal", () => {
+  it("renders nothing when not open", () => {
+    const { container } = render(
+      <Modal isOpen={false} onClose={vi.fn()}>
+        <p>Content</p>
+      </Modal>
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("renders children when open", () => {
+    render(
+      <Modal isOpen={true} onClose={vi.fn()}>
+        <p>Modal content</p>
+      </Modal>
+    );
+    expect(screen.getByText("Modal content")).toBeInTheDocument();
+  });
+
+  it("calls onClose when clicking backdrop", () => {
+    const onClose = vi.fn();
+    render(
+      <Modal isOpen={true} onClose={onClose}>
+        <p>Content</p>
+      </Modal>
+    );
+
+    fireEvent.click(screen.getByText("Content").parentElement!.parentElement!);
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("does not call onClose when clicking inner content", () => {
+    const onClose = vi.fn();
+    render(
+      <Modal isOpen={true} onClose={onClose}>
+        <p>Content</p>
+      </Modal>
+    );
+
+    fireEvent.click(screen.getByText("Content"));
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
