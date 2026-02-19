@@ -41,7 +41,7 @@ export default function TrackList({ media, loading, error }: TrackListProps) {
                 <span className="text-gray-600 w-5 text-right flex-shrink-0">
                   {track.position}
                 </span>
-                <span className="text-gray-300 truncate">{track.title}</span>
+                <span className="text-gray-700 truncate">{track.title}</span>
                 {track.length && (
                   <span
                     data-testid="track-duration"

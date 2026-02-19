@@ -56,7 +56,10 @@ export default function ReleaseGroupCard({
   return (
     <>
       <div className="bg-white rounded-xl border-2 border-black shadow-cartoon-md overflow-hidden hover:translate-y-[-2px] hover:shadow-cartoon-lg transition-all">
-        <div className="flex gap-4 p-4">
+        <div
+          className="flex gap-4 p-4 cursor-pointer"
+          onClick={handleToggle}
+        >
           <img
             src={coverUrl}
             alt={`${albumTitle} cover`}
@@ -74,29 +77,26 @@ export default function ReleaseGroupCard({
             <p className="text-gray-300 text-xs mt-1 truncate">{albumMbid}</p>
           </div>
           <div className="flex items-start gap-2">
-            <MonitorButton
-              state={state}
-              onClick={handleClick}
-              errorMsg={errorMsg ?? undefined}
-            />
-            <button
-              onClick={handleToggle}
-              className="p-1.5 text-gray-400 hover:text-gray-900 transition-colors rounded"
+            <div onClick={(e) => e.stopPropagation()}>
+              <MonitorButton
+                state={state}
+                onClick={handleClick}
+                errorMsg={errorMsg ?? undefined}
+              />
+            </div>
+            <svg
+              className={`w-5 h-5 mt-1.5 text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                className={`w-5 h-5 transition-transform ${expanded ? "rotate-180" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
           </div>
         </div>
 
