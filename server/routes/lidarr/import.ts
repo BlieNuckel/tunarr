@@ -163,7 +163,7 @@ router.post("/import/confirm", async (req: Request, res: Response) => {
 });
 
 /** Cancel upload — clean up temp files */
-router.delete("/import/:uploadId", async (req: Request, res: Response) => {
+router.delete("/import/:uploadId", async (req: Request<{ uploadId: string }>, res: Response) => {
   const importPath = getConfigValue("importPath");
   if (!importPath) {
     return res.status(400).json({ error: "importPath not configured" });
