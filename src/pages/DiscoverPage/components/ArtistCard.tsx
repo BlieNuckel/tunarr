@@ -121,12 +121,14 @@ export default function ArtistCard({
             <div
               key={rg.id}
               className={animatingOut ? "cascade-deal-out" : "cascade-deal-in"}
-              style={{
-                "--deal-index": animatingOut
-                  ? albums.length - 1 - index
-                  : index,
-                "--deal-rotate": `${DEAL_ROTATIONS[index % DEAL_ROTATIONS.length]}deg`,
-              } as React.CSSProperties}
+              style={
+                {
+                  "--deal-index": animatingOut
+                    ? albums.length - 1 - index
+                    : index,
+                  "--deal-rotate": `${DEAL_ROTATIONS[index % DEAL_ROTATIONS.length]}deg`,
+                } as React.CSSProperties
+              }
             >
               <ReleaseGroupCard releaseGroup={rg} />
             </div>

@@ -49,7 +49,9 @@ const makeReleaseGroup = (
   title: "Test Album",
   "primary-type": "Album",
   "first-release-date": "2023-05-10",
-  "artist-credit": [{ name: "Test Artist", artist: { id: "a1", name: "Test Artist" } }],
+  "artist-credit": [
+    { name: "Test Artist", artist: { id: "a1", name: "Test Artist" } },
+  ],
   ...overrides,
 });
 
@@ -73,7 +75,9 @@ describe("ReleaseGroupCard", () => {
       />
     );
 
-    expect(screen.getAllByText("Unknown Artist").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Unknown Artist").length).toBeGreaterThanOrEqual(
+      1
+    );
   });
 
   it("hides year when first-release-date is empty", () => {
@@ -96,21 +100,29 @@ describe("ReleaseGroupCard", () => {
 
     it("flips card and fetches tracks on mouse enter", () => {
       render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
-      const card = screen.getByTestId("release-group-card").closest(".flip-card")!;
+      const card = screen
+        .getByTestId("release-group-card")
+        .closest(".flip-card")!;
 
       fireEvent.mouseEnter(card);
 
-      const inner = screen.getByTestId("release-group-card").closest(".flip-card-inner")!;
+      const inner = screen
+        .getByTestId("release-group-card")
+        .closest(".flip-card-inner")!;
       expect(inner).toHaveClass("flipped");
       expect(mockFetchTracks).toHaveBeenCalledWith("abc-123");
     });
 
     it("flips back on mouse leave", () => {
       render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
-      const card = screen.getByTestId("release-group-card").closest(".flip-card")!;
+      const card = screen
+        .getByTestId("release-group-card")
+        .closest(".flip-card")!;
 
       fireEvent.mouseEnter(card);
-      const inner = screen.getByTestId("release-group-card").closest(".flip-card-inner")!;
+      const inner = screen
+        .getByTestId("release-group-card")
+        .closest(".flip-card-inner")!;
       expect(inner).toHaveClass("flipped");
 
       fireEvent.mouseLeave(card);
@@ -142,7 +154,9 @@ describe("ReleaseGroupCard", () => {
     it("collapses tracklist when expanded card is clicked again", () => {
       render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
 
-      const clickTarget = screen.getByTestId("release-group-card-mobile").querySelector(".flex.items-center")!;
+      const clickTarget = screen
+        .getByTestId("release-group-card-mobile")
+        .querySelector(".flex.items-center")!;
 
       fireEvent.click(clickTarget);
       expect(screen.getByTestId("mobile-tracklist")).toBeInTheDocument();
@@ -170,7 +184,9 @@ describe("ReleaseGroupCard", () => {
     it("fetches tracks on expand but not on collapse", () => {
       render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
 
-      const clickTarget = screen.getByTestId("release-group-card-mobile").querySelector(".flex.items-center")!;
+      const clickTarget = screen
+        .getByTestId("release-group-card-mobile")
+        .querySelector(".flex.items-center")!;
 
       fireEvent.click(clickTarget);
       expect(mockFetchTracks).toHaveBeenCalledTimes(1);
