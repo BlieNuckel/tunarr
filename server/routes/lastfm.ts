@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { getConfigValue } from "../config";
-import { enrichWithImages } from "../deezerImages";
+import { enrichWithImages } from "../deezerApi/artistImages";
 
 const router = express.Router();
 

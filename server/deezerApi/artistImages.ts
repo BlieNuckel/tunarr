@@ -1,13 +1,6 @@
+import type { DeezerSearchResponse } from "./types";
+
 const DEEZER_SEARCH = "https://api.deezer.com/search/artist";
-
-type DeezerArtist = {
-  picture_big: string;
-  picture_medium: string;
-};
-
-type DeezerSearchResponse = {
-  data: DeezerArtist[];
-};
 
 const cache = new Map<string, string>();
 
