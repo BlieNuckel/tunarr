@@ -10,13 +10,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run build` — Vite production build to `/build`
 - `npm run lint` — ESLint (flat config, TypeScript + React)
 - `npm run typecheck:server` — TypeScript type checking for server code (`cd server && tsc --noEmit`)
-- No test runner configured (testing-library deps exist but no `npm test` script)
+- `npm test` — Run frontend tests (Vitest + jsdom + testing-library, config: `vitest.config.ts`)
+- `npm run test:server` — Run server tests (Vitest + node, config: `server/vitest.config.ts`)
+- `npx vitest run src/components/__tests__/Modal.test.tsx` — Run a single frontend test file
+- `npx vitest run --config server/vitest.config.ts server/config.test.ts` — Run a single server test file
 
 ## Architecture
 
 Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `/api/*` to the Express server in development. In production, Express serves the built frontend as static files from `/build`.
 
-**Frontend (`/src`):** React with React Router DOM, Tailwind CSS for styling. Path alias `@/*` maps to `./src/*`. Pages live under `src/pages/` (Search, Discover, Status, Settings), each with co-located sub-components. Shared components in `src/components/`. Frontend uses plain `fetch()` to relative `/api/...` paths — no shared HTTP client.
+**Frontend (`/src`):** React with React Router DOM, Tailwind CSS for styling. Path alias `@/*` maps to `./src/*`. Pages live under `src/pages/` (Discover at `/`, Search at `/search`, Status, Settings), each with co-located sub-components. Shared components in `src/components/`. Frontend uses plain `fetch()` to relative `/api/...` paths — no shared HTTP client.
 
 **State management:** Single `LidarrContext` holds global settings, connection status, and Lidarr options (profiles, root paths). All other state is page-local via custom hooks in `src/hooks/` — each hook owns its own loading/error/data lifecycle.
 
