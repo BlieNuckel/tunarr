@@ -41,8 +41,8 @@ router.post("/test", async (req: Request, res: Response) => {
     const data = await response.json();
     res.json({ success: true, version: data.version });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

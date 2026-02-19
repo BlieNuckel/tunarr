@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { lidarrGet } from "../../lidarrApi/get.js";
+import { LidarrPaginatedResponse, LidarrHistoryRecord } from "../../lidarrApi/types";
 
 const router = express.Router();
 
-// History
 router.get("/history", async (req: Request, res: Response) => {
   try {
     const query: Record<string, unknown> = {
@@ -16,11 +16,11 @@ router.get("/history", async (req: Request, res: Response) => {
       sortDirection: "descending",
     };
     if (req.query.eventType) query.eventType = req.query.eventType;
-    const result = await lidarrGet("/history", query);
+    const result = await lidarrGet<LidarrPaginatedResponse<LidarrHistoryRecord>>("/history", query);
     res.status(result.status).json(result.data);
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

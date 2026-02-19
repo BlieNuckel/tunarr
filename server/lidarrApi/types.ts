@@ -1,7 +1,101 @@
-type ProxyResponse<T> = {
+export type ProxyResponse<T> = {
   status: number;
   data: T;
   ok: boolean;
 };
 
-export type { ProxyResponse };
+export type LidarrPaginatedResponse<T> = {
+  page: number;
+  pageSize: number;
+  totalRecords: number;
+  records: T[];
+};
+
+export type LidarrArtist = {
+  id: number;
+  artistName: string;
+  foreignArtistId: string;
+  monitored: boolean;
+  folder: string;
+};
+
+export type LidarrAlbum = {
+  id: number;
+  title: string;
+  foreignAlbumId: string;
+  monitored: boolean;
+  artist: {
+    id: number;
+    artistName: string;
+    foreignArtistId: string;
+  };
+};
+
+export type LidarrQueueItem = {
+  id: number;
+  status: string;
+  title: string;
+  size: number;
+  sizeleft: number;
+  trackedDownloadStatus: string;
+  artist: { artistName: string };
+  album: { title: string };
+  quality: { quality: { name: string } };
+};
+
+export type LidarrWantedRecord = {
+  id: number;
+  title: string;
+  artist: { artistName: string };
+};
+
+export type LidarrHistoryRecord = {
+  id: number;
+  albumId: number;
+  date: string;
+  artist: { id: number; artistName: string };
+  album: { id: number; title: string };
+};
+
+export type LidarrManualImportItem = {
+  path: string;
+  name: string;
+  albumReleaseId: number;
+  tracks: { id: number; title: string; trackNumber: string }[];
+  rejections: { reason: string }[];
+  quality: { quality: { name: string } };
+  indexerFlags: number;
+  downloadId: string;
+  disableReleaseSwitching: boolean;
+  artist: { id: number };
+  album: { id: number };
+};
+
+export type LidarrQualityProfile = {
+  id: number;
+  name: string;
+};
+
+export type LidarrMetadataProfile = {
+  id: number;
+  name: string;
+};
+
+export type LidarrRootFolder = {
+  id: number;
+  path: string;
+};
+
+/** Extracts a human-readable error message from Lidarr's error responses (array or object format) */
+export function extractLidarrError(data: unknown): string {
+  if (Array.isArray(data) && data.length > 0) {
+    const first = data[0];
+    if (first && typeof first === "object" && "errorMessage" in first) {
+      return String(first.errorMessage);
+    }
+  }
+  if (data && typeof data === "object" && "message" in data) {
+    return String(data.message);
+  }
+  return JSON.stringify(data);
+}

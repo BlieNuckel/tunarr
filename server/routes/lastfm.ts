@@ -7,9 +7,46 @@ const router = express.Router();
 
 const LASTFM_BASE = "https://ws.audioscrobbler.com/2.0/";
 
+type LastfmSimilarArtist = {
+  name: string;
+  mbid: string;
+  match: string;
+};
+
+type LastfmTag = {
+  name: string;
+  count: number;
+};
+
+type LastfmTagArtist = {
+  name: string;
+  mbid: string;
+};
+
+type LastfmSimilarResponse = {
+  error?: number;
+  message?: string;
+  similarartists?: { artist: LastfmSimilarArtist[] };
+};
+
+type LastfmTopTagsResponse = {
+  error?: number;
+  message?: string;
+  toptags?: { tag: LastfmTag[] };
+};
+
+type LastfmTagArtistsResponse = {
+  error?: number;
+  message?: string;
+  topartists?: {
+    artist: LastfmTagArtist[];
+    "@attr"?: { page: string; totalPages: string };
+  };
+};
+
 /** @returns the base URL with api_key and format params */
 const buildUrl = (method: string, params: Record<string, string>) => {
-  const apiKey = getConfigValue("lastfmApiKey") as string;
+  const apiKey = getConfigValue("lastfmApiKey");
   if (!apiKey) throw new Error("Last.fm API key not configured");
 
   const searchParams = new URLSearchParams({
@@ -24,113 +61,105 @@ const buildUrl = (method: string, params: Record<string, string>) => {
 
 router.get("/similar", async (req: Request, res: Response) => {
   const { artist } = req.query;
-  if (!artist) {
+  if (typeof artist !== "string") {
     return res.status(400).json({ error: "artist query parameter is required" });
   }
 
   try {
     const url = buildUrl("artist.getSimilar", {
-      artist: artist as string,
+      artist,
       limit: "30",
     });
     const response = await fetch(url);
-    const data = await response.json();
+    const data: LastfmSimilarResponse = await response.json();
 
     if (data.error) {
       return res.status(400).json({ error: data.message || "Last.fm API error" });
     }
 
-    const artists = (data.similarartists?.artist || []).map(
-      (a: Record<string, unknown>) => ({
-        name: a.name as string,
-        mbid: (a.mbid as string) || "",
-        match: parseFloat(a.match as string),
-        imageUrl: "",
-      }),
-    );
+    const artists = (data.similarartists?.artist || []).map((a) => ({
+      name: a.name,
+      mbid: a.mbid || "",
+      match: parseFloat(a.match),
+      imageUrl: "",
+    }));
 
     await enrichWithImages(artists);
 
     res.json({ artists });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 
 router.get("/artist/tags", async (req: Request, res: Response) => {
   const { artist } = req.query;
-  if (!artist) {
+  if (typeof artist !== "string") {
     return res.status(400).json({ error: "artist query parameter is required" });
   }
 
   try {
-    const url = buildUrl("artist.getTopTags", {
-      artist: artist as string,
-    });
+    const url = buildUrl("artist.getTopTags", { artist });
     const response = await fetch(url);
-    const data = await response.json();
+    const data: LastfmTopTagsResponse = await response.json();
 
     if (data.error) {
       return res.status(400).json({ error: data.message || "Last.fm API error" });
     }
 
-    const tags = (data.toptags?.tag || []).map(
-      (t: Record<string, unknown>) => ({
-        name: t.name as string,
-        count: Number(t.count),
-      }),
-    );
+    const tags = (data.toptags?.tag || []).map((t) => ({
+      name: t.name,
+      count: Number(t.count),
+    }));
 
     res.json({ tags });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 
 router.get("/tag/artists", async (req: Request, res: Response) => {
   const { tag, page } = req.query;
-  if (!tag) {
+  if (typeof tag !== "string") {
     return res.status(400).json({ error: "tag query parameter is required" });
   }
 
   try {
     const url = buildUrl("tag.getTopArtists", {
-      tag: tag as string,
+      tag,
       limit: "30",
-      page: (page as string) || "1",
+      page: typeof page === "string" ? page : "1",
     });
     const response = await fetch(url);
-    const data = await response.json();
+    const data: LastfmTagArtistsResponse = await response.json();
 
     if (data.error) {
       return res.status(400).json({ error: data.message || "Last.fm API error" });
     }
 
     const topartists = data.topartists;
-    const artists = (topartists?.artist || []).map(
-      (a: Record<string, unknown>, index: number) => ({
-        name: a.name as string,
-        mbid: (a.mbid as string) || "",
-        imageUrl: "",
-        rank: index + 1,
-      }),
-    );
+    const artists = (topartists?.artist || []).map((a, index) => ({
+      name: a.name,
+      mbid: a.mbid || "",
+      imageUrl: "",
+      rank: index + 1,
+    }));
 
     await enrichWithImages(artists);
 
-    const attr = topartists?.["@attr"] || {};
+    const attr = topartists?.["@attr"];
     res.json({
       artists,
       pagination: {
-        page: Number(attr.page) || 1,
-        totalPages: Number(attr.totalPages) || 1,
+        page: Number(attr?.page) || 1,
+        totalPages: Number(attr?.totalPages) || 1,
       },
     });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

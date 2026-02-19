@@ -6,28 +6,36 @@ import crypto from "crypto";
 import { getConfigValue } from "../../config";
 import { lidarrGet } from "../../lidarrApi/get";
 import { lidarrPost } from "../../lidarrApi/post";
+import { LidarrManualImportItem } from "../../lidarrApi/types";
 import { getAlbumByMbid, getOrAddArtist, getOrAddAlbum } from "./helpers";
+
+declare module "express-serve-static-core" {
+  interface Request {
+    __uploadId?: string;
+    __uploadDir?: string;
+  }
+}
 
 const ALLOWED_EXTENSIONS = [".flac", ".mp3", ".ogg", ".wav", ".m4a", ".aac"];
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     try {
-      const importPath = getConfigValue("importPath") as string;
+      const importPath = getConfigValue("importPath");
       if (!importPath) {
         return cb(new Error("importPath not configured"), "");
       }
 
-      const uploadId = (_req as unknown as Record<string, string>).__uploadId || crypto.randomUUID();
+      const uploadId = _req.__uploadId || crypto.randomUUID();
       const uploadDir = path.join(importPath, uploadId);
       fs.mkdirSync(uploadDir, { recursive: true });
 
-      (_req as unknown as Record<string, string>).__uploadId = uploadId;
-      (_req as unknown as Record<string, string>).__uploadDir = uploadDir;
+      _req.__uploadId = uploadId;
+      _req.__uploadDir = uploadDir;
 
       cb(null, uploadDir);
     } catch (err) {
-      cb(err as Error, "");
+      cb(err instanceof Error ? err : new Error("Unknown error"), "");
     }
   },
   filename: (_req, file, cb) => {
@@ -49,7 +57,7 @@ const upload = multer({ storage, fileFilter, limits: { fileSize: 500 * 1024 * 10
 const router = express.Router();
 
 const requireImportPath = (_req: Request, res: Response, next: () => void) => {
-  const importPath = getConfigValue("importPath") as string;
+  const importPath = getConfigValue("importPath");
   if (!importPath) {
     return res.status(400).json({ error: "Import path not configured. Please set it in Settings." });
   }
@@ -67,8 +75,8 @@ router.post("/import/upload", requireImportPath, upload.array("files"), async (r
       return res.status(400).json({ error: "albumMbid is required" });
     }
 
-    const uploadId = (req as unknown as Record<string, string>).__uploadId;
-    const uploadDir = (req as unknown as Record<string, string>).__uploadDir;
+    const uploadId = req.__uploadId;
+    const uploadDir = req.__uploadDir;
 
     if (!uploadId || !uploadDir) {
       return res.status(500).json({ error: "Upload failed" });
@@ -83,7 +91,7 @@ router.post("/import/upload", requireImportPath, upload.array("files"), async (r
     const artist = await getOrAddArtist(artistMbid);
     const { album } = await getOrAddAlbum(albumMbid, artist);
 
-    const scanResult = await lidarrGet<unknown[]>("/manualimport", {
+    const scanResult = await lidarrGet<LidarrManualImportItem[]>("/manualimport", {
       folder: uploadDir,
       artistId: artist.id,
       filterExistingFiles: true,
@@ -97,18 +105,15 @@ router.post("/import/upload", requireImportPath, upload.array("files"), async (r
       return res.status(400).json({ error: "Lidarr found no importable files. Make sure the import path is accessible to Lidarr." });
     }
 
-    const scanItems = scanResult.data as Record<string, unknown>[];
-    for (const item of scanItems) {
-      const tracks = item.tracks as Record<string, unknown>[] | undefined;
-      const rejections = item.rejections as Record<string, unknown>[] | undefined;
+    for (const item of scanResult.data) {
       console.log("[import/upload] scan item:", {
         path: item.path,
         name: item.name,
         albumReleaseId: item.albumReleaseId,
-        trackCount: tracks?.length ?? 0,
-        trackIds: tracks?.map((t) => t.id) ?? [],
-        rejectionCount: rejections?.length ?? 0,
-        rejections: rejections?.map((r) => r.reason) ?? [],
+        trackCount: item.tracks?.length ?? 0,
+        trackIds: item.tracks?.map((t) => t.id) ?? [],
+        rejectionCount: item.rejections?.length ?? 0,
+        rejections: item.rejections?.map((r) => r.reason) ?? [],
       });
     }
 
@@ -119,27 +124,26 @@ router.post("/import/upload", requireImportPath, upload.array("files"), async (r
       items: scanResult.data,
     });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 
 /** Confirm manual import — trigger the actual import via Lidarr's command API */
 router.post("/import/confirm", async (req: Request, res: Response) => {
   try {
-    const { items } = req.body;
+    const { items }: { items: LidarrManualImportItem[] } = req.body;
     if (!items?.length) {
       return res.status(400).json({ error: "items array is required" });
     }
 
-    // Transform scan results into ManualImportFile format for the command
-    const files = items.map((item: Record<string, unknown>) => ({
+    const files = items.map((item) => ({
       path: item.path,
-      artistId: (item.artist as Record<string, unknown>)?.id,
-      albumId: (item.album as Record<string, unknown>)?.id,
+      artistId: item.artist?.id,
+      albumId: item.album?.id,
       albumReleaseId: item.albumReleaseId,
       trackIds: Array.isArray(item.tracks)
-        ? item.tracks.map((t: Record<string, unknown>) => t.id)
+        ? item.tracks.map((t) => t.id)
         : [],
       quality: item.quality,
       indexerFlags: item.indexerFlags ?? 0,
@@ -149,8 +153,6 @@ router.post("/import/confirm", async (req: Request, res: Response) => {
 
     console.log("[import/confirm] command payload:", JSON.stringify({ files }, null, 2));
 
-    // POST /manualimport only re-validates items — the actual import
-    // is triggered via POST /command with name "ManualImport"
     const result = await lidarrPost("/command", {
       name: "ManualImport",
       files,
@@ -165,23 +167,21 @@ router.post("/import/confirm", async (req: Request, res: Response) => {
 
     res.json({ status: "success" });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 
 /** Cancel upload — clean up temp files */
 router.delete("/import/:uploadId", async (req: Request, res: Response) => {
   try {
-    const importPath = getConfigValue("importPath") as string;
+    const importPath = getConfigValue("importPath");
     if (!importPath) {
       return res.status(400).json({ error: "importPath not configured" });
     }
 
-    const uploadId = req.params.uploadId as string;
-    const uploadDir = path.join(importPath, uploadId);
+    const uploadDir = path.join(importPath, req.params.uploadId);
 
-    // Ensure the path is within importPath to prevent directory traversal
     const resolved = path.resolve(uploadDir);
     if (!resolved.startsWith(path.resolve(importPath))) {
       return res.status(400).json({ error: "Invalid uploadId" });
@@ -193,8 +193,8 @@ router.delete("/import/:uploadId", async (req: Request, res: Response) => {
 
     res.json({ status: "cleaned" });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

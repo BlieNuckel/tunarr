@@ -1,26 +1,7 @@
 import { getConfigValue } from "../../config";
 import { lidarrGet } from "../../lidarrApi/get";
 import { lidarrPost } from "../../lidarrApi/post";
-
-export type LidarrAlbum = {
-  id: number;
-  title: string;
-  foreignAlbumId: string;
-  monitored: boolean;
-  artist: {
-    id: number;
-    name: string;
-    foreignArtistId: string;
-  };
-};
-
-export type LidarrArtist = {
-  id: number;
-  name: string;
-  foreignArtistId: string;
-  monitored: boolean;
-  folder: string;
-};
+import { LidarrAlbum, LidarrArtist, extractLidarrError } from "../../lidarrApi/types";
 
 export const getAlbumByMbid = async (albumMbid: string) => {
   const result = await lidarrGet<LidarrAlbum[]>("/album/lookup", {
@@ -44,15 +25,7 @@ const addAlbumToLidarr = async (albumMbid: string, artist: LidarrArtist) => {
   });
 
   if (addAlbumResult.status >= 300) {
-    const errorData = addAlbumResult.data as unknown;
-    const errorArray = Array.isArray(errorData) ? errorData : [];
-    const dataRecord = addAlbumResult.data as Record<string, unknown>;
-    const errorMessage =
-      (errorArray[0] as Record<string, unknown>)?.errorMessage ||
-      dataRecord?.message ||
-      JSON.stringify(addAlbumResult.data);
-
-    throw new Error(`Failed to add album: ${errorMessage}`);
+    throw new Error(`Failed to add album: ${extractLidarrError(addAlbumResult.data)}`);
   }
 
   return addAlbumResult.data;
@@ -82,15 +55,7 @@ const addArtistToLidarr = async (artistMbid: string) => {
   });
 
   if (!addArtistResult.ok) {
-    const errorData = addArtistResult.data as unknown;
-    const errorArray = Array.isArray(errorData) ? errorData : [];
-    const dataRecord = addArtistResult.data as Record<string, unknown>;
-    const errorMessage =
-      (errorArray[0] as Record<string, unknown>)?.errorMessage ||
-      dataRecord?.message ||
-      JSON.stringify(addArtistResult.data);
-
-    throw new Error(`Failed to add artist: ${errorMessage}`);
+    throw new Error(`Failed to add artist: ${extractLidarrError(addArtistResult.data)}`);
   }
 
   return addArtistResult.data;

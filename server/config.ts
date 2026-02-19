@@ -86,6 +86,6 @@ export const setConfig = (newConfig: Partial<IConfig>) => {
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(mergedConfig, null, 2));
 };
 
-export const getConfigValue = (key: keyof IConfig) => {
+export const getConfigValue = <K extends keyof IConfig>(key: K): IConfig[K] => {
   return getConfig()[key];
 };

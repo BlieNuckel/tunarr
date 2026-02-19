@@ -4,6 +4,27 @@ import { getConfig } from "../config";
 
 const router = express.Router();
 
+type PlexSection = {
+  key: string;
+  type: string;
+  title: string;
+};
+
+type PlexArtistMetadata = {
+  title: string;
+  viewCount: number;
+  thumb: string;
+  Genre: { tag: string }[];
+};
+
+type PlexSectionsResponse = {
+  MediaContainer: { Directory: PlexSection[] };
+};
+
+type PlexArtistsResponse = {
+  MediaContainer: { Metadata: PlexArtistMetadata[] };
+};
+
 const getPlexConfig = () => {
   const config = getConfig();
   if (!config.plexUrl || !config.plexToken) {
@@ -23,13 +44,11 @@ const getMusicSectionKey = async (baseUrl: string, headers: Record<string, strin
   const res = await fetch(`${baseUrl}/library/sections`, { headers });
   if (!res.ok) throw new Error(`Plex returned ${res.status}`);
 
-  const data = await res.json();
+  const data: PlexSectionsResponse = await res.json();
   const sections = data.MediaContainer?.Directory || [];
-  const musicSection = sections.find(
-    (s: Record<string, unknown>) => s.type === "artist",
-  );
+  const musicSection = sections.find((s) => s.type === "artist");
   if (!musicSection) throw new Error("No music library found in Plex");
-  return musicSection.key as string;
+  return musicSection.key;
 };
 
 router.get("/top-artists", async (req: Request, res: Response) => {
@@ -46,24 +65,24 @@ router.get("/top-artists", async (req: Request, res: Response) => {
       return res.status(response.status).json({ error: `Plex returned ${response.status}` });
     }
 
-    const data = await response.json();
+    const data: PlexArtistsResponse = await response.json();
     const metadata = data.MediaContainer?.Metadata || [];
 
     const artists = metadata
-      .filter((a: Record<string, unknown>) => (a.viewCount as number) > 0)
-      .map((a: Record<string, unknown>) => ({
-        name: a.title as string,
-        viewCount: (a.viewCount as number) || 0,
+      .filter((a) => a.viewCount > 0)
+      .map((a) => ({
+        name: a.title,
+        viewCount: a.viewCount || 0,
         thumb: a.thumb
           ? `${baseUrl}${a.thumb}?X-Plex-Token=${getConfig().plexToken}`
           : "",
-        genres: ((a.Genre as Array<{ tag: string }>) || []).map((g) => g.tag),
+        genres: (a.Genre || []).map((g) => g.tag),
       }));
 
     res.json({ artists });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

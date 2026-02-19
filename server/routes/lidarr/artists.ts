@@ -1,13 +1,8 @@
 import express, { Request, Response } from "express";
 import { lidarrGet } from "../../lidarrApi/get";
+import { LidarrArtist } from "../../lidarrApi/types";
 
 const router = express.Router();
-
-type LidarrArtist = {
-  id: number;
-  artistName: string;
-  foreignArtistId: string;
-};
 
 router.get("/artists", async (_req: Request, res: Response) => {
   try {
@@ -25,8 +20,8 @@ router.get("/artists", async (_req: Request, res: Response) => {
 
     res.json(artists);
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

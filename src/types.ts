@@ -1,9 +1,14 @@
 export interface ReleaseGroup {
   id: string;
-  title?: string;
-  "first-release-date"?: string;
-  "artist-credit"?: Array<{ artist?: { name?: string } }>;
-  [key: string]: unknown;
+  score: number;
+  title: string;
+  "primary-type": string;
+  "first-release-date": string;
+  "artist-credit": Array<{
+    name: string;
+    artist: { id: string; name: string };
+  }>;
+  "secondary-types"?: string[];
 }
 
 export interface Track {
@@ -21,17 +26,20 @@ export interface Medium {
 
 export interface QueueItem {
   id: number;
-  artist: string;
-  album: string;
   status: string;
-  [key: string]: unknown;
+  title: string;
+  size: number;
+  sizeleft: number;
+  trackedDownloadStatus: string;
+  artist: { artistName: string };
+  album: { title: string };
+  quality: { quality: { name: string } };
 }
 
 export interface WantedItem {
   id: number;
-  artist: string;
-  album: string;
-  [key: string]: unknown;
+  title: string;
+  artist: { artistName: string };
 }
 
 export interface RecentImport {
@@ -46,7 +54,6 @@ export interface RecentImport {
     id: number;
     title: string;
   };
-  [key: string]: unknown;
 }
 
 export type MonitorState = "idle" | "adding" | "success" | "already_monitored" | "error";

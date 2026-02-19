@@ -1,9 +1,5 @@
 import { useState, useCallback } from "react";
-
-interface ReleaseGroup {
-  id: string;
-  [key: string]: unknown;
-}
+import { ReleaseGroup } from "../types";
 
 export default function useSearch() {
   const [results, setResults] = useState<ReleaseGroup[]>([]);
@@ -12,15 +8,15 @@ export default function useSearch() {
 
   const search = useCallback(async (query: string, searchType: string) => {
     if (!query.trim()) return;
-    
+
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ 
+      const params = new URLSearchParams({
         q: query,
-        searchType 
+        searchType
       });
-      
+
       const res = await fetch(`/api/musicbrainz/search?${params.toString()}`);
       if (!res.ok) {
         const data = await res.json();

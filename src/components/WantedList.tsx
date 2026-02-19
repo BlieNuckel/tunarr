@@ -12,15 +12,15 @@ export default function WantedList({ items, onSearch }: WantedListProps) {
 
   return (
     <div className="space-y-2">
-      {items.map((item: WantedItem) => (
+      {items.map((item) => (
         <div
           key={item.id}
           className="flex items-center justify-between bg-gray-800 rounded-lg px-4 py-3 border border-gray-700"
         >
           <div>
-            <p className="text-white font-medium">{(item as any).title}</p>
+            <p className="text-white font-medium">{item.title}</p>
             <p className="text-gray-400 text-sm">
-              {(item as any).artist?.artistName || "Unknown Artist"}
+              {item.artist?.artistName || "Unknown Artist"}
             </p>
           </div>
           <button

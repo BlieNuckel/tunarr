@@ -13,8 +13,7 @@ router.post("/add", async (req: Request, res: Response) => {
 
   try {
     const lookupAlbum = await getAlbumByMbid(albumMbid);
-
-    const artistMbid = lookupAlbum.artist?.foreignArtistId as string;
+    const artistMbid = lookupAlbum.artist?.foreignArtistId;
 
     if (!artistMbid) {
       return res
@@ -47,8 +46,8 @@ router.post("/add", async (req: Request, res: Response) => {
 
     res.json({ status: "success" });
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

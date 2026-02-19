@@ -5,8 +5,13 @@ export type ManualImportItem = {
   name: string;
   quality: { quality: { name: string } };
   rejections: { reason: string }[];
-  tracks: { title: string; trackNumber: string }[];
-  [key: string]: unknown;
+  tracks: { id: number; title: string; trackNumber: string }[];
+  albumReleaseId: number;
+  indexerFlags: number;
+  downloadId: string;
+  disableReleaseSwitching: boolean;
+  artist: { id: number };
+  album: { id: number };
 };
 
 type ImportStep = "idle" | "uploading" | "reviewing" | "importing" | "done" | "error";

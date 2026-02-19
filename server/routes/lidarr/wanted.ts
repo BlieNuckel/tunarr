@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { lidarrGet } from "../../lidarrApi/get";
+import { LidarrPaginatedResponse, LidarrWantedRecord } from "../../lidarrApi/types";
 
 const router = express.Router();
 
-// Wanted/missing
 router.get("/wanted/missing", async (req: Request, res: Response) => {
   try {
-    const result = await lidarrGet("/wanted/missing", {
+    const result = await lidarrGet<LidarrPaginatedResponse<LidarrWantedRecord>>("/wanted/missing", {
       page: req.query.page || 1,
       pageSize: req.query.pageSize || 20,
       includeArtist: true,
@@ -16,8 +16,8 @@ router.get("/wanted/missing", async (req: Request, res: Response) => {
     });
     res.status(result.status).json(result.data);
   } catch (err) {
-    const error = err as Error;
-    res.status(500).json({ error: error.message });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: message });
   }
 });
 

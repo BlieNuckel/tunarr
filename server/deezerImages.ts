@@ -1,5 +1,14 @@
 const DEEZER_SEARCH = "https://api.deezer.com/search/artist";
 
+type DeezerArtist = {
+  picture_big: string;
+  picture_medium: string;
+};
+
+type DeezerSearchResponse = {
+  data: DeezerArtist[];
+};
+
 const cache = new Map<string, string>();
 
 /** Fetch an artist image URL from Deezer's free API, with in-memory caching */
@@ -13,7 +22,7 @@ export async function getArtistImage(artistName: string): Promise<string> {
     );
     if (!res.ok) return "";
 
-    const data = await res.json();
+    const data: DeezerSearchResponse = await res.json();
     const artist = data.data?.[0];
     const imageUrl = artist?.picture_big || artist?.picture_medium || "";
 
