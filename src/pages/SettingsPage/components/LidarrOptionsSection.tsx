@@ -24,14 +24,14 @@ export default function LidarrOptionsSection({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
           Lidarr Root Path
         </label>
         <select
           key={rootFolders.length}
           value={rootFolderPath}
           onChange={(e) => onRootFolderChange(e.target.value)}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-white border-2 border-black rounded-lg text-gray-900 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
         >
           {rootFolders.map((folder) => (
             <option key={folder.id} value={folder.path}>
@@ -41,14 +41,14 @@ export default function LidarrOptionsSection({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
           Quality Profile
         </label>
         <select
           key={qualityProfiles.length}
           value={qualityProfileId}
           onChange={(e) => onQualityProfileChange(Number(e.target.value))}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-white border-2 border-black rounded-lg text-gray-900 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
         >
           {qualityProfiles.map((profile) => (
             <option key={profile.id} value={profile.id}>
@@ -58,14 +58,14 @@ export default function LidarrOptionsSection({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-600 mb-1">
           Metadata Profile
         </label>
         <select
           key={metadataProfiles.length}
           value={metadataProfileId}
           onChange={(e) => onMetadataProfileChange(Number(e.target.value))}
-          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500"
+          className="w-full px-3 py-2 bg-white border-2 border-black rounded-lg text-gray-900 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
         >
           {metadataProfiles.map((profile) => (
             <option key={profile.id} value={profile.id}>

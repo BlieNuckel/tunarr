@@ -42,11 +42,11 @@ export default function LibraryPicker({
 
   return (
     <div className="lg:col-span-1" ref={dropdownRef}>
-      <h2 className="text-sm font-medium text-gray-400 mb-2">Your Library</h2>
+      <h2 className="text-sm font-medium text-gray-500 mb-2">Your Library</h2>
       {loading ? (
-        <p className="text-gray-500 text-sm">Loading library...</p>
+        <p className="text-gray-400 text-sm">Loading library...</p>
       ) : artists.length === 0 ? (
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-400 text-sm">
           No artists in library. Connect Lidarr in Settings.
         </p>
       ) : (
@@ -57,12 +57,12 @@ export default function LibraryPicker({
             onChange={(e) => setFilter(e.target.value)}
             onFocus={() => setDropdownOpen(true)}
             placeholder="Search library..."
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:border-indigo-500 text-sm"
+            className="w-full px-3 py-2 bg-white border-2 border-black rounded-lg text-gray-900 placeholder-gray-200 focus:outline-none focus:border-amber-400 text-sm shadow-cartoon-md"
           />
           {dropdownOpen && (
-            <div className="absolute z-10 w-full mt-1 max-h-64 overflow-y-auto space-y-1 bg-gray-800 rounded-lg border border-gray-700 p-2 shadow-lg">
+            <div className="absolute z-10 w-full mt-1 max-h-64 overflow-y-auto space-y-1 bg-white rounded-xl border-2 border-black p-2 shadow-cartoon-lg">
               {filteredArtists.length === 0 ? (
-                <p className="text-gray-500 text-sm px-3 py-2">No matches</p>
+                <p className="text-gray-400 text-sm px-3 py-2">No matches</p>
               ) : (
                 filteredArtists.map((artist) => (
                   <button
@@ -72,10 +72,10 @@ export default function LibraryPicker({
                       setFilter("");
                       setDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                       selectedArtist === artist.name
-                        ? "bg-indigo-600 text-white"
-                        : "text-gray-300 hover:bg-gray-700"
+                        ? "bg-amber-300 text-black font-bold"
+                        : "text-gray-700 hover:bg-amber-50"
                     }`}
                   >
                     {artist.name}

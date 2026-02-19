@@ -26,7 +26,7 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Search Albums</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Search Albums</h1>
 
       <SearchBar
         onSearch={handleSearch}
@@ -34,9 +34,9 @@ export default function SearchPage() {
         initialSearchType={searchType}
       />
 
-      {loading && <p className="text-gray-400 mt-4">Searching...</p>}
+      {loading && <p className="text-gray-500 mt-4">Searching...</p>}
 
-      {error && <p className="text-red-400 mt-4">Error: {error}</p>}
+      {error && <p className="text-rose-500 mt-4">Error: {error}</p>}
 
       {results.length > 0 && (
         <div className="mt-6 space-y-3">

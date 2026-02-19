@@ -60,7 +60,7 @@ export default function DiscoverPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">Discover</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Discover</h1>
 
       {!plexLoading && (
         <PlexTopArtists
@@ -92,11 +92,11 @@ export default function DiscoverPage() {
       )}
 
       {(similarLoading || tagArtistsLoading) && (
-        <p className="text-gray-400 mt-4">Loading...</p>
+        <p className="text-gray-500 mt-4">Loading...</p>
       )}
-      {similarError && <p className="text-red-400 mt-4">{similarError}</p>}
+      {similarError && <p className="text-rose-500 mt-4">{similarError}</p>}
       {tagArtistsError && (
-        <p className="text-red-400 mt-4">{tagArtistsError}</p>
+        <p className="text-rose-500 mt-4">{tagArtistsError}</p>
       )}
 
       {showingTagResults ? (
