@@ -34,7 +34,7 @@
     "test:server": "vitest run --config server/vitest.config.ts"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
