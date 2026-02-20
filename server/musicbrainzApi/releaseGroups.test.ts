@@ -2,15 +2,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   searchReleaseGroups,
   searchArtistReleaseGroups,
+  getReleaseGroupIdFromRelease,
 } from "./releaseGroups";
+
+const mockFetch = vi.fn();
+vi.stubGlobal("fetch", mockFetch);
 
 vi.mock("./config", () => ({
   MB_BASE: "https://musicbrainz.test/ws/2",
   MB_HEADERS: { "User-Agent": "test" },
+  rateLimitedMbFetch: (...args: unknown[]) => mockFetch(...args),
 }));
-
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -103,5 +105,46 @@ describe("searchArtistReleaseGroups", () => {
     await expect(searchArtistReleaseGroups("Test")).rejects.toThrow(
       "MusicBrainz returned 429"
     );
+  });
+});
+
+describe("getReleaseGroupIdFromRelease", () => {
+  it("returns release-group ID from release MBID", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        id: "release-123",
+        title: "OK Computer",
+        "release-group": {
+          id: "rg-456",
+          title: "OK Computer",
+        },
+      })
+    );
+
+    const result = await getReleaseGroupIdFromRelease("release-123");
+    expect(result).toBe("rg-456");
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://musicbrainz.test/ws/2/release/release-123?inc=release-groups&fmt=json",
+      { headers: { "User-Agent": "test" } }
+    );
+  });
+
+  it("returns null when release not found", async () => {
+    mockFetch.mockResolvedValue(errorResponse(404));
+
+    const result = await getReleaseGroupIdFromRelease("nonexistent");
+    expect(result).toBeNull();
+  });
+
+  it("returns null when release-group is missing", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        id: "release-123",
+        title: "Some Release",
+      })
+    );
+
+    const result = await getReleaseGroupIdFromRelease("release-123");
+    expect(result).toBeNull();
   });
 });

@@ -15,10 +15,11 @@ function renderLayout(path = "/") {
   );
 }
 
-describe("Layout", () => {
-  it("renders the navbar", () => {
+describe('Layout', () => {
+  it('renders the sidebar with logo in both mobile and desktop', () => {
     renderLayout();
-    expect(screen.getByText("Tunearr")).toBeInTheDocument();
+    const tunearrElements = screen.getAllByText('Tunearr');
+    expect(tunearrElements).toHaveLength(2); // One in mobile header, one in desktop sidebar
   });
 
   it("renders child route content via Outlet", () => {

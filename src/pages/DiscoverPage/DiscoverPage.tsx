@@ -11,6 +11,7 @@ import ArtistResultsList from "./components/ArtistResultsList";
 export default function DiscoverPage() {
   const {
     libraryArtists,
+    libraryAlbums,
     libraryLoading,
     plexTopArtists,
     plexLoading,
@@ -27,7 +28,7 @@ export default function DiscoverPage() {
     fetchTagArtists,
   } = useDiscover();
 
-  const { promotedAlbum, refresh: refreshPromotedAlbum } = usePromotedAlbum();
+  const { promotedAlbum, loading: promotedLoading, refresh: refreshPromotedAlbum } = usePromotedAlbum();
 
   const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -44,9 +45,18 @@ export default function DiscoverPage() {
     [libraryArtists]
   );
 
+  const libraryAlbumMbids = useMemo(
+    () => new Set(libraryAlbums.map((a) => a.foreignAlbumId)),
+    [libraryAlbums]
+  );
+
   const isInLibrary = (name: string, mbid?: string) => {
     if (mbid && libraryMbids.has(mbid)) return true;
     return libraryNames.has(name.toLowerCase());
+  };
+
+  const isAlbumInLibrary = (albumMbid: string) => {
+    return libraryAlbumMbids.has(albumMbid);
   };
 
   const handleArtistSelect = (name: string) => {
@@ -66,8 +76,12 @@ export default function DiscoverPage() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Discover</h1>
 
-      {promotedAlbum && (
-        <PromotedAlbum data={promotedAlbum} onRefresh={refreshPromotedAlbum} />
+      {(promotedAlbum || promotedLoading) && (
+        <PromotedAlbum
+          data={promotedAlbum}
+          loading={promotedLoading}
+          onRefresh={refreshPromotedAlbum}
+        />
       )}
 
       {!plexLoading && (
@@ -100,7 +114,12 @@ export default function DiscoverPage() {
       )}
 
       {(similarLoading || tagArtistsLoading) && (
-        <p className="text-gray-500 mt-4">Loading...</p>
+        <div className="flex items-center justify-center gap-3 py-12 bg-amber-50 rounded-xl border-2 border-black shadow-cartoon-sm mt-4">
+          <div className="w-6 h-6 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-700 font-medium">
+            Discovering similar artists...
+          </p>
+        </div>
       )}
       {similarError && <p className="text-rose-500 mt-4">{similarError}</p>}
       {tagArtistsError && (
@@ -111,6 +130,7 @@ export default function DiscoverPage() {
         <ArtistResultsList
           artists={tagArtists}
           isInLibrary={isInLibrary}
+          isAlbumInLibrary={isAlbumInLibrary}
           pagination={{
             page: tagPagination.page,
             totalPages: tagPagination.totalPages,
@@ -118,7 +138,11 @@ export default function DiscoverPage() {
           }}
         />
       ) : (
-        <ArtistResultsList artists={similarArtists} isInLibrary={isInLibrary} />
+        <ArtistResultsList
+          artists={similarArtists}
+          isInLibrary={isInLibrary}
+          isAlbumInLibrary={isAlbumInLibrary}
+        />
       )}
 
       {!effectiveSelectedArtist && !similarLoading && (

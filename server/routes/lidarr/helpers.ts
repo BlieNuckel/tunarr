@@ -29,9 +29,21 @@ const addAlbumToLidarr = async (albumMbid: string, artist: LidarrArtist) => {
   });
 
   if (addAlbumResult.status >= 300) {
-    throw new Error(
-      `Failed to add album: ${extractLidarrError(addAlbumResult.data)}`
-    );
+    const errorMsg = extractLidarrError(addAlbumResult.data);
+
+    // If Lidarr says "already added", fetch all albums and find it
+    if (errorMsg.toLowerCase().includes("already") && errorMsg.toLowerCase().includes("added")) {
+      const allAlbumsResult = await lidarrGet<LidarrAlbum[]>("/album");
+      const existingAlbum = allAlbumsResult.data.find(
+        (a) => a.foreignAlbumId === albumMbid
+      );
+
+      if (existingAlbum) {
+        return existingAlbum;
+      }
+    }
+
+    throw new Error(`Failed to add album: ${errorMsg}`);
   }
 
   return addAlbumResult.data;
@@ -86,13 +98,15 @@ export const getOrAddAlbum = async (
   albumMbid: string,
   artist: LidarrArtist
 ) => {
-  const albumsResult = await lidarrGet<LidarrAlbum[]>("/album", {
-    artistId: artist.id,
-  });
-  const album = albumsResult.data.find((a) => a.foreignAlbumId === albumMbid);
+  // Check all albums in Lidarr, not just this artist's albums
+  // This prevents "already added" errors when the album exists under a different artist
+  const allAlbumsResult = await lidarrGet<LidarrAlbum[]>("/album");
+  const existingAlbum = allAlbumsResult.data.find(
+    (a) => a.foreignAlbumId === albumMbid
+  );
 
-  if (album) {
-    return { wasAdded: false, album };
+  if (existingAlbum) {
+    return { wasAdded: false, album: existingAlbum };
   }
 
   return { wasAdded: true, album: await addAlbumToLidarr(albumMbid, artist) };

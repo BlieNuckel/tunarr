@@ -3,6 +3,8 @@ import { getArtistTopTags } from "../lastfmApi/artists";
 import { getTopAlbumsByTag } from "../lastfmApi/albums";
 import { lidarrGet } from "../lidarrApi/get";
 import type { LidarrArtist } from "../lidarrApi/types";
+import { getAlbumArtwork } from "../appleApi/artists";
+import { getReleaseGroupIdFromRelease } from "../musicbrainzApi/releaseGroups";
 
 export type PromotedAlbumResult = {
   album: {
@@ -143,6 +145,21 @@ export async function getPromotedAlbum(
 
   const shuffled = shuffle(allAlbums);
 
+  // Convert Last.fm release MBIDs to release-group MBIDs
+  // Do this sequentially (not in parallel) to avoid MusicBrainz rate limiting
+  // Stop after finding enough valid albums
+  const validAlbums = [];
+  for (const album of shuffled) {
+    const releaseGroupId = await getReleaseGroupIdFromRelease(album.mbid);
+    if (releaseGroupId) {
+      validAlbums.push({ ...album, mbid: releaseGroupId });
+      // Stop after finding 10 valid albums - we only need one anyway
+      if (validAlbums.length >= 10) break;
+    }
+  }
+
+  if (validAlbums.length === 0) return null;
+
   let libraryArtistMbids = new Set<string>();
   try {
     const result = await lidarrGet<LidarrArtist[]>("/artist");
@@ -153,12 +170,15 @@ export async function getPromotedAlbum(
     // Lidarr unavailable — treat all as not in library
   }
 
-  const notInLibrary = shuffled.find(
+  const notInLibrary = validAlbums.find(
     (a) => !libraryArtistMbids.has(a.artistMbid)
   );
 
-  const chosen = notInLibrary || shuffled[0];
+  const chosen = notInLibrary || validAlbums[0];
   const inLibrary = !notInLibrary;
+
+  // Try to get high-quality artwork from Apple Music
+  const appleArtwork = await getAlbumArtwork(chosen.name, chosen.artistName);
 
   const result: PromotedAlbumResult = {
     album: {
@@ -166,7 +186,10 @@ export async function getPromotedAlbum(
       mbid: chosen.mbid,
       artistName: chosen.artistName,
       artistMbid: chosen.artistMbid,
-      coverUrl: `https://coverartarchive.org/release-group/${chosen.mbid}/front-500`,
+      coverUrl:
+        appleArtwork ||
+        chosen.imageUrl ||
+        `https://coverartarchive.org/release-group/${chosen.mbid}/front-500`,
     },
     tag: chosenTag.name,
     inLibrary,

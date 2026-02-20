@@ -1,10 +1,13 @@
-import { useMemo, useState } from "react";
-import MonitorButton from "./MonitorButton";
-import TrackList from "./TrackList";
-import PurchaseLinksModal from "./PurchaseLinksModal";
-import useLidarr from "../hooks/useLidarr";
-import useReleaseTracks from "../hooks/useReleaseTracks";
-import { MonitorState, ReleaseGroup } from "../types";
+import { useMemo, useState } from 'react';
+import MonitorButton from './MonitorButton';
+import TrackList from './TrackList';
+import PurchaseLinksModal from './PurchaseLinksModal';
+import Spinner from './Spinner';
+import { CheckIcon, PlusIcon } from '@/components/icons';
+import ImageWithShimmer from './ImageWithShimmer';
+import useLidarr from '../hooks/useLidarr';
+import useReleaseTracks from '../hooks/useReleaseTracks';
+import { MonitorState, ReleaseGroup } from '../types';
 
 /** @returns {string} deterministic pastel HSL color derived from the input string */
 function pastelColorFromId(id: string): string {
@@ -26,10 +29,12 @@ const mobileMonitorStyles: Record<MonitorState, string> = {
 
 interface ReleaseGroupCardProps {
   releaseGroup: ReleaseGroup;
+  inLibrary?: boolean;
 }
 
 export default function ReleaseGroupCard({
   releaseGroup,
+  inLibrary = false,
 }: ReleaseGroupCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -51,8 +56,9 @@ export default function ReleaseGroupCard({
     fetchTracks,
   } = useReleaseTracks();
 
+  const effectiveState = inLibrary ? "already_monitored" : state;
   const disabled =
-    state === "adding" || state === "success" || state === "already_monitored";
+    effectiveState === "adding" || effectiveState === "success" || effectiveState === "already_monitored";
 
   const loadTracksIfNeeded = () => {
     if (media.length === 0 && !tracksLoading) {
@@ -80,7 +86,7 @@ export default function ReleaseGroupCard({
       return;
     }
 
-    if (state === "idle" || state === "error") {
+    if (effectiveState === "idle" || effectiveState === "error") {
       setIsModalOpen(true);
     }
   };
@@ -89,58 +95,26 @@ export default function ReleaseGroupCard({
     addToLidarr({ albumMbid });
   };
 
-  const coverImage = (
-    <img
-      src={coverUrl}
-      alt={`${albumTitle} cover`}
-      className="w-full h-full object-cover text-transparent"
-      onError={(e) => {
-        (e.target as HTMLImageElement).style.display = "none";
-      }}
-    />
-  );
+  const [coverError, setCoverError] = useState(false);
+
+  const coverImage = !coverError ? (
+    <div className="absolute inset-0">
+      <ImageWithShimmer
+        src={coverUrl}
+        alt={`${albumTitle} cover`}
+        className="w-full h-full object-cover"
+        onError={() => setCoverError(true)}
+      />
+    </div>
+  ) : null;
 
   const monitorIcon =
-    state === "adding" ? (
-      <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth={3}
-          className="opacity-25"
-        />
-        <path
-          fill="currentColor"
-          className="opacity-75"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-        />
-      </svg>
-    ) : state === "success" || state === "already_monitored" ? (
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2.5}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-      </svg>
+    effectiveState === 'adding' ? (
+      <Spinner />
+    ) : effectiveState === 'success' || effectiveState === 'already_monitored' ? (
+      <CheckIcon className="w-5 h-5" />
     ) : (
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2.5}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 5v14m-7-7h14"
-        />
-      </svg>
+      <PlusIcon className="w-5 h-5" />
     );
 
   return (
@@ -155,15 +129,22 @@ export default function ReleaseGroupCard({
           onClick={handleMobileCardClick}
         >
           <div
-            className="w-18 aspect-square flex-shrink-0"
+            className="w-18 aspect-square flex-shrink-0 relative"
             style={{ backgroundColor: pastelBg }}
           >
             {coverImage}
           </div>
           <div className="flex-1 min-w-0 px-3 py-2">
-            <h3 className="text-gray-900 font-semibold text-sm truncate">
-              {albumTitle}
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-gray-900 font-semibold text-sm truncate">
+                {albumTitle}
+              </h3>
+              {inLibrary && (
+                <span className="text-xs bg-amber-300 text-black px-1.5 py-0.5 rounded-full flex-shrink-0 border-2 border-black font-bold shadow-cartoon-sm whitespace-nowrap">
+                  In Library
+                </span>
+              )}
+            </div>
             <p className="text-gray-500 text-xs truncate">{artistName}</p>
             {year && <p className="text-gray-400 text-xs">{year}</p>}
           </div>
@@ -173,7 +154,7 @@ export default function ReleaseGroupCard({
               handleMonitorClick();
             }}
             disabled={disabled}
-            className={`w-10 h-10 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[state]}`}
+            className={`w-10 h-10 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[effectiveState]}`}
             data-testid="mobile-monitor-button"
             aria-label="Add to Lidarr"
           >
@@ -213,16 +194,23 @@ export default function ReleaseGroupCard({
             data-testid="release-group-card"
           >
             <div
-              className="aspect-square"
+              className="aspect-square relative"
               style={{ backgroundColor: pastelBg }}
             >
               {coverImage}
             </div>
 
             <div className="p-3 border-t-2 border-black">
-              <h3 className="text-gray-900 font-semibold text-sm truncate">
-                {albumTitle}
-              </h3>
+              <div className="flex items-center gap-1.5 mb-1">
+                <h3 className="text-gray-900 font-semibold text-sm truncate">
+                  {albumTitle}
+                </h3>
+                {inLibrary && (
+                  <span className="text-xs bg-amber-300 text-black px-1.5 py-0.5 rounded-full flex-shrink-0 border-2 border-black font-bold shadow-cartoon-sm whitespace-nowrap">
+                    In Library
+                  </span>
+                )}
+              </div>
               <p className="text-gray-500 text-xs truncate">{artistName}</p>
               {year && <p className="text-gray-400 text-xs mt-0.5">{year}</p>}
             </div>
@@ -249,7 +237,7 @@ export default function ReleaseGroupCard({
 
             <div className="flex-shrink-0 mt-2">
               <MonitorButton
-                state={state}
+                state={effectiveState}
                 onClick={handleMonitorClick}
                 errorMsg={errorMsg ?? undefined}
               />

@@ -4,6 +4,8 @@ const mockGetTopArtists = vi.fn();
 const mockGetArtistTopTags = vi.fn();
 const mockGetTopAlbumsByTag = vi.fn();
 const mockLidarrGet = vi.fn();
+const mockGetAlbumArtwork = vi.fn();
+const mockGetReleaseGroupIdFromRelease = vi.fn();
 
 vi.mock("../plexApi/topArtists", () => ({
   getTopArtists: (...args: unknown[]) => mockGetTopArtists(...args),
@@ -21,12 +23,26 @@ vi.mock("../lidarrApi/get", () => ({
   lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
 }));
 
+vi.mock("../appleApi/artists", () => ({
+  getAlbumArtwork: (...args: unknown[]) => mockGetAlbumArtwork(...args),
+}));
+
+vi.mock("../musicbrainzApi/releaseGroups", () => ({
+  getReleaseGroupIdFromRelease: (...args: unknown[]) =>
+    mockGetReleaseGroupIdFromRelease(...args),
+}));
+
 import { getPromotedAlbum, clearPromotedAlbumCache } from "./getPromotedAlbum";
 
 beforeEach(() => {
   vi.clearAllMocks();
   clearPromotedAlbumCache();
   vi.spyOn(Math, "random").mockReturnValue(0.1);
+  mockGetAlbumArtwork.mockResolvedValue('https://apple.com/album.jpg');
+  // Mock MusicBrainz conversion - by default, convert Last.fm release MBIDs to release-group MBIDs
+  mockGetReleaseGroupIdFromRelease.mockImplementation((mbid: string) =>
+    Promise.resolve(`rg-${mbid}`)
+  );
 });
 
 const plexArtists = [
@@ -74,11 +90,8 @@ describe("getPromotedAlbum", () => {
       mbid: expect.any(String),
       artistName: expect.any(String),
       artistMbid: expect.any(String),
-      coverUrl: expect.stringContaining(
-        "https://coverartarchive.org/release-group/"
-      ),
+      coverUrl: 'https://apple.com/album.jpg', // Apple artwork is now first
     });
-    expect(result!.album.coverUrl).toContain(result!.album.mbid);
     expect(result!.tag).toBe("alternative");
     expect(result!.inLibrary).toBe(false);
     expect(mockGetTopArtists).toHaveBeenCalledWith(10);
@@ -241,6 +254,19 @@ describe("getPromotedAlbum", () => {
 
     const result = await getPromotedAlbum();
     expect(result).not.toBeNull();
-    expect(result!.album.mbid).toBe("alb-1");
+    // MBID is converted from release to release-group
+    expect(result!.album.mbid).toBe("rg-alb-1");
+  });
+
+  it("returns null when no albums can be converted to release-groups", async () => {
+    mockGetTopArtists.mockResolvedValue(plexArtists);
+    mockGetArtistTopTags.mockResolvedValue(tags);
+    mockGetTopAlbumsByTag.mockResolvedValue(albumsPage);
+    mockLidarrGet.mockResolvedValue({ ok: true, data: [] });
+    // Simulate MusicBrainz not finding release-groups
+    mockGetReleaseGroupIdFromRelease.mockResolvedValue(null);
+
+    const result = await getPromotedAlbum();
+    expect(result).toBeNull();
   });
 });

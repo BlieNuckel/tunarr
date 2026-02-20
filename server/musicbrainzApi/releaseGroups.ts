@@ -1,8 +1,9 @@
-import { MB_BASE, MB_HEADERS } from "./config";
+import { MB_BASE, MB_HEADERS, rateLimitedMbFetch } from "./config";
 import type {
   MusicBrainzSearchResponse,
   MusicBrainzArtistSearchResponse,
   ReleaseGroupSearchResult,
+  MusicBrainzRelease,
 } from "./types";
 
 /** Search for release groups (albums/EPs) by text query */
@@ -53,11 +54,43 @@ export async function searchArtistReleaseGroups(
   }
 
   const data: MusicBrainzSearchResponse = await response.json();
-  const sorted = data["release-groups"].sort((a, b) => b.score - a.score);
+
+  // Sort by release date (newest first), then by score
+  const sorted = data["release-groups"].sort((a, b) => {
+    const dateA = a["first-release-date"] || "";
+    const dateB = b["first-release-date"] || "";
+
+    // If both have dates, sort by date (newest first)
+    if (dateA && dateB) {
+      return dateB.localeCompare(dateA);
+    }
+
+    // If only one has a date, prioritize it
+    if (dateA) return -1;
+    if (dateB) return 1;
+
+    // If neither has a date, sort by score
+    return b.score - a.score;
+  });
 
   return {
     ...data,
     "release-groups": sorted,
     count: sorted.length,
   };
+}
+
+/** Convert a release MBID to its release-group MBID */
+export async function getReleaseGroupIdFromRelease(
+  releaseMbid: string
+): Promise<string | null> {
+  const url = `${MB_BASE}/release/${releaseMbid}?inc=release-groups&fmt=json`;
+  const response = await rateLimitedMbFetch(url, { headers: MB_HEADERS });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data: MusicBrainzRelease = await response.json();
+  return data["release-group"]?.id || null;
 }
