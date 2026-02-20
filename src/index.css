@@ -52,6 +52,39 @@
   animation: cascade-deal-out 0.15s cubic-bezier(0.4, 0, 1, 1) both;
 }
 
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  40% {
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pop {
+  animation: pop 0.25s ease-out both;
+}
+
+@keyframes pop-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.animate-pop-out {
+  animation: pop-out 0.15s ease-in both;
+}
+
 .flip-card {
   perspective: 800px;
 }
