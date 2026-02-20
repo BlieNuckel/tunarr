@@ -25,4 +25,4 @@ EXPOSE 3001
 
 USER node
 
-CMD ["npx", "tsx", "server/index.ts"]
+CMD ["pnpm", "start:server"]

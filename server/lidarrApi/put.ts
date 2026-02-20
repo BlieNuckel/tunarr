@@ -1,4 +1,5 @@
 import { getLidarrConfig } from "./config";
+import { lidarrFetch } from "./fetch";
 import { ProxyResponse } from "./types";
 
 /** Generic proxy helper for PUT requests */
@@ -7,7 +8,7 @@ const lidarrPut = async <T = unknown>(
   body: unknown
 ): Promise<ProxyResponse<T>> => {
   const { url, headers } = getLidarrConfig();
-  const response = await fetch(`${url}/api/v1${lidarrPath}`, {
+  const response = await lidarrFetch(`${url}/api/v1${lidarrPath}`, {
     method: "PUT",
     headers,
     body: JSON.stringify(body),
