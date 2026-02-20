@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 /** @typedef {Object} LibraryArtist */
 export type LibraryArtist = {
@@ -58,12 +58,6 @@ export default function useDiscover() {
     page: 1,
     totalPages: 1,
   });
-
-  const [autoSelectedArtist, setAutoSelectedArtist] = useState<string | null>(
-    null
-  );
-
-  const hasAutoTriggered = useRef(false);
 
   useEffect(() => {
     const loadLibrary = async () => {
@@ -135,18 +129,6 @@ export default function useDiscover() {
     }
   }, []);
 
-  // Auto-discover: when Plex top artists load, pick the top one and fetch similar
-  useEffect(() => {
-    if (hasAutoTriggered.current) return;
-    if (plexLoading) return;
-    if (plexTopArtists.length === 0) return;
-
-    hasAutoTriggered.current = true;
-    const topArtist = plexTopArtists[0].name;
-    setAutoSelectedArtist(topArtist);
-    fetchSimilar(topArtist);
-  }, [plexLoading, plexTopArtists, fetchSimilar]);
-
   const fetchTagArtists = useCallback(async (tag: string, page = 1) => {
     setTagArtistsLoading(true);
     setTagArtistsError(null);
@@ -179,7 +161,6 @@ export default function useDiscover() {
     libraryLoading,
     plexTopArtists,
     plexLoading,
-    autoSelectedArtist,
     similarArtists,
     similarLoading,
     similarError,

@@ -58,8 +58,6 @@ describe("useDiscover", () => {
     mockFetchResponses([
       { url: "/api/lidarr/artists", data: [] },
       { url: "/api/plex/top-artists", data: { artists } },
-      { url: "/api/lastfm/similar", data: { artists: [] } },
-      { url: "/api/lastfm/artist/tags", data: { tags: [] } },
     ]);
 
     const { result } = renderHook(() => useDiscover());
@@ -68,31 +66,6 @@ describe("useDiscover", () => {
       expect(result.current.plexLoading).toBe(false);
     });
     expect(result.current.plexTopArtists).toEqual(artists);
-  });
-
-  it("auto-discovers similar from top plex artist", async () => {
-    const plexArtists = [
-      { name: "Radiohead", viewCount: 100, thumb: "", genres: [] },
-    ];
-    const similar = [{ name: "Muse", mbid: "m1", match: 0.8, imageUrl: "" }];
-    mockFetchResponses([
-      { url: "/api/lidarr/artists", data: [] },
-      { url: "/api/plex/top-artists", data: { artists: plexArtists } },
-      { url: "/api/lastfm/similar", data: { artists: similar } },
-      {
-        url: "/api/lastfm/artist/tags",
-        data: { tags: [{ name: "rock", count: 100 }] },
-      },
-    ]);
-
-    const { result } = renderHook(() => useDiscover());
-
-    await waitFor(() => {
-      expect(result.current.autoSelectedArtist).toBe("Radiohead");
-    });
-    await waitFor(() => {
-      expect(result.current.similarArtists).toEqual(similar);
-    });
   });
 
   it("fetchSimilar sets error on failure", async () => {

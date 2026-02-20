@@ -37,7 +37,6 @@ vi.mock("@/hooks/useDiscover", () => ({
     libraryLoading: false,
     plexTopArtists: [{ name: "Pink Floyd", viewCount: 80, thumb: "" }],
     plexLoading: false,
-    autoSelectedArtist: "Pink Floyd",
     similarArtists: [{ name: "Muse", mbid: "m1", match: 0.8, imageUrl: "" }],
     similarLoading: false,
     similarError: null,
@@ -49,6 +48,13 @@ vi.mock("@/hooks/useDiscover", () => ({
     tagPagination: { page: 1, totalPages: 1 },
     fetchSimilar: mockFetchSimilar,
     fetchTagArtists: mockFetchTagArtists,
+  }),
+}));
+
+vi.mock("@/hooks/useLibraryRecommendations", () => ({
+  default: () => ({
+    recommendations: [],
+    isLoading: false,
   }),
 }));
 
@@ -96,8 +102,9 @@ describe("DiscoverPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders tag list for selected artist", () => {
+  it("renders tag list after selecting an artist", () => {
     render(<DiscoverPage />);
+    fireEvent.click(screen.getByText("Pink Floyd"));
     expect(screen.getByText('Similar to "Pink Floyd"')).toBeInTheDocument();
     expect(screen.getByText("rock")).toBeInTheDocument();
   });
@@ -118,6 +125,7 @@ describe("DiscoverPage", () => {
 
   it("calls fetchTagArtists when tag clicked", () => {
     render(<DiscoverPage />);
+    fireEvent.click(screen.getByText("Pink Floyd"));
     fireEvent.click(screen.getByText("rock"));
     expect(mockFetchTagArtists).toHaveBeenCalledWith("rock");
   });
