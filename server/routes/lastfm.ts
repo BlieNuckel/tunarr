@@ -19,9 +19,11 @@ router.get('/similar', async (req: Request, res: Response) => {
   }
 
   const artists = await getSimilarArtists(artist);
+  console.log(`[Last.fm /similar] Got ${artists.length} artists from Last.fm`);
 
-  // Enrich with Apple Music artwork
   const artworkMap = await getArtistsArtwork(artists.map((a) => a.name));
+  console.log(`[Last.fm /similar] Apple API returned ${artworkMap.size} artworks`);
+
   const enrichedArtists = artists.map((a) => ({
     ...a,
     imageUrl: artworkMap.get(a.name.toLowerCase()) || a.imageUrl,

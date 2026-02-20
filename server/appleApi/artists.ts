@@ -9,23 +9,37 @@ const ITUNES_SEARCH_BASE = 'https://itunes.apple.com/search';
 export const getArtistArtwork = async (
   artistName: string
 ): Promise<string> => {
-  const params = new URLSearchParams({
-    term: artistName,
-    entity: 'musicArtist',
-    limit: '1',
-  });
+  try {
+    const params = new URLSearchParams({
+      term: artistName,
+      entity: 'musicArtist',
+      limit: '1',
+    });
 
-  const url = `${ITUNES_SEARCH_BASE}?${params.toString()}`;
-  const response = await fetch(url);
-  const data: AppleSearchResponse = await response.json();
+    const url = `${ITUNES_SEARCH_BASE}?${params.toString()}`;
+    const response = await fetch(url);
 
-  if (data.resultCount > 0 && data.results[0].artworkUrl100) {
-    // Apple returns 100x100 by default, but we can request larger sizes
-    // by replacing the size in the URL
-    return data.results[0].artworkUrl100.replace('100x100', '300x300');
+    if (!response.ok) {
+      console.error(`[Apple API] Failed to fetch artwork for ${artistName}: ${response.status}`);
+      return '';
+    }
+
+    const data: AppleSearchResponse = await response.json();
+
+    if (data.resultCount > 0 && data.results[0].artworkUrl100) {
+      // Apple returns 100x100 by default, but we can request larger sizes
+      // by replacing the size in the URL
+      const artworkUrl = data.results[0].artworkUrl100.replace('100x100', '300x300');
+      console.log(`[Apple API] Found artwork for ${artistName}: ${artworkUrl}`);
+      return artworkUrl;
+    }
+
+    console.log(`[Apple API] No artwork found for ${artistName}`);
+    return '';
+  } catch (error) {
+    console.error(`[Apple API] Error fetching artwork for ${artistName}:`, error);
+    return '';
   }
-
-  return '';
 };
 
 /**
