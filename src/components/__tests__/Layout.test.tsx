@@ -16,7 +16,7 @@ function renderLayout(path = "/") {
 }
 
 describe("Layout", () => {
-  it("renders the navbar", () => {
+  it("renders the sidebar", () => {
     renderLayout();
     expect(screen.getByText("Tunearr")).toBeInTheDocument();
   });
