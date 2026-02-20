@@ -9,8 +9,8 @@ export default function WelcomeStep({ onGetStarted }: WelcomeStepProps) {
         Welcome to Tunarr
       </h1>
       <p className="text-gray-500 mb-8 max-w-md mx-auto">
-        Tunarr helps you discover and add music to your Lidarr library.
-        Let's get your integrations set up so you can start requesting albums.
+        Tunarr helps you discover and add music to your Lidarr library. Let's
+        get your integrations set up so you can start requesting albums.
       </p>
       <button
         type="button"
