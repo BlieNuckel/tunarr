@@ -18,7 +18,7 @@ function renderLayout(path = "/") {
 describe("Layout", () => {
   it("renders the navbar", () => {
     renderLayout();
-    expect(screen.getByText("Tunarr")).toBeInTheDocument();
+    expect(screen.getByText("Tunearr")).toBeInTheDocument();
   });
 
   it("renders child route content via Outlet", () => {

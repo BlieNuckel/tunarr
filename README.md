@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="public/favicon.svg" alt="Tunarr" width="80" />
+  <img src="public/favicon.svg" alt="Tunearr" width="80" />
 </p>
 
-<h1 align="center">Tunarr</h1>
+<h1 align="center">Tunearr</h1>
 
 <p align="center">
   A self-hosted web app for discovering, searching, and requesting music through Lidarr.
 </p>
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="Tunarr — Discover page" width="700" />
+  <img src="docs/screenshot.png" alt="Tunearr — Discover page" width="700" />
 </p>
 
 ---
@@ -36,8 +36,8 @@
 
 ```yaml
 services:
-  tunarr:
-    image: ghcr.io/blienuckel/tunarr:latest
+  tunearr:
+    image: ghcr.io/blienuckel/tunearr:latest
     user: "1000:1000"
     ports:
       - "3001:3001"
@@ -50,8 +50,8 @@ If you want to use the manual import feature, also mount the directory where you
 
 ```yaml
 services:
-  tunarr:
-    image: ghcr.io/blienuckel/tunarr:latest
+  tunearr:
+    image: ghcr.io/blienuckel/tunearr:latest
     user: "1000:1000"
     ports:
       - "3001:3001"
@@ -74,8 +74,8 @@ docker compose up -d
 ### Building from source
 
 ```sh
-git clone git@github.com:BlieNuckel/tunarr.git
-cd tunarr
+git clone git@github.com:BlieNuckel/tunearr.git
+cd tunearr
 docker compose up -d --build
 ```
 

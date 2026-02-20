@@ -72,7 +72,7 @@ describe("OnboardingPage", () => {
 
   it("shows welcome step initially", () => {
     renderOnboarding();
-    expect(screen.getByText("Welcome to Tunarr")).toBeInTheDocument();
+    expect(screen.getByText("Welcome to Tunearr")).toBeInTheDocument();
     expect(screen.getByText("Get Started")).toBeInTheDocument();
   });
 
@@ -260,6 +260,6 @@ describe("OnboardingPage", () => {
     expect(screen.getByText("Lidarr Connection")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("Back"));
-    expect(screen.getByText("Welcome to Tunarr")).toBeInTheDocument();
+    expect(screen.getByText("Welcome to Tunearr")).toBeInTheDocument();
   });
 });

@@ -13,7 +13,7 @@ function renderNavbar(path = "/") {
 describe("Navbar", () => {
   it("renders the logo link", () => {
     renderNavbar();
-    expect(screen.getByText("Tunarr")).toBeInTheDocument();
+    expect(screen.getByText("Tunearr")).toBeInTheDocument();
   });
 
   it("shows current page label in menu button", () => {

@@ -74,7 +74,7 @@ export default function Navbar() {
             />
           </svg>
           <span className="hidden sm:inline text-lg font-bold text-gray-900 group-hover:text-amber-500 transition-colors">
-            Tunarr
+            Tunearr
           </span>
         </NavLink>
 

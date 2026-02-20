@@ -11,7 +11,7 @@ export default function ImportStep({
 }: ImportStepProps) {
   return (
     <div className="space-y-4">
-      <StepDescription text="Set a shared import directory accessible by both Tunarr and Lidarr for file uploads. You can skip this and add it later in Settings." />
+      <StepDescription text="Set a shared import directory accessible by both Tunearr and Lidarr for file uploads. You can skip this and add it later in Settings." />
       <div>
         <label className="block text-sm font-medium text-gray-600 mb-1">
           Import Path
@@ -33,7 +33,7 @@ export default function ImportStep({
     volumes:
       - /path/to/imports:/imports
 
-  tunarr:
+  tunearr:
     volumes:
       - /path/to/imports:/imports`}</pre>
       </div>
