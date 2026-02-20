@@ -42,6 +42,7 @@ export default function PromotedAlbum({ data, loading, onRefresh }: PromotedAlbu
   };
 
   const handleAddToLibrary = () => {
+    if (!album) return;
     addToLidarr({ albumMbid: album.mbid });
   };
 

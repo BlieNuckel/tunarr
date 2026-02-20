@@ -24,6 +24,8 @@
     "start:server": "tsx server/index.ts",
     "build": "vite build",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit && npm run typecheck:server",
+    "typecheck:client": "tsc --noEmit",
     "typecheck:server": "cd server && tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
