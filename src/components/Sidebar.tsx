@@ -60,16 +60,15 @@ function MobileNav() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
-      <div className="relative bg-white border-2 border-black rounded-2xl shadow-cartoon-md">
-        {activeIndex !== -1 && (
-          <div
-            ref={pillRef}
-            className="nav-pill-squish absolute top-2 h-8 bg-amber-300 rounded-full border-2 border-black pointer-events-none transition-[left] duration-300 ease-out"
-            style={{ left: pillStyle.left, width: pillStyle.width }}
-          />
-        )}
-
+      <div className="relative bg-white border-3 border-black rounded-full px-4">
         <ul ref={navRef} className="relative flex items-center justify-around">
+          {activeIndex !== -1 && (
+            <div
+              ref={pillRef}
+              className="nav-pill-squish absolute top-2 h-8 bg-amber-300 rounded-full border-2 border-black pointer-events-none transition-[left] duration-300 ease-out"
+              style={{ left: pillStyle.left, width: pillStyle.width }}
+            />
+          )}
           {links.map((link, i) => (
             <li
               key={link.to}
