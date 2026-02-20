@@ -93,13 +93,27 @@ export default function ArtistCard({
       {expanded && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {loading && (
-            <p className="text-gray-500 text-sm">Loading albums...</p>
+            <>
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-xl border-2 border-black shadow-cartoon-sm overflow-hidden animate-pulse"
+                >
+                  <div className="aspect-square bg-gray-200" />
+                  <div className="p-3 border-t-2 border-black space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4" />
+                    <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </>
           )}
           {error && <p className="text-rose-500 text-sm">{error}</p>}
           {!loading && !error && albums.length === 0 && (
             <p className="text-gray-400 text-sm">No albums found.</p>
           )}
-          {albums.map((rg, index) => (
+          {!loading && albums.map((rg, index) => (
             <div
               key={rg.id}
               className={animatingOut ? "cascade-deal-out" : "cascade-deal-in"}

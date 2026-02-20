@@ -115,11 +115,14 @@ describe("ArtistCard", () => {
     expect(mockFetchAlbums).not.toHaveBeenCalled();
   });
 
-  it("shows loading text when loading", () => {
+  it("shows loading skeleton cards when loading", () => {
     mockLoading = true;
     render(<ArtistCard name="Radiohead" />);
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByText("Loading albums...")).toBeInTheDocument();
+
+    // Should show 5 skeleton cards with animate-pulse class
+    const skeletons = document.querySelectorAll('.animate-pulse');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it("shows error text when there is an error", () => {
