@@ -4,6 +4,7 @@ import MonitorButton from '@/components/MonitorButton';
 import PurchaseLinksModal from '@/components/PurchaseLinksModal';
 import { RefreshIcon } from '@/components/icons';
 import useLidarr from '@/hooks/useLidarr';
+import ImageWithShimmer from '@/components/ImageWithShimmer';
 
 /** @returns deterministic pastel HSL color derived from the input string */
 function pastelColorFromId(id: string): string {
@@ -23,6 +24,7 @@ interface PromotedAlbumProps {
 export default function PromotedAlbum({ data, onRefresh }: PromotedAlbumProps) {
   const [coverError, setCoverError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const { state, errorMsg, addToLidarr } = useLidarr();
 
   const { album, tag, inLibrary } = data;
@@ -40,6 +42,15 @@ export default function PromotedAlbum({ data, onRefresh }: PromotedAlbumProps) {
     addToLidarr({ albumMbid: album.mbid });
   };
 
+  const handleRefresh = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      onRefresh();
+      setCoverError(false);
+      setTimeout(() => setIsAnimating(false), 50);
+    }, 300);
+  };
+
   return (
     <>
       <div className="mb-6">
@@ -48,25 +59,32 @@ export default function PromotedAlbum({ data, onRefresh }: PromotedAlbumProps) {
             Recommended for you
           </h2>
           <button
-            onClick={onRefresh}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-gray-700 hover:text-gray-900 text-xs font-bold bg-white hover:bg-gray-50 rounded-lg border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all"
+            onClick={handleRefresh}
+            disabled={isAnimating}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-gray-700 hover:text-gray-900 text-xs font-bold bg-white hover:bg-gray-50 rounded-lg border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Shuffle recommendation"
           >
-            <RefreshIcon className="w-4 h-4" />
+            <RefreshIcon className={`w-4 h-4 ${isAnimating ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Shuffle</span>
           </button>
         </div>
 
-        <div className="bg-white rounded-xl border-2 border-black shadow-cartoon-md overflow-hidden flex flex-col sm:flex-row">
+        <div
+          className={`bg-white rounded-xl border-2 border-black shadow-cartoon-md overflow-hidden flex flex-col sm:flex-row transition-all duration-300 ${
+            isAnimating
+              ? 'opacity-0 -translate-x-4 scale-95'
+              : 'opacity-100 translate-x-0 scale-100'
+          }`}
+        >
           <div
-            className="w-full sm:w-48 aspect-square sm:aspect-auto sm:h-48 flex-shrink-0"
+            className="w-full sm:w-48 aspect-square sm:aspect-auto sm:h-48 flex-shrink-0 overflow-hidden"
             style={{ backgroundColor: pastelBg }}
           >
             {!coverError && (
-              <img
+              <ImageWithShimmer
                 src={album.coverUrl}
                 alt={`${album.name} cover`}
-                className="w-full h-full object-cover text-transparent"
+                className="w-full h-full object-cover"
                 onError={() => setCoverError(true)}
               />
             )}

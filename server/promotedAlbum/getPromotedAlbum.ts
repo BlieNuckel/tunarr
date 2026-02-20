@@ -4,6 +4,7 @@ import { getTopAlbumsByTag } from "../lastfmApi/albums";
 import { lidarrGet } from "../lidarrApi/get";
 import type { LidarrArtist } from "../lidarrApi/types";
 import { getAlbumArtwork } from "../appleApi/artists";
+import { getReleaseGroupIdFromRelease } from "../musicbrainzApi/releaseGroups";
 
 export type PromotedAlbumResult = {
   album: {
@@ -144,6 +145,20 @@ export async function getPromotedAlbum(
 
   const shuffled = shuffle(allAlbums);
 
+  // Convert Last.fm release MBIDs to release-group MBIDs
+  const albumsWithReleaseGroupIds = await Promise.all(
+    shuffled.map(async (album) => {
+      const releaseGroupId = await getReleaseGroupIdFromRelease(album.mbid);
+      return releaseGroupId ? { ...album, mbid: releaseGroupId } : null;
+    })
+  );
+
+  const validAlbums = albumsWithReleaseGroupIds.filter(
+    (a): a is NonNullable<typeof a> => a !== null
+  );
+
+  if (validAlbums.length === 0) return null;
+
   let libraryArtistMbids = new Set<string>();
   try {
     const result = await lidarrGet<LidarrArtist[]>("/artist");
@@ -154,11 +169,11 @@ export async function getPromotedAlbum(
     // Lidarr unavailable — treat all as not in library
   }
 
-  const notInLibrary = shuffled.find(
+  const notInLibrary = validAlbums.find(
     (a) => !libraryArtistMbids.has(a.artistMbid)
   );
 
-  const chosen = notInLibrary || shuffled[0];
+  const chosen = notInLibrary || validAlbums[0];
   const inLibrary = !notInLibrary;
 
   // Try to get high-quality artwork from Apple Music

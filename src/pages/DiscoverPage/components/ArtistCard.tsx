@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import useArtistAlbums from '@/hooks/useArtistAlbums';
 import ReleaseGroupCard from '@/components/ReleaseGroupCard';
 import { ChevronDownIcon, MusicalNoteIcon } from '@/components/icons';
+import ImageWithShimmer from '@/components/ImageWithShimmer';
 
 const DEAL_ROTATIONS = [-4, 3.5, -3, 4.5, -3.5, 3];
 const EXIT_DURATION_MS = 150;
@@ -57,10 +58,10 @@ export default function ArtistCard({
           className="w-full flex items-center gap-3 p-3 text-left hover:bg-amber-50 transition-colors"
         >
           {imageUrl && !imageError ? (
-            <img
+            <ImageWithShimmer
               src={imageUrl}
               alt={name}
-              className="w-12 h-12 rounded-lg object-cover bg-gray-100 flex-shrink-0 border-2 border-black"
+              className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border-2 border-black"
               onError={() => setImageError(true)}
             />
           ) : (

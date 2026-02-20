@@ -4,6 +4,7 @@ import TrackList from './TrackList';
 import PurchaseLinksModal from './PurchaseLinksModal';
 import Spinner from './Spinner';
 import { CheckIcon, PlusIcon } from '@/components/icons';
+import ImageWithShimmer from './ImageWithShimmer';
 import useLidarr from '../hooks/useLidarr';
 import useReleaseTracks from '../hooks/useReleaseTracks';
 import { MonitorState, ReleaseGroup } from '../types';
@@ -91,16 +92,16 @@ export default function ReleaseGroupCard({
     addToLidarr({ albumMbid });
   };
 
-  const coverImage = (
-    <img
+  const [coverError, setCoverError] = useState(false);
+
+  const coverImage = !coverError ? (
+    <ImageWithShimmer
       src={coverUrl}
       alt={`${albumTitle} cover`}
-      className="w-full h-full object-cover text-transparent"
-      onError={(e) => {
-        (e.target as HTMLImageElement).style.display = "none";
-      }}
+      className="w-full h-full object-cover"
+      onError={() => setCoverError(true)}
     />
-  );
+  ) : null;
 
   const monitorIcon =
     state === 'adding' ? (

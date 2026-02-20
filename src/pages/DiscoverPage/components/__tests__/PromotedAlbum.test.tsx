@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import PromotedAlbum from "../PromotedAlbum";
 import type { PromotedAlbumData } from "@/hooks/usePromotedAlbum";
 
@@ -86,9 +86,36 @@ describe("PromotedAlbum", () => {
   });
 
   it("calls onRefresh when shuffle button clicked", () => {
+    vi.useFakeTimers();
     render(<PromotedAlbum data={albumData} onRefresh={mockRefresh} />);
     fireEvent.click(screen.getByLabelText('Shuffle recommendation'));
+
+    expect(mockRefresh).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+
     expect(mockRefresh).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("disables shuffle button during animation", () => {
+    vi.useFakeTimers();
+    render(<PromotedAlbum data={albumData} onRefresh={mockRefresh} />);
+    const button = screen.getByLabelText('Shuffle recommendation');
+
+    fireEvent.click(button);
+    expect(button).toBeDisabled();
+
+    act(() => {
+      vi.advanceTimersByTime(350);
+    });
+
+    expect(button).not.toBeDisabled();
+
+    vi.useRealTimers();
   });
 
   it('opens modal on monitor button click', () => {

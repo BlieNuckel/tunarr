@@ -54,3 +54,12 @@ export type TrackMedia = {
   title: string;
   tracks: { position: number; title: string; length: number | null }[];
 };
+
+export type MusicBrainzRelease = {
+  id: string;
+  title: string;
+  "release-group": {
+    id: string;
+    title: string;
+  };
+};
