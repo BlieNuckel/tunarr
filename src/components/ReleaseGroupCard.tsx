@@ -180,18 +180,23 @@ export default function ReleaseGroupCard({
             {monitorIcon}
           </button>
         </div>
-        {isExpanded && (
-          <div
-            className="border-t-2 border-black p-3 overlay-scrollbar max-h-64 overflow-y-auto"
-            data-testid="mobile-tracklist"
-          >
-            <TrackList
-              media={media}
-              loading={tracksLoading}
-              error={tracksError}
-            />
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+          style={{ transitionTimingFunction: "cubic-bezier(0.34, 1.3, 0.64, 1)" }}
+        >
+          <div className="overflow-hidden">
+            <div
+              className="border-t-2 border-black p-3 overlay-scrollbar max-h-64 overflow-y-auto"
+              data-testid="mobile-tracklist"
+            >
+              <TrackList
+                media={media}
+                loading={tracksLoading}
+                error={tracksError}
+              />
+            </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Desktop: flip card on hover */}

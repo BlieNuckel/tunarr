@@ -142,12 +142,13 @@ describe("ReleaseGroupCard", () => {
     it("expands to show tracklist when card is clicked", () => {
       render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
 
-      expect(screen.queryByTestId("mobile-tracklist")).not.toBeInTheDocument();
+      const grid = screen.getByTestId("mobile-tracklist").closest(".grid")!;
+      expect(grid).toHaveClass("grid-rows-[0fr]");
 
       const mobileCard = screen.getByTestId("release-group-card-mobile");
       fireEvent.click(mobileCard.querySelector(".flex.items-center")!);
 
-      expect(screen.getByTestId("mobile-tracklist")).toBeInTheDocument();
+      expect(grid).toHaveClass("grid-rows-[1fr]");
       expect(mockFetchTracks).toHaveBeenCalledWith("abc-123");
     });
 
@@ -157,12 +158,13 @@ describe("ReleaseGroupCard", () => {
       const clickTarget = screen
         .getByTestId("release-group-card-mobile")
         .querySelector(".flex.items-center")!;
+      const grid = screen.getByTestId("mobile-tracklist").closest(".grid")!;
 
       fireEvent.click(clickTarget);
-      expect(screen.getByTestId("mobile-tracklist")).toBeInTheDocument();
+      expect(grid).toHaveClass("grid-rows-[1fr]");
 
       fireEvent.click(clickTarget);
-      expect(screen.queryByTestId("mobile-tracklist")).not.toBeInTheDocument();
+      expect(grid).toHaveClass("grid-rows-[0fr]");
     });
 
     it("opens purchase modal when + button is clicked", () => {
@@ -178,7 +180,8 @@ describe("ReleaseGroupCard", () => {
 
       fireEvent.click(screen.getByTestId("mobile-monitor-button"));
 
-      expect(screen.queryByTestId("mobile-tracklist")).not.toBeInTheDocument();
+      const grid = screen.getByTestId("mobile-tracklist").closest(".grid")!;
+      expect(grid).toHaveClass("grid-rows-[0fr]");
     });
 
     it("fetches tracks on expand but not on collapse", () => {
