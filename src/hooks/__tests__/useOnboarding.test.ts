@@ -49,7 +49,10 @@ describe("useOnboarding", () => {
   });
 
   it("does not go above last step", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ valid: true }) });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ valid: true }),
+    });
     const { result } = renderHook(() => useOnboarding());
     for (let i = 0; i < STEPS.length + 2; i++) {
       await act(async () => result.current.next());
@@ -70,7 +73,10 @@ describe("useOnboarding", () => {
     expect(result.current.currentStep).toBe("plex");
     expect(result.current.isOptional).toBe(true);
 
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ valid: true }) });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ valid: true }),
+    });
     await act(async () => result.current.next());
     expect(result.current.currentStep).toBe("import");
     expect(result.current.isOptional).toBe(true);
@@ -203,9 +209,7 @@ describe("useOnboarding", () => {
       await act(async () => result.current.next());
 
       expect(result.current.currentStep).toBe("import");
-      expect(result.current.error).toBe(
-        'Import path "/bad" does not exist.'
-      );
+      expect(result.current.error).toBe('Import path "/bad" does not exist.');
     });
 
     it("advances on import step when validation succeeds", async () => {

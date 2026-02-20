@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import OnboardingPage from "../OnboardingPage";
 import {
@@ -348,9 +354,7 @@ describe("OnboardingPage", () => {
       fireEvent.click(screen.getByText("Next"));
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/does not exist/)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/does not exist/)).toBeInTheDocument();
       });
 
       expect(screen.getByTestId("import-path-input")).toBeInTheDocument();
