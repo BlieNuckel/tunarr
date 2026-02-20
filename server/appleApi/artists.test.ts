@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getArtistArtwork, getArtistsArtwork } from './artists';
+import {
+  getArtistArtwork,
+  getArtistsArtwork,
+  getAlbumArtwork,
+  getAlbumsArtwork,
+} from './artists';
 
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
@@ -151,5 +156,93 @@ describe('getArtistsArtwork', () => {
       'https://example.com/radiohead/600x600bb.jpg'
     );
     expect(result.get('unknown artist')).toBe('');
+  });
+});
+
+describe('getAlbumArtwork', () => {
+  it('returns 600x600 artwork URL when album found', async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        resultCount: 1,
+        results: [
+          {
+            wrapperType: 'collection',
+            collectionId: 1234,
+            collectionName: 'OK Computer',
+            artistId: 816,
+            artistName: 'Radiohead',
+            artworkUrl100: 'https://example.com/okcomputer/100x100bb.jpg',
+          },
+        ],
+      })
+    );
+
+    const result = await getAlbumArtwork('OK Computer', 'Radiohead');
+
+    expect(result).toBe('https://example.com/okcomputer/600x600bb.jpg');
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://itunes.apple.com/search?term=Radiohead+OK+Computer&entity=album&limit=1'
+    );
+  });
+
+  it('returns empty string when no results', async () => {
+    mockFetch.mockResolvedValue(
+      jsonResponse({
+        resultCount: 0,
+        results: [],
+      })
+    );
+
+    const result = await getAlbumArtwork('Nonexistent Album', 'Unknown Artist');
+    expect(result).toBe('');
+  });
+});
+
+describe('getAlbumsArtwork', () => {
+  it('returns map of album keys to artwork URLs', async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        jsonResponse({
+          resultCount: 1,
+          results: [
+            {
+              wrapperType: 'collection',
+              collectionId: 1,
+              collectionName: 'OK Computer',
+              artistId: 816,
+              artistName: 'Radiohead',
+              artworkUrl100: 'https://example.com/okcomputer/100x100bb.jpg',
+            },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          resultCount: 1,
+          results: [
+            {
+              wrapperType: 'collection',
+              collectionId: 2,
+              collectionName: 'Dummy',
+              artistId: 1234,
+              artistName: 'Portishead',
+              artworkUrl100: 'https://example.com/dummy/100x100bb.jpg',
+            },
+          ],
+        })
+      );
+
+    const result = await getAlbumsArtwork([
+      { name: 'OK Computer', artistName: 'Radiohead' },
+      { name: 'Dummy', artistName: 'Portishead' },
+    ]);
+
+    expect(result.size).toBe(2);
+    expect(result.get('ok computer|radiohead')).toBe(
+      'https://example.com/okcomputer/600x600bb.jpg'
+    );
+    expect(result.get('dummy|portishead')).toBe(
+      'https://example.com/dummy/600x600bb.jpg'
+    );
   });
 });

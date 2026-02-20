@@ -6,7 +6,7 @@ import {
   getTopArtistsByTag,
 } from '../lastfmApi/artists';
 import { getTopAlbumsByTag } from '../lastfmApi/albums';
-import { getArtistsArtwork } from '../appleApi/artists';
+import { getArtistsArtwork, getAlbumsArtwork } from '../appleApi/artists';
 
 const router = express.Router();
 
@@ -75,7 +75,23 @@ router.get('/tag/albums', async (req: Request, res: Response) => {
     tag,
     typeof page === 'string' ? page : '1'
   );
-  res.json(result);
+  console.log(`[Last.fm /tag/albums] Got ${result.albums.length} albums from Last.fm`);
+
+  // Enrich with Apple Music artwork
+  const artworkMap = await getAlbumsArtwork(
+    result.albums.map((a) => ({ name: a.name, artistName: a.artistName }))
+  );
+  console.log(`[Last.fm /tag/albums] Apple API returned ${artworkMap.size} artworks`);
+
+  const enrichedAlbums = result.albums.map((a) => {
+    const key = `${a.name.toLowerCase()}|${a.artistName.toLowerCase()}`;
+    return {
+      ...a,
+      imageUrl: artworkMap.get(key) || a.imageUrl,
+    };
+  });
+
+  res.json({ ...result, albums: enrichedAlbums });
 });
 
 export default router;

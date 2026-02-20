@@ -4,6 +4,7 @@ const mockGetTopArtists = vi.fn();
 const mockGetArtistTopTags = vi.fn();
 const mockGetTopAlbumsByTag = vi.fn();
 const mockLidarrGet = vi.fn();
+const mockGetAlbumArtwork = vi.fn();
 
 vi.mock("../plexApi/topArtists", () => ({
   getTopArtists: (...args: unknown[]) => mockGetTopArtists(...args),
@@ -21,12 +22,17 @@ vi.mock("../lidarrApi/get", () => ({
   lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
 }));
 
+vi.mock("../appleApi/artists", () => ({
+  getAlbumArtwork: (...args: unknown[]) => mockGetAlbumArtwork(...args),
+}));
+
 import { getPromotedAlbum, clearPromotedAlbumCache } from "./getPromotedAlbum";
 
 beforeEach(() => {
   vi.clearAllMocks();
   clearPromotedAlbumCache();
   vi.spyOn(Math, "random").mockReturnValue(0.1);
+  mockGetAlbumArtwork.mockResolvedValue('https://apple.com/album.jpg');
 });
 
 const plexArtists = [
@@ -74,11 +80,8 @@ describe("getPromotedAlbum", () => {
       mbid: expect.any(String),
       artistName: expect.any(String),
       artistMbid: expect.any(String),
-      coverUrl: expect.stringContaining(
-        "https://coverartarchive.org/release-group/"
-      ),
+      coverUrl: 'https://apple.com/album.jpg', // Apple artwork is now first
     });
-    expect(result!.album.coverUrl).toContain(result!.album.mbid);
     expect(result!.tag).toBe("alternative");
     expect(result!.inLibrary).toBe(false);
     expect(mockGetTopArtists).toHaveBeenCalledWith(10);

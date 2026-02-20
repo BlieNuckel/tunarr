@@ -5,6 +5,7 @@ const mockGetArtistTopTags = vi.fn();
 const mockGetTopArtistsByTag = vi.fn();
 const mockGetTopAlbumsByTag = vi.fn();
 const mockGetArtistsArtwork = vi.fn();
+const mockGetAlbumsArtwork = vi.fn();
 
 vi.mock('../lastfmApi/artists', () => ({
   getSimilarArtists: (...args: unknown[]) => mockGetSimilarArtists(...args),
@@ -18,6 +19,7 @@ vi.mock('../lastfmApi/albums', () => ({
 
 vi.mock('../appleApi/artists', () => ({
   getArtistsArtwork: (...args: unknown[]) => mockGetArtistsArtwork(...args),
+  getAlbumsArtwork: (...args: unknown[]) => mockGetAlbumsArtwork(...args),
 }));
 
 import express from 'express';
@@ -130,16 +132,34 @@ describe('GET /tag/albums', () => {
           mbid: 'a1',
           artistName: 'Radiohead',
           artistMbid: 'r1',
+          imageUrl: '',
         },
       ],
       pagination: { page: 1, totalPages: 3 },
     };
     mockGetTopAlbumsByTag.mockResolvedValue(result);
+    mockGetAlbumsArtwork.mockResolvedValue(
+      new Map([['ok computer|radiohead', 'https://apple.com/okcomputer.jpg']])
+    );
 
     const res = await request(app).get('/tag/albums?tag=rock');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual(result);
+    expect(res.body).toEqual({
+      albums: [
+        {
+          name: 'OK Computer',
+          mbid: 'a1',
+          artistName: 'Radiohead',
+          artistMbid: 'r1',
+          imageUrl: 'https://apple.com/okcomputer.jpg',
+        },
+      ],
+      pagination: { page: 1, totalPages: 3 },
+    });
     expect(mockGetTopAlbumsByTag).toHaveBeenCalledWith('rock', '1');
+    expect(mockGetAlbumsArtwork).toHaveBeenCalledWith([
+      { name: 'OK Computer', artistName: 'Radiohead' },
+    ]);
   });
 
   it('forwards page parameter', async () => {
@@ -148,6 +168,7 @@ describe('GET /tag/albums', () => {
       pagination: { page: 5, totalPages: 10 },
     };
     mockGetTopAlbumsByTag.mockResolvedValue(result);
+    mockGetAlbumsArtwork.mockResolvedValue(new Map());
 
     await request(app).get('/tag/albums?tag=rock&page=5');
     expect(mockGetTopAlbumsByTag).toHaveBeenCalledWith('rock', '5');
