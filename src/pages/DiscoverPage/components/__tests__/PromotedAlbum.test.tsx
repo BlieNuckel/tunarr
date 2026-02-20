@@ -91,12 +91,6 @@ describe("PromotedAlbum", () => {
     expect(mockRefresh).toHaveBeenCalled();
   });
 
-  it('opens modal on preview button click', () => {
-    render(<PromotedAlbum data={albumData} onRefresh={mockRefresh} />);
-    fireEvent.click(screen.getByText('Preview'));
-    expect(screen.getByTestId('purchase-modal')).toBeInTheDocument();
-  });
-
   it('opens modal on monitor button click', () => {
     render(<PromotedAlbum data={albumData} onRefresh={mockRefresh} />);
     fireEvent.click(screen.getByTestId('monitor-button'));

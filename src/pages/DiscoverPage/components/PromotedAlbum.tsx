@@ -36,10 +36,6 @@ export default function PromotedAlbum({ data, onRefresh }: PromotedAlbumProps) {
     }
   };
 
-  const handlePreviewClick = () => {
-    setIsModalOpen(true);
-  };
-
   const handleAddToLibrary = () => {
     addToLidarr({ albumMbid: album.mbid });
   };
@@ -89,13 +85,7 @@ export default function PromotedAlbum({ data, onRefresh }: PromotedAlbumProps) {
               </span>
             </div>
 
-            <div className="mt-3 flex gap-2 justify-end">
-              <button
-                onClick={handlePreviewClick}
-                className="px-4 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 font-bold text-sm rounded-lg border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all"
-              >
-                Preview
-              </button>
+            <div className="mt-3 flex justify-end">
               <MonitorButton
                 state={effectiveState}
                 onClick={handleMonitorClick}
