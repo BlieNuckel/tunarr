@@ -11,6 +11,8 @@ vi.stubGlobal("fetch", mockFetch);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  getArtistArtwork.clearCache();
+  getAlbumArtwork.clearCache();
 });
 
 function jsonResponse(data: unknown) {

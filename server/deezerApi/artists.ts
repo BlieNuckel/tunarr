@@ -1,12 +1,16 @@
+import { ApiCache, withCache } from "../cache";
 import type { DeezerArtistSearchResponse } from "./types";
 
 const DEEZER_SEARCH_BASE = "https://api.deezer.com/search/artist";
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+const deezerCache = new ApiCache();
 
 /**
  * Search for an artist on Deezer and return their image URL
  * @returns picture_xl (1000x1000) or empty string if not found
  */
-export const getArtistImage = async (artistName: string): Promise<string> => {
+const fetchArtistImage = async (artistName: string): Promise<string> => {
   try {
     const params = new URLSearchParams({
       q: artistName,
@@ -40,6 +44,13 @@ export const getArtistImage = async (artistName: string): Promise<string> => {
     return "";
   }
 };
+
+export const getArtistImage = withCache(fetchArtistImage, {
+  cache: deezerCache,
+  key: (name) => name.toLowerCase(),
+  ttlMs: 7 * ONE_DAY_MS,
+  label: "Deezer API",
+});
 
 /**
  * Batch fetch image URLs for multiple artists
