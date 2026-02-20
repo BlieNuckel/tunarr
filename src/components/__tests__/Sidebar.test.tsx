@@ -30,10 +30,8 @@ describe("Sidebar", () => {
     renderSidebar("/");
     const discoverLinks = screen.getAllByRole("link", { name: /Discover/ });
     expect(discoverLinks).toHaveLength(2);
-    // Desktop version has bg-amber-300
     expect(discoverLinks[0]).toHaveClass("bg-amber-300");
-    // Mobile version has bg-amber-50
-    expect(discoverLinks[1]).toHaveClass("bg-amber-50");
+    expect(discoverLinks[1]).toHaveClass("text-black");
   });
 
   it("highlights Search link on search page", () => {
@@ -41,7 +39,7 @@ describe("Sidebar", () => {
     const searchLinks = screen.getAllByRole("link", { name: /Search/ });
     expect(searchLinks).toHaveLength(2);
     expect(searchLinks[0]).toHaveClass("bg-amber-300");
-    expect(searchLinks[1]).toHaveClass("bg-amber-50");
+    expect(searchLinks[1]).toHaveClass("text-black");
   });
 
   it("highlights Status link on status page", () => {
@@ -49,7 +47,7 @@ describe("Sidebar", () => {
     const statusLinks = screen.getAllByRole("link", { name: /Status/ });
     expect(statusLinks).toHaveLength(2);
     expect(statusLinks[0]).toHaveClass("bg-amber-300");
-    expect(statusLinks[1]).toHaveClass("bg-amber-50");
+    expect(statusLinks[1]).toHaveClass("text-black");
   });
 
   it("highlights Settings link on settings page", () => {
@@ -57,7 +55,7 @@ describe("Sidebar", () => {
     const settingsLinks = screen.getAllByRole("link", { name: /Settings/ });
     expect(settingsLinks).toHaveLength(2);
     expect(settingsLinks[0]).toHaveClass("bg-amber-300");
-    expect(settingsLinks[1]).toHaveClass("bg-amber-50");
+    expect(settingsLinks[1]).toHaveClass("text-black");
   });
 
   it("applies hover styles to non-active links", () => {

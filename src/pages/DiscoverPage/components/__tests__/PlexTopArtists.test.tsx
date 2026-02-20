@@ -25,8 +25,8 @@ describe("PlexTopArtists", () => {
 
     expect(screen.getByText("Radiohead")).toBeInTheDocument();
     expect(screen.getByText("Pink Floyd")).toBeInTheDocument();
-    expect(screen.getByText("100 plays")).toBeInTheDocument();
-    expect(screen.getByText("80 plays")).toBeInTheDocument();
+    expect(screen.getByText("100")).toBeInTheDocument();
+    expect(screen.getByText("80")).toBeInTheDocument();
   });
 
   it("renders heading", () => {

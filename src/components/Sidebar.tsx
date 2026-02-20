@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useRef, useLayoutEffect, useState, useCallback } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   DiscoverIcon,
   SearchIcon,
@@ -16,6 +17,86 @@ const links: Array<{
   { to: "/status", label: "Status", icon: SparklesIcon },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
+
+function MobileNav() {
+  const { pathname } = useLocation();
+  const navRef = useRef<HTMLUListElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const hasMounted = useRef(false);
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number }>({
+    left: 0,
+    width: 0,
+  });
+  const activeIndex = links.findIndex((link) =>
+    link.to === "/" ? pathname === "/" : pathname.startsWith(link.to),
+  );
+
+  const measure = useCallback(() => {
+    const nav = navRef.current;
+    const item = itemRefs.current[activeIndex];
+    if (!nav || !item || activeIndex === -1) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    const iconCenter = itemRect.left - navRect.left + itemRect.width / 2;
+    const pillWidth = 44;
+    setPillStyle({ left: iconCenter - pillWidth / 2, width: pillWidth });
+  }, [activeIndex]);
+
+  useLayoutEffect(() => {
+    measure();
+
+    const pill = pillRef.current;
+    if (!pill || !hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+
+    pill.style.animation = "none";
+    void pill.offsetHeight;
+    pill.style.animation = "";
+  }, [measure]);
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
+      <div className="relative bg-white border-2 border-black rounded-2xl shadow-cartoon-md">
+        {activeIndex !== -1 && (
+          <div
+            ref={pillRef}
+            className="nav-pill-squish absolute top-2 h-8 bg-amber-300 rounded-full border-2 border-black pointer-events-none transition-[left] duration-300 ease-out"
+            style={{ left: pillStyle.left, width: pillStyle.width }}
+          />
+        )}
+
+        <ul ref={navRef} className="relative flex items-center justify-around">
+          {links.map((link, i) => (
+            <li
+              key={link.to}
+              ref={(el) => {
+                itemRefs.current[i] = el;
+              }}
+              className="flex-1"
+            >
+              <NavLink
+                to={link.to}
+                end={link.to === "/"}
+                className={({ isActive }) =>
+                  `relative flex flex-col items-center justify-center gap-1 py-3 text-xs font-bold transition-colors ${
+                    isActive ? "text-black" : "text-gray-500"
+                  }`
+                }
+              >
+                <link.icon className="w-6 h-6" />
+                <span>{link.label}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  );
+}
 
 export default function Sidebar() {
   return (
@@ -142,28 +223,7 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile Bottom Navigation, shown only on mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-black z-50">
-        <ul className="flex items-center justify-around">
-          {links.map((link) => (
-            <li key={link.to} className="flex-1">
-              <NavLink
-                to={link.to}
-                end={link.to === "/"}
-                className={({ isActive }) =>
-                  `flex flex-col items-center justify-center gap-1 py-3 text-xs font-bold transition-all ${
-                    isActive
-                      ? "text-amber-500 bg-amber-50"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-amber-50"
-                  }`
-                }
-              >
-                <link.icon className="w-6 h-6" />
-                <span>{link.label}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <MobileNav />
     </>
   );
 }
