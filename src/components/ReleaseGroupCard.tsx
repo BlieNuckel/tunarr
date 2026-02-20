@@ -56,8 +56,9 @@ export default function ReleaseGroupCard({
     fetchTracks,
   } = useReleaseTracks();
 
+  const effectiveState = inLibrary ? "already_monitored" : state;
   const disabled =
-    state === "adding" || state === "success" || state === "already_monitored";
+    effectiveState === "adding" || effectiveState === "success" || effectiveState === "already_monitored";
 
   const loadTracksIfNeeded = () => {
     if (media.length === 0 && !tracksLoading) {
@@ -85,7 +86,7 @@ export default function ReleaseGroupCard({
       return;
     }
 
-    if (state === "idle" || state === "error") {
+    if (effectiveState === "idle" || effectiveState === "error") {
       setIsModalOpen(true);
     }
   };
@@ -108,9 +109,9 @@ export default function ReleaseGroupCard({
   ) : null;
 
   const monitorIcon =
-    state === 'adding' ? (
+    effectiveState === 'adding' ? (
       <Spinner />
-    ) : state === 'success' || state === 'already_monitored' ? (
+    ) : effectiveState === 'success' || effectiveState === 'already_monitored' ? (
       <CheckIcon className="w-5 h-5" />
     ) : (
       <PlusIcon className="w-5 h-5" />
@@ -153,7 +154,7 @@ export default function ReleaseGroupCard({
               handleMonitorClick();
             }}
             disabled={disabled}
-            className={`w-10 h-10 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[state]}`}
+            className={`w-10 h-10 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[effectiveState]}`}
             data-testid="mobile-monitor-button"
             aria-label="Add to Lidarr"
           >
@@ -236,7 +237,7 @@ export default function ReleaseGroupCard({
 
             <div className="flex-shrink-0 mt-2">
               <MonitorButton
-                state={state}
+                state={effectiveState}
                 onClick={handleMonitorClick}
                 errorMsg={errorMsg ?? undefined}
               />

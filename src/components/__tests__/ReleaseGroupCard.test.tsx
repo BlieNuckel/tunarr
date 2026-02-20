@@ -224,5 +224,21 @@ describe("ReleaseGroupCard", () => {
 
       expect(screen.queryByText("In Library")).not.toBeInTheDocument();
     });
+
+    it('disables add button when inLibrary is true', () => {
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} inLibrary={true} />);
+
+      const mobileButton = screen.getByTestId("mobile-monitor-button");
+      expect(mobileButton).toBeDisabled();
+    });
+
+    it('shows checkmark icon when inLibrary is true', () => {
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} inLibrary={true} />);
+
+      // Mobile button should have the already_monitored style
+      const mobileButton = screen.getByTestId("mobile-monitor-button");
+      expect(mobileButton.className).toContain("bg-gray-200");
+      expect(mobileButton.className).toContain("text-gray-500");
+    });
   });
 });
