@@ -4,7 +4,7 @@ import WelcomeStep from "../WelcomeStep";
 describe("WelcomeStep", () => {
   it("renders welcome message", () => {
     render(<WelcomeStep onGetStarted={vi.fn()} />);
-    expect(screen.getByText("Welcome to Music Requester")).toBeInTheDocument();
+    expect(screen.getByText("Welcome to Tunarr")).toBeInTheDocument();
   });
 
   it("renders description text", () => {

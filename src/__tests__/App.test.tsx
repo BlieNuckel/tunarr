@@ -81,11 +81,11 @@ describe("App", () => {
 
   it("renders onboarding at /onboarding for unconfigured", () => {
     renderApp("/onboarding", unconfiguredContext);
-    expect(screen.getByText("Welcome to Music Requester")).toBeInTheDocument();
+    expect(screen.getByText("Welcome to Tunarr")).toBeInTheDocument();
   });
 
   it("redirects to onboarding when not configured", () => {
     renderApp("/", unconfiguredContext);
-    expect(screen.getByText("Welcome to Music Requester")).toBeInTheDocument();
+    expect(screen.getByText("Welcome to Tunarr")).toBeInTheDocument();
   });
 });

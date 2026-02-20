@@ -1,6 +1,6 @@
 {
-  "short_name": "Music Req",
-  "name": "Music Requester",
+  "short_name": "Tunarr",
+  "name": "Tunarr",
   "icons": [
     {
       "src": "favicon.ico",
