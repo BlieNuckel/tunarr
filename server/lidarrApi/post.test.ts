@@ -4,8 +4,8 @@ vi.mock("./config", () => ({
   getLidarrConfig: vi.fn(),
 }));
 
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
+const mockFetch = vi.hoisted(() => vi.fn());
+vi.mock("./fetch", () => ({ lidarrFetch: mockFetch }));
 
 import { lidarrPost } from "./post";
 import { getLidarrConfig } from "./config";

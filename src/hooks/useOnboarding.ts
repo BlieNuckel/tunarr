@@ -173,8 +173,8 @@ export function useOnboarding() {
         importPath: fields.importPath,
       });
       navigate("/");
-    } catch {
-      setError("Failed to save settings");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setSaving(false);
     }

@@ -1,4 +1,5 @@
 import { getLidarrConfig } from "./config";
+import { lidarrFetch } from "./fetch";
 import { ProxyResponse } from "./types";
 
 /** Generic proxy helper for GET requests */
@@ -11,9 +12,12 @@ const lidarrGet = async <T = unknown>(
     Object.entries(query).map(([key, value]) => [key, String(value)])
   ).toString();
   const sep = params ? "?" : "";
-  const response = await fetch(`${url}/api/v1${lidarrPath}${sep}${params}`, {
-    headers,
-  });
+  const response = await lidarrFetch(
+    `${url}/api/v1${lidarrPath}${sep}${params}`,
+    {
+      headers,
+    }
+  );
   return {
     status: response.status,
     data: await response.json(),

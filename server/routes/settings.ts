@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import express from "express";
 import fs from "fs";
 import { getConfig, setConfig } from "../config";
+import { lidarrFetch } from "../lidarrApi/fetch";
 
 const router = express.Router();
 
@@ -48,7 +49,9 @@ router.post("/test", async (req: Request, res: Response) => {
   }
   const url = lidarrUrl.replace(/\/+$/, "");
   const headers = { "X-Api-Key": lidarrApiKey };
-  const response = await fetch(`${url}/api/v1/system/status`, { headers });
+  const response = await lidarrFetch(`${url}/api/v1/system/status`, {
+    headers,
+  });
   if (!response.ok) {
     return res
       .status(response.status)
@@ -57,9 +60,9 @@ router.post("/test", async (req: Request, res: Response) => {
   const data = await response.json();
 
   const [qualityRes, metadataRes, rootRes] = await Promise.all([
-    fetch(`${url}/api/v1/qualityprofile`, { headers }).catch(() => null),
-    fetch(`${url}/api/v1/metadataprofile`, { headers }).catch(() => null),
-    fetch(`${url}/api/v1/rootfolder`, { headers }).catch(() => null),
+    lidarrFetch(`${url}/api/v1/qualityprofile`, { headers }).catch(() => null),
+    lidarrFetch(`${url}/api/v1/metadataprofile`, { headers }).catch(() => null),
+    lidarrFetch(`${url}/api/v1/rootfolder`, { headers }).catch(() => null),
   ]);
 
   const qualityProfiles = qualityRes?.ok
