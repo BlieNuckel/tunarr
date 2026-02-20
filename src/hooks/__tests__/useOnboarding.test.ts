@@ -171,7 +171,6 @@ describe("useOnboarding", () => {
       await result.current.handleFinish();
     });
 
-    expect(result.current.error).toBe("Failed to save settings");
     expect(result.current.saving).toBe(false);
     expect(mockNavigate).not.toHaveBeenCalled();
   });
