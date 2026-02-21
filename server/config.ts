@@ -15,6 +15,7 @@ export type IConfig = {
   plexUrl: string;
   plexToken: string;
   importPath: string;
+  theme: "light" | "dark" | "system";
 };
 
 const DEFAULT_CONFIG: IConfig = {
@@ -27,6 +28,7 @@ const DEFAULT_CONFIG: IConfig = {
   plexUrl: "",
   plexToken: "",
   importPath: "",
+  theme: "system",
 };
 
 const CONFIG_DIR =
@@ -66,6 +68,12 @@ const validateConfig = (config: Partial<IConfig>) => {
     typeof config.importPath !== "string"
   ) {
     throw new Error("importPath must be a string");
+  }
+  if (
+    config.theme !== undefined &&
+    !["light", "dark", "system"].includes(config.theme)
+  ) {
+    throw new Error("theme must be 'light', 'dark', or 'system'");
   }
 };
 
