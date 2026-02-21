@@ -7,6 +7,7 @@ import { CheckIcon, PlusIcon } from "@/components/icons";
 import ImageWithShimmer from "./ImageWithShimmer";
 import useLidarr from "../hooks/useLidarr";
 import useReleaseTracks from "../hooks/useReleaseTracks";
+import useAudioPreview from "../hooks/useAudioPreview";
 import { MonitorState, ReleaseGroup } from "../types";
 
 /** @returns {string} deterministic pastel HSL color derived from the input string */
@@ -55,6 +56,7 @@ export default function ReleaseGroupCard({
     error: tracksError,
     fetchTracks,
   } = useReleaseTracks();
+  const { toggle, stop, isTrackPlaying } = useAudioPreview();
 
   const effectiveState: MonitorState = inLibrary
     ? "already_monitored"
@@ -72,7 +74,7 @@ export default function ReleaseGroupCard({
 
   const loadTracksIfNeeded = () => {
     if (media.length === 0 && !tracksLoading) {
-      fetchTracks(albumMbid);
+      fetchTracks(albumMbid, artistName);
     }
   };
 
@@ -83,10 +85,12 @@ export default function ReleaseGroupCard({
 
   const handleMouseLeave = () => {
     setIsFlipped(false);
+    stop();
   };
 
   const handleMobileCardClick = () => {
     if (!isExpanded) loadTracksIfNeeded();
+    if (isExpanded) stop();
     setIsExpanded(!isExpanded);
   };
 
@@ -140,14 +144,14 @@ export default function ReleaseGroupCard({
           onClick={handleMobileCardClick}
         >
           <div
-            className="w-18 aspect-square flex-shrink-0 relative"
+            className="w-24 aspect-square flex-shrink-0 relative"
             style={{ backgroundColor: pastelBg }}
           >
             {coverImage}
           </div>
-          <div className="flex-1 min-w-0 px-3 py-2">
+          <div className="flex-1 min-w-0 px-4 py-3">
             <div className="flex items-center gap-1.5">
-              <h3 className="text-gray-900 font-semibold text-sm truncate">
+              <h3 className="text-gray-900 font-semibold text-base truncate">
                 {albumTitle}
               </h3>
               {inLibrary && (
@@ -156,7 +160,7 @@ export default function ReleaseGroupCard({
                 </span>
               )}
             </div>
-            <p className="text-gray-500 text-xs truncate">{artistName}</p>
+            <p className="text-gray-500 text-sm truncate">{artistName}</p>
             {year && <p className="text-gray-400 text-xs">{year}</p>}
           </div>
           <button
@@ -165,7 +169,7 @@ export default function ReleaseGroupCard({
               handleMonitorClick();
             }}
             disabled={disabled}
-            className={`w-10 h-10 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[effectiveState]}`}
+            className={`w-12 h-12 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[effectiveState]}`}
             data-testid="mobile-monitor-button"
             aria-label="Add to Lidarr"
           >
@@ -187,6 +191,8 @@ export default function ReleaseGroupCard({
                 media={media}
                 loading={tracksLoading}
                 error={tracksError}
+                onTogglePreview={toggle}
+                isTrackPlaying={isTrackPlaying}
               />
             </div>
           </div>
@@ -243,6 +249,8 @@ export default function ReleaseGroupCard({
                 media={media}
                 loading={tracksLoading}
                 error={tracksError}
+                onTogglePreview={toggle}
+                isTrackPlaying={isTrackPlaying}
               />
             </div>
 

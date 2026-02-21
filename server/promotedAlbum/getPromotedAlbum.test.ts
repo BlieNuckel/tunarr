@@ -4,7 +4,6 @@ const mockGetTopArtists = vi.fn();
 const mockGetArtistTopTags = vi.fn();
 const mockGetTopAlbumsByTag = vi.fn();
 const mockLidarrGet = vi.fn();
-const mockGetAlbumArtwork = vi.fn();
 const mockGetReleaseGroupIdFromRelease = vi.fn();
 
 vi.mock("../plexApi/topArtists", () => ({
@@ -23,10 +22,6 @@ vi.mock("../lidarrApi/get", () => ({
   lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
 }));
 
-vi.mock("../appleApi/artists", () => ({
-  getAlbumArtwork: (...args: unknown[]) => mockGetAlbumArtwork(...args),
-}));
-
 vi.mock("../musicbrainzApi/releaseGroups", () => ({
   getReleaseGroupIdFromRelease: (...args: unknown[]) =>
     mockGetReleaseGroupIdFromRelease(...args),
@@ -38,7 +33,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   clearPromotedAlbumCache();
   vi.spyOn(Math, "random").mockReturnValue(0.1);
-  mockGetAlbumArtwork.mockResolvedValue("https://apple.com/album.jpg");
   // Mock MusicBrainz conversion - by default, convert Last.fm release MBIDs to release-group MBIDs
   mockGetReleaseGroupIdFromRelease.mockImplementation((mbid: string) =>
     Promise.resolve(`rg-${mbid}`)
@@ -90,7 +84,7 @@ describe("getPromotedAlbum", () => {
       mbid: expect.any(String),
       artistName: expect.any(String),
       artistMbid: expect.any(String),
-      coverUrl: "https://apple.com/album.jpg", // Apple artwork is now first
+      coverUrl: expect.stringMatching(/^https:\/\/coverartarchive\.org\/release-group\//)
     });
     expect(result!.tag).toBe("alternative");
     expect(result!.inLibrary).toBe(false);

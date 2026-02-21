@@ -93,19 +93,29 @@ export default function ArtistCard({
       </div>
 
       {expanded && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
           {loading && (
             <>
               {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-xl border-2 border-black shadow-cartoon-sm overflow-hidden animate-pulse"
-                >
-                  <div className="aspect-square bg-gray-200" />
-                  <div className="p-3 border-t-2 border-black space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4" />
-                    <div className="h-3 bg-gray-200 rounded w-1/2" />
-                    <div className="h-3 bg-gray-200 rounded w-1/3" />
+                <div key={i}>
+                  <div className="sm:hidden bg-white rounded-xl border-2 border-black shadow-cartoon-sm overflow-hidden animate-pulse">
+                    <div className="flex items-center">
+                      <div className="w-24 aspect-square bg-gray-200 flex-shrink-0" />
+                      <div className="flex-1 min-w-0 px-4 py-3 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 rounded w-1/2" />
+                        <div className="h-3 bg-gray-200 rounded w-1/3" />
+                      </div>
+                      <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0 mr-3" />
+                    </div>
+                  </div>
+                  <div className="hidden sm:block bg-white rounded-xl border-2 border-black shadow-cartoon-sm overflow-hidden animate-pulse">
+                    <div className="aspect-square bg-gray-200" />
+                    <div className="p-3 border-t-2 border-black space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200 rounded w-1/3" />
+                    </div>
                   </div>
                 </div>
               ))}

@@ -1,12 +1,16 @@
+import { ApiCache, withCache } from "../cache";
 import type { AppleSearchResponse } from "./types";
 
 const ITUNES_SEARCH_BASE = "https://itunes.apple.com/search";
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+const appleCache = new ApiCache();
 
 /**
  * Search for an artist on Apple Music and return their artwork URL
  * @returns artworkUrl (300x300) or empty string if not found
  */
-export const getArtistArtwork = async (artistName: string): Promise<string> => {
+const fetchArtistArtwork = async (artistName: string): Promise<string> => {
   try {
     // Search for albums by the artist instead of the artist entity
     // Artist entities don't have artwork, but albums do
@@ -51,27 +55,10 @@ export const getArtistArtwork = async (artistName: string): Promise<string> => {
 };
 
 /**
- * Batch fetch artwork URLs for multiple artists
- * @returns Map of artist name (lowercase) to artwork URL
- */
-export const getArtistsArtwork = async (
-  artistNames: string[]
-): Promise<Map<string, string>> => {
-  const results = await Promise.all(
-    artistNames.map(async (name) => {
-      const artworkUrl = await getArtistArtwork(name);
-      return { name: name.toLowerCase(), artworkUrl };
-    })
-  );
-
-  return new Map(results.map((r) => [r.name, r.artworkUrl]));
-};
-
-/**
  * Search for an album on Apple Music and return artwork URL
  * @returns artworkUrl (600x600) or empty string if not found
  */
-export const getAlbumArtwork = async (
+const fetchAlbumArtwork = async (
   albumName: string,
   artistName: string
 ): Promise<string> => {
@@ -112,6 +99,38 @@ export const getAlbumArtwork = async (
     );
     return "";
   }
+};
+
+export const getArtistArtwork = withCache(fetchArtistArtwork, {
+  cache: appleCache,
+  key: (name) => name.toLowerCase(),
+  ttlMs: 7 * ONE_DAY_MS,
+  label: "Apple API",
+});
+
+export const getAlbumArtwork = withCache(fetchAlbumArtwork, {
+  cache: appleCache,
+  key: (albumName, artistName) =>
+    `${albumName.toLowerCase()}|${artistName.toLowerCase()}`,
+  ttlMs: 7 * ONE_DAY_MS,
+  label: "Apple API",
+});
+
+/**
+ * Batch fetch artwork URLs for multiple artists
+ * @returns Map of artist name (lowercase) to artwork URL
+ */
+export const getArtistsArtwork = async (
+  artistNames: string[]
+): Promise<Map<string, string>> => {
+  const results = await Promise.all(
+    artistNames.map(async (name) => {
+      const artworkUrl = await getArtistArtwork(name);
+      return { name: name.toLowerCase(), artworkUrl };
+    })
+  );
+
+  return new Map(results.map((r) => [r.name, r.artworkUrl]));
 };
 
 /**
