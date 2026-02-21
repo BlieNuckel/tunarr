@@ -64,7 +64,7 @@ export default function TrackList({
 
               const rowContent = (
                 <>
-                  {hasPreview ? (
+                  {hasPreview && (
                     <span
                       className={`w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full transition-colors ${
                         playing
@@ -80,12 +80,6 @@ export default function TrackList({
                       ) : (
                         <PlayIcon className="w-5 h-5" />
                       )}
-                    </span>
-                  ) : (
-                    <span
-                      className={`w-6 text-right flex-shrink-0 ${dark ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {track.position}
                     </span>
                   )}
                   <span
@@ -118,7 +112,7 @@ export default function TrackList({
                       {rowContent}
                     </button>
                   ) : (
-                    <div className="flex items-baseline gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm min-h-[44px]">
                       {rowContent}
                     </div>
                   )}

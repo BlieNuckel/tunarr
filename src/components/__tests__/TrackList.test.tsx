@@ -118,7 +118,7 @@ describe("TrackList", () => {
     expect(screen.getByLabelText("Play preview")).toBeInTheDocument();
   });
 
-  it("renders track number when no previewUrl", () => {
+  it("does not render play button when no previewUrl", () => {
     const media: Medium[] = [
       {
         position: 1,
@@ -141,10 +141,9 @@ describe("TrackList", () => {
     );
 
     expect(screen.queryByTestId("preview-button-1")).not.toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument();
   });
 
-  it("renders track number when no preview handlers provided", () => {
+  it("does not render play button when no preview handlers provided", () => {
     const media: Medium[] = [
       {
         position: 1,
@@ -164,7 +163,6 @@ describe("TrackList", () => {
     render(<TrackList media={media} loading={false} error={null} />);
 
     expect(screen.queryByTestId("preview-button-1")).not.toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument();
   });
 
   it("calls onTogglePreview when play button is clicked", () => {
