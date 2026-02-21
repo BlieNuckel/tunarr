@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getOrAddArtist, getOrAddAlbum, getAlbumByMbid } from "./helpers";
+import {
+  getOrAddArtist,
+  getOrAddAlbum,
+  getAlbumByMbid,
+  removeAlbum,
+} from "./helpers";
 import type { LidarrArtist, LidarrAlbum } from "../../lidarrApi/types";
 
 vi.mock("../../config", () => ({
@@ -14,11 +19,17 @@ vi.mock("../../lidarrApi/post", () => ({
   lidarrPost: vi.fn(),
 }));
 
+vi.mock("../../lidarrApi/put", () => ({
+  lidarrPut: vi.fn(),
+}));
+
 import { lidarrGet } from "../../lidarrApi/get";
 import { lidarrPost } from "../../lidarrApi/post";
+import { lidarrPut } from "../../lidarrApi/put";
 
 const mockLidarrGet = vi.mocked(lidarrGet);
 const mockLidarrPost = vi.mocked(lidarrPost);
+const mockLidarrPut = vi.mocked(lidarrPut);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -158,6 +169,74 @@ describe("getOrAddAlbum", () => {
 
     await expect(getOrAddAlbum("dup-mbid", mockArtist)).rejects.toThrow(
       "Failed to add album: Album already exists"
+    );
+  });
+});
+
+describe("removeAlbum", () => {
+  it("returns artistInLibrary=false when artist is not in Lidarr", async () => {
+    mockLidarrGet.mockResolvedValue({ status: 200, data: [], ok: true });
+
+    const result = await removeAlbum("album-mbid-1", "artist-mbid-1");
+    expect(result).toEqual({ artistInLibrary: false });
+    expect(mockLidarrPut).not.toHaveBeenCalled();
+  });
+
+  it("returns albumInLibrary=false when album is not in Lidarr", async () => {
+    mockLidarrGet
+      .mockResolvedValueOnce({ status: 200, data: [mockArtist], ok: true })
+      .mockResolvedValueOnce({ status: 200, data: [], ok: true });
+
+    const result = await removeAlbum("album-mbid-1", "artist-mbid-1");
+    expect(result).toEqual({ artistInLibrary: true, albumInLibrary: false });
+    expect(mockLidarrPut).not.toHaveBeenCalled();
+  });
+
+  it("returns alreadyUnmonitored=true when album is already unmonitored", async () => {
+    const unmonitoredAlbum = { ...mockAlbum, monitored: false };
+    mockLidarrGet
+      .mockResolvedValueOnce({ status: 200, data: [mockArtist], ok: true })
+      .mockResolvedValueOnce({
+        status: 200,
+        data: [unmonitoredAlbum],
+        ok: true,
+      });
+
+    const result = await removeAlbum("album-mbid-1", "artist-mbid-1");
+    expect(result).toEqual({
+      artistInLibrary: true,
+      albumInLibrary: true,
+      alreadyUnmonitored: true,
+    });
+    expect(mockLidarrPut).not.toHaveBeenCalled();
+  });
+
+  it("unmonitors album and returns alreadyUnmonitored=false on success", async () => {
+    mockLidarrGet
+      .mockResolvedValueOnce({ status: 200, data: [mockArtist], ok: true })
+      .mockResolvedValueOnce({ status: 200, data: [mockAlbum], ok: true });
+    mockLidarrPut.mockResolvedValue({ ok: true, status: 200, data: null });
+
+    const result = await removeAlbum("album-mbid-1", "artist-mbid-1");
+    expect(result).toEqual({
+      artistInLibrary: true,
+      albumInLibrary: true,
+      alreadyUnmonitored: false,
+    });
+    expect(mockLidarrPut).toHaveBeenCalledWith("/album/monitor", {
+      albumIds: [10],
+      monitored: false,
+    });
+  });
+
+  it("throws when unmonitor PUT fails", async () => {
+    mockLidarrGet
+      .mockResolvedValueOnce({ status: 200, data: [mockArtist], ok: true })
+      .mockResolvedValueOnce({ status: 200, data: [mockAlbum], ok: true });
+    mockLidarrPut.mockResolvedValue({ ok: false, status: 500, data: null });
+
+    await expect(removeAlbum("album-mbid-1", "artist-mbid-1")).rejects.toThrow(
+      "Failed to unmonitor album"
     );
   });
 });

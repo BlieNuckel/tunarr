@@ -3,6 +3,10 @@ import { useState, useCallback } from "react";
 type LidarrState =
   | "idle"
   | "adding"
+  | "removing"
+  | "artist_not_in_library"
+  | "album_not_in_library"
+  | "already_unmonitored"
   | "success"
   | "already_monitored"
   | "error";
@@ -46,5 +50,49 @@ export default function useLidarr() {
     []
   );
 
-  return { state, errorMsg, addToLidarr };
+  const removeFromLidarr = useCallback(
+    async ({ albumMbid }: { albumMbid: string }) => {
+      setState("removing");
+      setErrorMsg(null);
+
+      try {
+        const res = await fetch("/api/lidarr/remove", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ albumMbid }),
+        });
+
+        const text = await res.text();
+        let data;
+
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(`Server error (${res.status})`);
+        }
+
+        if (!res.ok) throw new Error(data.error || "Failed to remove album");
+
+        if (
+          [
+            "already_unmonitored",
+            "artist_not_in_library",
+            "album_not_in_library",
+          ].includes(data.status)
+        ) {
+          setState(data.status as LidarrState);
+        } else {
+          setState("success");
+        }
+      } catch (err) {
+        setState("error");
+        setErrorMsg(
+          err instanceof Error ? err.message : "Failed to remove album"
+        );
+      }
+    },
+    []
+  );
+
+  return { state, errorMsg, addToLidarr, removeFromLidarr };
 }

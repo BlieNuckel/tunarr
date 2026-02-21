@@ -58,6 +58,24 @@ export default function StatusPage() {
     }
   };
 
+  const handleAlbumRemove = async (albumMbid: string) => {
+    try {
+      const res = await fetch("/api/lidarr/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ albumMbid }),
+      });
+
+      if (res.ok) {
+        setWanted((prev) =>
+          prev.filter((item) => item.foreignAlbumId !== albumMbid)
+        );
+      }
+    } catch {
+      // Silently fail — user can retry
+    }
+  };
+
   if (loading) {
     return <p className="text-gray-500">Loading status...</p>;
   }
@@ -84,7 +102,11 @@ export default function StatusPage() {
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           Wanted / Missing
         </h2>
-        <WantedList items={wanted} onSearch={handleAlbumSearch} />
+        <WantedList
+          items={wanted}
+          onSearch={handleAlbumSearch}
+          onRemove={handleAlbumRemove}
+        />
       </section>
 
       <section>

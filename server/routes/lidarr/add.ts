@@ -1,7 +1,12 @@
 import express, { Request, Response } from "express";
 import { lidarrPost } from "../../lidarrApi/post";
 import { lidarrPut } from "../../lidarrApi/put";
-import { getAlbumByMbid, getOrAddArtist, getOrAddAlbum } from "./helpers";
+import {
+  getAlbumByMbid,
+  getOrAddArtist,
+  getOrAddAlbum,
+  removeAlbum,
+} from "./helpers";
 
 const router = express.Router();
 
@@ -42,6 +47,39 @@ router.post("/add", async (req: Request, res: Response) => {
     name: "AlbumSearch",
     albumIds: [album.id],
   });
+
+  res.json({ status: "success" });
+});
+
+router.post("/remove", async (req: Request, res: Response) => {
+  const { albumMbid } = req.body;
+
+  if (!albumMbid) {
+    return res.status(400).json({ error: "albumMbid is required" });
+  }
+
+  const lookupAlbum = await getAlbumByMbid(albumMbid);
+  const artistMbid = lookupAlbum.artist?.foreignArtistId;
+
+  if (!artistMbid) {
+    return res
+      .status(404)
+      .json({ error: "Could not determine artist from album lookup" });
+  }
+
+  const result = await removeAlbum(albumMbid, artistMbid);
+
+  if (!result.artistInLibrary) {
+    return res.json({ status: "artist_not_in_library" });
+  }
+
+  if (!result.albumInLibrary) {
+    return res.json({ status: "album_not_in_library" });
+  }
+
+  if (result.alreadyUnmonitored) {
+    return res.json({ status: "already_unmonitored" });
+  }
 
   res.json({ status: "success" });
 });

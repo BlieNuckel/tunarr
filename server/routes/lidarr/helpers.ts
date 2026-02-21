@@ -1,6 +1,7 @@
 import { getConfigValue } from "../../config";
 import { lidarrGet } from "../../lidarrApi/get";
 import { lidarrPost } from "../../lidarrApi/post";
+import { lidarrPut } from "../../lidarrApi/put";
 import {
   LidarrAlbum,
   LidarrArtist,
@@ -113,4 +114,47 @@ export const getOrAddAlbum = async (
   }
 
   return { wasAdded: true, album: await addAlbumToLidarr(albumMbid, artist) };
+};
+
+export const removeAlbum = async (albumMbid: string, artistMbid: string) => {
+  const artistsResult = await lidarrGet<LidarrArtist[]>("/artist");
+  const artist = artistsResult.data.find(
+    (a) => a.foreignArtistId === artistMbid
+  );
+
+  if (!artist) {
+    return { artistInLibrary: false } as const;
+  }
+
+  const allAlbumsResult = await lidarrGet<LidarrAlbum[]>("/album");
+  const album = allAlbumsResult.data.find(
+    (a) => a.foreignAlbumId === albumMbid
+  );
+
+  if (!album) {
+    return { artistInLibrary: true, albumInLibrary: false } as const;
+  }
+
+  if (!album.monitored) {
+    return {
+      artistInLibrary: true,
+      albumInLibrary: true,
+      alreadyUnmonitored: true,
+    } as const;
+  }
+
+  const result = await lidarrPut("/album/monitor", {
+    albumIds: [album.id],
+    monitored: false,
+  });
+
+  if (!result.ok) {
+    throw new Error("Failed to unmonitor album");
+  }
+
+  return {
+    artistInLibrary: true,
+    albumInLibrary: true,
+    alreadyUnmonitored: false,
+  } as const;
 };
