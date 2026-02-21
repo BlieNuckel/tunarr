@@ -56,11 +56,15 @@ export default function ReleaseGroupCard({
     fetchTracks,
   } = useReleaseTracks();
 
-  const effectiveState: MonitorState =
-    inLibrary ? "already_monitored"
-    : state === "idle" || state === "adding" || state === "success" || state === "already_monitored" || state === "error"
-    ? state
-    : "idle";
+  const effectiveState: MonitorState = inLibrary
+    ? "already_monitored"
+    : state === "idle" ||
+        state === "adding" ||
+        state === "success" ||
+        state === "already_monitored" ||
+        state === "error"
+      ? state
+      : "idle";
   const disabled =
     effectiveState === "adding" ||
     effectiveState === "success" ||

@@ -38,11 +38,15 @@ export default function PromotedAlbum({
   const inLibrary = data?.inLibrary ?? false;
   const pastelBg = album ? pastelColorFromId(album.mbid) : "hsl(200, 70%, 85%)";
 
-  const effectiveState: MonitorState =
-    inLibrary ? "already_monitored"
-    : state === "idle" || state === "adding" || state === "success" || state === "already_monitored" || state === "error"
-    ? state
-    : "idle";
+  const effectiveState: MonitorState = inLibrary
+    ? "already_monitored"
+    : state === "idle" ||
+        state === "adding" ||
+        state === "success" ||
+        state === "already_monitored" ||
+        state === "error"
+      ? state
+      : "idle";
 
   const handleMonitorClick = () => {
     if (effectiveState === "idle" || effectiveState === "error") {
