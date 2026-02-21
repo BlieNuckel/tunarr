@@ -10,4 +10,5 @@ export {
   MusicalNoteIcon,
   SparklesIcon,
   Squares2X2Icon as DiscoverIcon,
+  EyeSlashIcon,
 } from "@heroicons/react/20/solid";

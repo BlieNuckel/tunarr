@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import StatusPage from "../StatusPage";
 
 beforeEach(() => {
@@ -115,6 +115,55 @@ describe("StatusPage", () => {
 
     await waitFor(() => {
       expect(screen.queryByText("Loading status...")).not.toBeInTheDocument();
+    });
+  });
+
+  it("removes wanted item from list when Unmonitor succeeds", async () => {
+    const wantedItem = {
+      id: 1,
+      title: "In Rainbows",
+      foreignAlbumId: "mbid-f1",
+      artist: { artistName: "Radiohead" },
+    };
+
+    vi.mocked(fetch).mockImplementation((input) => {
+      const url = typeof input === "string" ? input : (input as Request).url;
+
+      if (url.includes("/api/lidarr/remove")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ status: "success" }), { status: 200 })
+        );
+      }
+      if (url.includes("/api/lidarr/queue")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ records: [] }), { status: 200 })
+        );
+      }
+      if (url.includes("/api/lidarr/wanted")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ records: [wantedItem] }), {
+            status: 200,
+          })
+        );
+      }
+      if (url.includes("/api/lidarr/history")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ records: [] }), { status: 200 })
+        );
+      }
+      return Promise.resolve(new Response("{}", { status: 200 }));
+    });
+
+    render(<StatusPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("In Rainbows")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Unmonitor" }));
+
+    await waitFor(() => {
+      expect(screen.queryByText("In Rainbows")).not.toBeInTheDocument();
     });
   });
 });

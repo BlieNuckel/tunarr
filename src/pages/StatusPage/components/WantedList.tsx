@@ -1,13 +1,19 @@
 import { useState } from "react";
 import { WantedItem } from "@/types";
 import PurchaseLinksModal from "@/components/PurchaseLinksModal";
+import { SearchIcon, EyeSlashIcon } from "@/components/icons";
 
 interface WantedListProps {
   items: WantedItem[];
   onSearch: (albumId: number) => void;
+  onRemove: (albumMbid: string) => void;
 }
 
-export default function WantedList({ items, onSearch }: WantedListProps) {
+export default function WantedList({
+  items,
+  onSearch,
+  onRemove,
+}: WantedListProps) {
   const [selectedItem, setSelectedItem] = useState<WantedItem | null>(null);
 
   if (items.length === 0) {
@@ -21,7 +27,7 @@ export default function WantedList({ items, onSearch }: WantedListProps) {
           <div
             key={item.id}
             onClick={() => setSelectedItem(item)}
-            className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border-2 border-black shadow-cartoon-md hover:translate-y-[-2px] hover:shadow-cartoon-lg transition-all cursor-pointer"
+            className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border-2 border-black shadow-cartoon-md hover:-translate-y-0.5 hover:shadow-cartoon-lg transition-all cursor-pointer"
           >
             <div>
               <p className="text-gray-900 font-medium">{item.title}</p>
@@ -29,15 +35,28 @@ export default function WantedList({ items, onSearch }: WantedListProps) {
                 {item.artist?.artistName || "Unknown Artist"}
               </p>
             </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onSearch(item.id);
-              }}
-              className="px-3 py-1.5 bg-pink-400 hover:bg-pink-300 text-black text-sm font-bold rounded-lg border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all"
-            >
-              Search
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(item.foreignAlbumId);
+                }}
+                aria-label="Unmonitor"
+                className="w-9 h-9 flex items-center justify-center bg-gray-200 hover:bg-gray-100 text-black rounded-lg border-2 border-black shadow-cartoon-sm hover:-translate-y-px hover:shadow-cartoon-md active:translate-y-px active:shadow-cartoon-pressed transition-all"
+              >
+                <EyeSlashIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSearch(item.id);
+                }}
+                aria-label="Search"
+                className="w-9 h-9 flex items-center justify-center bg-pink-400 hover:bg-pink-300 text-black rounded-lg border-2 border-black shadow-cartoon-sm hover:-translate-y-px hover:shadow-cartoon-md active:translate-y-px active:shadow-cartoon-pressed transition-all"
+              >
+                <SearchIcon className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
