@@ -1,28 +1,30 @@
 FROM node:22-alpine AS build
 
-WORKDIR /build-temp
-COPY package.json package-lock.json ./
-RUN npm ci
+RUN corepack enable pnpm
+
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 FROM node:22-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
+COPY package.json pnpm-lock.yaml ./
+COPY --from=build /app/node_modules ./node_modules
 COPY server/ ./server/
-COPY --from=build /build-temp/build ./build/
+COPY --from=build /app/build ./build/
 
 ENV APP_CONFIG_DIR=/config
-RUN mkdir -p /config && chown node:node /config
-
 ENV NODE_ENV=production
 ENV PORT=3001
-EXPOSE 3001
 
+RUN mkdir -p /config && chown node:node /config && chown -R node:node /app
+
+EXPOSE 3001
 USER node
 
-CMD ["pnpm", "start:server"]
+CMD ["node_modules/.bin/tsx", "server/index.ts"]
