@@ -56,42 +56,34 @@ export default function TrackList({
               {medium.title && ` — ${medium.title}`}
             </p>
           )}
-          <ol className="space-y-0.5">
+          <ol className="space-y-1">
             {medium.tracks.map((track) => {
               const hasPreview =
                 !!track.previewUrl && !!onTogglePreview && !!isTrackPlaying;
               const playing = hasPreview && isTrackPlaying(track.previewUrl!);
 
-              return (
-                <li
-                  key={track.position}
-                  className="flex items-baseline gap-2 text-sm"
-                >
+              const rowContent = (
+                <>
                   {hasPreview ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onTogglePreview(track.previewUrl!);
-                      }}
-                      className={`w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full transition-colors ${
+                    <span
+                      className={`w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full transition-colors ${
                         playing
                           ? "text-amber-500"
                           : dark
-                            ? "text-gray-400 hover:text-amber-400"
-                            : "text-gray-500 hover:text-amber-500"
+                            ? "text-gray-400 group-hover:text-amber-400"
+                            : "text-gray-500 group-hover:text-amber-500"
                       }`}
-                      aria-label={playing ? "Pause preview" : "Play preview"}
                       data-testid={`preview-button-${track.position}`}
                     >
                       {playing ? (
-                        <PauseIcon className="w-4 h-4" />
+                        <PauseIcon className="w-5 h-5" />
                       ) : (
-                        <PlayIcon className="w-4 h-4" />
+                        <PlayIcon className="w-5 h-5" />
                       )}
-                    </button>
+                    </span>
                   ) : (
                     <span
-                      className={`w-5 text-right flex-shrink-0 ${dark ? "text-gray-400" : "text-gray-600"}`}
+                      className={`w-6 text-right flex-shrink-0 ${dark ? "text-gray-400" : "text-gray-600"}`}
                     >
                       {track.position}
                     </span>
@@ -108,6 +100,27 @@ export default function TrackList({
                     >
                       {formatDuration(track.length)}
                     </span>
+                  )}
+                </>
+              );
+
+              return (
+                <li key={track.position}>
+                  {hasPreview ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTogglePreview(track.previewUrl!);
+                      }}
+                      className="group w-full flex items-center gap-2 text-sm text-left min-h-[44px]"
+                      aria-label={playing ? "Pause preview" : "Play preview"}
+                    >
+                      {rowContent}
+                    </button>
+                  ) : (
+                    <div className="flex items-baseline gap-2 text-sm">
+                      {rowContent}
+                    </div>
                   )}
                 </li>
               );
