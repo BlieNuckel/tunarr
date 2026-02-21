@@ -42,9 +42,7 @@ describe("getTrackPreview", () => {
   });
 
   it("returns empty string when no results", async () => {
-    mockFetch.mockResolvedValue(
-      jsonResponse({ data: [], total: 0 })
-    );
+    mockFetch.mockResolvedValue(jsonResponse({ data: [], total: 0 }));
 
     const result = await getTrackPreview("Unknown", "Nothing");
     expect(result).toBe("");
@@ -141,9 +139,7 @@ describe("getTrackPreviews", () => {
     ]);
 
     expect(result.size).toBe(2);
-    expect(result.get("radiohead|creep")).toBe(
-      "https://example.com/creep.mp3"
-    );
+    expect(result.get("radiohead|creep")).toBe("https://example.com/creep.mp3");
     expect(result.get("radiohead|karma police")).toBe(
       "https://example.com/karma.mp3"
     );
@@ -164,9 +160,7 @@ describe("getTrackPreviews", () => {
           total: 1,
         })
       )
-      .mockResolvedValueOnce(
-        jsonResponse({ data: [], total: 0 })
-      );
+      .mockResolvedValueOnce(jsonResponse({ data: [], total: 0 }));
 
     const result = await getTrackPreviews([
       { artistName: "Radiohead", title: "Creep" },
@@ -174,9 +168,7 @@ describe("getTrackPreviews", () => {
     ]);
 
     expect(result.size).toBe(2);
-    expect(result.get("radiohead|creep")).toBe(
-      "https://example.com/creep.mp3"
-    );
+    expect(result.get("radiohead|creep")).toBe("https://example.com/creep.mp3");
     expect(result.get("radiohead|unreleased")).toBe("");
   });
 });

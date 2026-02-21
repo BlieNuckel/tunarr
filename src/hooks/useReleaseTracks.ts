@@ -27,9 +27,7 @@ export default function useReleaseTracks() {
         const data = await res.json();
         setMedia(data.media || []);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch tracks"
-        );
+        setError(err instanceof Error ? err.message : "Failed to fetch tracks");
         setMedia([]);
       } finally {
         setLoading(false);

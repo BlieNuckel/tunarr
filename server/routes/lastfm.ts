@@ -23,9 +23,7 @@ router.get("/similar", async (req: Request, res: Response) => {
   console.log(`[Last.fm /similar] Got ${artists.length} artists from Last.fm`);
 
   const imageMap = await getArtistsImages(artists.map((a) => a.name));
-  console.log(
-    `[Last.fm /similar] Deezer API returned ${imageMap.size} images`
-  );
+  console.log(`[Last.fm /similar] Deezer API returned ${imageMap.size} images`);
 
   const enrichedArtists = artists.map((a) => ({
     ...a,

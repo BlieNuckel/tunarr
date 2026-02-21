@@ -124,9 +124,7 @@ describe("TrackList", () => {
         position: 1,
         format: "CD",
         title: "",
-        tracks: [
-          { position: 1, title: "No Preview Track", length: 180000 },
-        ],
+        tracks: [{ position: 1, title: "No Preview Track", length: 180000 }],
       },
     ];
 

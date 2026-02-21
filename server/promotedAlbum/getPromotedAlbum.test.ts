@@ -84,7 +84,9 @@ describe("getPromotedAlbum", () => {
       mbid: expect.any(String),
       artistName: expect.any(String),
       artistMbid: expect.any(String),
-      coverUrl: expect.stringMatching(/^https:\/\/coverartarchive\.org\/release-group\//)
+      coverUrl: expect.stringMatching(
+        /^https:\/\/coverartarchive\.org\/release-group\//
+      ),
     });
     expect(result!.tag).toBe("alternative");
     expect(result!.inLibrary).toBe(false);

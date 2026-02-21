@@ -123,9 +123,7 @@ describe("getArtistsImages", () => {
 
     expect(result.size).toBe(2);
     expect(result.get("radiohead")).toBe("https://example.com/radiohead.jpg");
-    expect(result.get("portishead")).toBe(
-      "https://example.com/portishead.jpg"
-    );
+    expect(result.get("portishead")).toBe("https://example.com/portishead.jpg");
   });
 
   it("handles artists with no image", async () => {

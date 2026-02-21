@@ -47,7 +47,9 @@ describe("useAudioPreview", () => {
 
     expect(mockAudioInstance.src).toBe("https://example.com/preview.mp3");
     expect(mockPlay).toHaveBeenCalled();
-    expect(result.current.isTrackPlaying("https://example.com/preview.mp3")).toBe(true);
+    expect(
+      result.current.isTrackPlaying("https://example.com/preview.mp3")
+    ).toBe(true);
   });
 
   it("pauses when toggling the same track that is playing", () => {
@@ -59,7 +61,9 @@ describe("useAudioPreview", () => {
     act(() => result.current.toggle("https://example.com/preview.mp3"));
 
     expect(mockPause).toHaveBeenCalled();
-    expect(result.current.isTrackPlaying("https://example.com/preview.mp3")).toBe(false);
+    expect(
+      result.current.isTrackPlaying("https://example.com/preview.mp3")
+    ).toBe(false);
   });
 
   it("switches to a different track", () => {
@@ -72,8 +76,12 @@ describe("useAudioPreview", () => {
 
     expect(mockAudioInstance.src).toBe("https://example.com/track2.mp3");
     expect(mockPlay).toHaveBeenCalledTimes(2);
-    expect(result.current.isTrackPlaying("https://example.com/track2.mp3")).toBe(true);
-    expect(result.current.isTrackPlaying("https://example.com/track1.mp3")).toBe(false);
+    expect(
+      result.current.isTrackPlaying("https://example.com/track2.mp3")
+    ).toBe(true);
+    expect(
+      result.current.isTrackPlaying("https://example.com/track1.mp3")
+    ).toBe(false);
   });
 
   it("stops playback", () => {
@@ -85,18 +93,24 @@ describe("useAudioPreview", () => {
 
     expect(mockPause).toHaveBeenCalled();
     expect(mockAudioInstance.src).toBe("");
-    expect(result.current.isTrackPlaying("https://example.com/preview.mp3")).toBe(false);
+    expect(
+      result.current.isTrackPlaying("https://example.com/preview.mp3")
+    ).toBe(false);
   });
 
   it("resets state when track ends", () => {
     const { result } = renderHook(() => useAudioPreview());
 
     act(() => result.current.toggle("https://example.com/preview.mp3"));
-    expect(result.current.isTrackPlaying("https://example.com/preview.mp3")).toBe(true);
+    expect(
+      result.current.isTrackPlaying("https://example.com/preview.mp3")
+    ).toBe(true);
 
     act(() => endedHandler!());
 
-    expect(result.current.isTrackPlaying("https://example.com/preview.mp3")).toBe(false);
+    expect(
+      result.current.isTrackPlaying("https://example.com/preview.mp3")
+    ).toBe(false);
   });
 
   it("cleans up audio element on unmount", () => {

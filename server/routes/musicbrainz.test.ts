@@ -96,9 +96,7 @@ describe("GET /tracks/:releaseGroupId", () => {
       ])
     );
 
-    const res = await request(app).get(
-      "/tracks/rg-123?artistName=Radiohead"
-    );
+    const res = await request(app).get("/tracks/rg-123?artistName=Radiohead");
 
     expect(res.status).toBe(200);
     expect(res.body.media[0].tracks[0].previewUrl).toBe(
