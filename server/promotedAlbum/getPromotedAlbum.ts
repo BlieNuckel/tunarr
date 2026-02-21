@@ -3,7 +3,6 @@ import { getArtistTopTags } from "../lastfmApi/artists";
 import { getTopAlbumsByTag } from "../lastfmApi/albums";
 import { lidarrGet } from "../lidarrApi/get";
 import type { LidarrArtist } from "../lidarrApi/types";
-import { getAlbumArtwork } from "../appleApi/artists";
 import { getReleaseGroupIdFromRelease } from "../musicbrainzApi/releaseGroups";
 
 export type PromotedAlbumResult = {
@@ -177,19 +176,13 @@ export async function getPromotedAlbum(
   const chosen = notInLibrary || validAlbums[0];
   const inLibrary = !notInLibrary;
 
-  // Try to get high-quality artwork from Apple Music
-  const appleArtwork = await getAlbumArtwork(chosen.name, chosen.artistName);
-
   const result: PromotedAlbumResult = {
     album: {
       name: chosen.name,
       mbid: chosen.mbid,
       artistName: chosen.artistName,
       artistMbid: chosen.artistMbid,
-      coverUrl:
-        appleArtwork ||
-        chosen.imageUrl ||
-        `https://coverartarchive.org/release-group/${chosen.mbid}/front-500`,
+      coverUrl: `https://coverartarchive.org/release-group/${chosen.mbid}/front-500`,
     },
     tag: chosenTag.name,
     inLibrary,
