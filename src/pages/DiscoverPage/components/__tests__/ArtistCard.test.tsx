@@ -45,6 +45,19 @@ const makeAlbum = (overrides: Partial<ReleaseGroup> = {}): ReleaseGroup => ({
   ...overrides,
 });
 
+const makeFeaturedAlbum = (
+  overrides: Partial<ReleaseGroup> = {}
+): ReleaseGroup =>
+  makeAlbum({
+    "artist-credit": [
+      {
+        name: "Other Artist",
+        artist: { id: "a2", name: "Other Artist" },
+      },
+    ],
+    ...overrides,
+  });
+
 describe("ArtistCard", () => {
   const defaultIsAlbumInLibrary = () => false;
 
@@ -156,7 +169,13 @@ describe("ArtistCard", () => {
   });
 
   it("does not re-fetch albums if already loaded", () => {
-    mockAlbums = [makeAlbum()];
+    mockAlbums = [
+      makeAlbum({
+        "artist-credit": [
+          { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+        ],
+      }),
+    ];
     render(
       <ArtistCard name="Radiohead" isAlbumInLibrary={defaultIsAlbumInLibrary} />
     );
@@ -193,9 +212,20 @@ describe("ArtistCard", () => {
   });
 
   it("renders album cards when expanded with albums", () => {
+    const radioheadCredit = [
+      { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+    ];
     mockAlbums = [
-      makeAlbum({ id: "rg-1", title: "OK Computer" }),
-      makeAlbum({ id: "rg-2", title: "Kid A" }),
+      makeAlbum({
+        id: "rg-1",
+        title: "OK Computer",
+        "artist-credit": radioheadCredit,
+      }),
+      makeAlbum({
+        id: "rg-2",
+        title: "Kid A",
+        "artist-credit": radioheadCredit,
+      }),
     ];
     render(
       <ArtistCard name="Radiohead" isAlbumInLibrary={defaultIsAlbumInLibrary} />
@@ -206,7 +236,13 @@ describe("ArtistCard", () => {
   });
 
   it("uses grid layout for album cards", () => {
-    mockAlbums = [makeAlbum()];
+    mockAlbums = [
+      makeAlbum({
+        "artist-credit": [
+          { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+        ],
+      }),
+    ];
     render(
       <ArtistCard name="Radiohead" isAlbumInLibrary={defaultIsAlbumInLibrary} />
     );
@@ -220,7 +256,13 @@ describe("ArtistCard", () => {
   });
 
   it("collapses after exit animation timeout", () => {
-    mockAlbums = [makeAlbum()];
+    mockAlbums = [
+      makeAlbum({
+        "artist-credit": [
+          { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+        ],
+      }),
+    ];
     render(
       <ArtistCard name="Radiohead" isAlbumInLibrary={defaultIsAlbumInLibrary} />
     );
@@ -237,7 +279,13 @@ describe("ArtistCard", () => {
   });
 
   it("ignores clicks during exit animation", () => {
-    mockAlbums = [makeAlbum()];
+    mockAlbums = [
+      makeAlbum({
+        "artist-credit": [
+          { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+        ],
+      }),
+    ];
     render(
       <ArtistCard name="Radiohead" isAlbumInLibrary={defaultIsAlbumInLibrary} />
     );
@@ -257,7 +305,13 @@ describe("ArtistCard", () => {
   });
 
   it("applies cascade-deal-in class to album cards when expanding", () => {
-    mockAlbums = [makeAlbum()];
+    mockAlbums = [
+      makeAlbum({
+        "artist-credit": [
+          { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+        ],
+      }),
+    ];
     render(
       <ArtistCard name="Radiohead" isAlbumInLibrary={defaultIsAlbumInLibrary} />
     );
@@ -268,7 +322,13 @@ describe("ArtistCard", () => {
   });
 
   it("applies cascade-deal-out class to album cards when collapsing", () => {
-    mockAlbums = [makeAlbum()];
+    mockAlbums = [
+      makeAlbum({
+        "artist-credit": [
+          { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+        ],
+      }),
+    ];
     render(
       <ArtistCard name="Radiohead" isAlbumInLibrary={defaultIsAlbumInLibrary} />
     );
@@ -281,9 +341,15 @@ describe("ArtistCard", () => {
   });
 
   it("passes inLibrary prop to ReleaseGroupCard based on isAlbumInLibrary", () => {
+    const radioheadCredit = [
+      { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+    ];
     mockAlbums = [
-      makeAlbum({ id: "album-in-library" }),
-      makeAlbum({ id: "album-not-in-library" }),
+      makeAlbum({ id: "album-in-library", "artist-credit": radioheadCredit }),
+      makeAlbum({
+        id: "album-not-in-library",
+        "artist-credit": radioheadCredit,
+      }),
     ];
     const isAlbumInLibrary = (albumMbid: string) =>
       albumMbid === "album-in-library";
@@ -298,5 +364,125 @@ describe("ArtistCard", () => {
 
     expect(inLibraryCard).toHaveAttribute("data-in-library", "true");
     expect(notInLibraryCard).toHaveAttribute("data-in-library", "false");
+  });
+
+  describe("primary vs featured album sections", () => {
+    const radioheadCredit = [
+      { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+    ];
+
+    it("splits albums into primary and featured sections", () => {
+      mockAlbums = [
+        makeAlbum({
+          id: "rg-primary",
+          title: "OK Computer",
+          "artist-credit": radioheadCredit,
+        }),
+        makeFeaturedAlbum({ id: "rg-featured", title: "Collab Album" }),
+      ];
+      render(
+        <ArtistCard
+          name="Radiohead"
+          isAlbumInLibrary={defaultIsAlbumInLibrary}
+        />
+      );
+      fireEvent.click(screen.getByRole("button"));
+
+      expect(screen.getByText("OK Computer")).toBeInTheDocument();
+      expect(screen.getByText("Collab Album")).toBeInTheDocument();
+      expect(screen.getByText("Featured")).toBeInTheDocument();
+    });
+
+    it("does not show Featured heading when all albums are primary", () => {
+      mockAlbums = [
+        makeAlbum({
+          id: "rg-1",
+          title: "OK Computer",
+          "artist-credit": radioheadCredit,
+        }),
+        makeAlbum({
+          id: "rg-2",
+          title: "Kid A",
+          "artist-credit": radioheadCredit,
+        }),
+      ];
+      render(
+        <ArtistCard
+          name="Radiohead"
+          isAlbumInLibrary={defaultIsAlbumInLibrary}
+        />
+      );
+      fireEvent.click(screen.getByRole("button"));
+
+      expect(screen.getByText("OK Computer")).toBeInTheDocument();
+      expect(screen.getByText("Kid A")).toBeInTheDocument();
+      expect(screen.queryByText("Featured")).not.toBeInTheDocument();
+    });
+
+    it("shows Featured heading when only featured albums exist", () => {
+      mockAlbums = [
+        makeFeaturedAlbum({ id: "rg-1", title: "Collab Album" }),
+      ];
+      render(
+        <ArtistCard
+          name="Radiohead"
+          isAlbumInLibrary={defaultIsAlbumInLibrary}
+        />
+      );
+      fireEvent.click(screen.getByRole("button"));
+
+      expect(screen.getByText("Collab Album")).toBeInTheDocument();
+      expect(screen.getByText("Featured")).toBeInTheDocument();
+    });
+
+    it("matches artist name case-insensitively", () => {
+      mockAlbums = [
+        makeAlbum({
+          id: "rg-1",
+          title: "Primary Album",
+          "artist-credit": [
+            { name: "radiohead", artist: { id: "a1", name: "radiohead" } },
+          ],
+        }),
+      ];
+      render(
+        <ArtistCard
+          name="Radiohead"
+          isAlbumInLibrary={defaultIsAlbumInLibrary}
+        />
+      );
+      fireEvent.click(screen.getByRole("button"));
+
+      expect(screen.getByText("Primary Album")).toBeInTheDocument();
+      expect(screen.queryByText("Featured")).not.toBeInTheDocument();
+    });
+
+    it("continues deal-index for featured albums after primary ones", () => {
+      mockAlbums = [
+        makeAlbum({
+          id: "rg-primary-1",
+          title: "Album 1",
+          "artist-credit": radioheadCredit,
+        }),
+        makeAlbum({
+          id: "rg-primary-2",
+          title: "Album 2",
+          "artist-credit": radioheadCredit,
+        }),
+        makeFeaturedAlbum({ id: "rg-featured-1", title: "Featured Album" }),
+      ];
+      render(
+        <ArtistCard
+          name="Radiohead"
+          isAlbumInLibrary={defaultIsAlbumInLibrary}
+        />
+      );
+      fireEvent.click(screen.getByRole("button"));
+
+      const featuredWrapper = screen.getByTestId(
+        "release-group-rg-featured-1"
+      ).parentElement!;
+      expect(featuredWrapper.style.getPropertyValue("--deal-index")).toBe("2");
+    });
   });
 });

@@ -4,9 +4,30 @@ import ReleaseGroupCard from "@/components/ReleaseGroupCard";
 import { ChevronDownIcon, MusicalNoteIcon } from "@/components/icons";
 import ImageWithShimmer from "@/components/ImageWithShimmer";
 import Skeleton from "@/components/Skeleton";
+import type { ReleaseGroup } from "@/types";
 
 const DEAL_ROTATIONS = [-4, 3.5, -3, 4.5, -3.5, 3];
 const EXIT_DURATION_MS = 150;
+
+function splitAlbumsByCredit(
+  albums: ReleaseGroup[],
+  artistName: string
+): { primary: ReleaseGroup[]; featured: ReleaseGroup[] } {
+  const normalised = artistName.toLowerCase();
+  const primary: ReleaseGroup[] = [];
+  const featured: ReleaseGroup[] = [];
+
+  for (const album of albums) {
+    const credit = album["artist-credit"]?.[0];
+    if (credit && credit.artist.name.toLowerCase() === normalised) {
+      primary.push(album);
+    } else {
+      featured.push(album);
+    }
+  }
+
+  return { primary, featured };
+}
 
 interface ArtistCardProps {
   name: string;
@@ -53,6 +74,30 @@ export default function ArtistCard({
     }
   };
 
+  const { primary, featured } = splitAlbumsByCredit(albums, name);
+
+  const renderAlbumGrid = (items: ReleaseGroup[], dealIndexOffset: number) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
+      {items.map((rg, index) => (
+        <div
+          key={rg.id}
+          className={animatingOut ? "cascade-deal-out" : "cascade-deal-in"}
+          style={
+            {
+              "--deal-index": dealIndexOffset + index,
+              "--deal-rotate": `${DEAL_ROTATIONS[(dealIndexOffset + index) % DEAL_ROTATIONS.length]}deg`,
+            } as React.CSSProperties
+          }
+        >
+          <ReleaseGroupCard
+            releaseGroup={rg}
+            inLibrary={isAlbumInLibrary(rg.id)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <>
       <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-black shadow-cartoon-md overflow-hidden hover:translate-y-[-2px] hover:shadow-cartoon-lg transition-all">
@@ -96,9 +141,9 @@ export default function ArtistCard({
       </div>
 
       {expanded && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
+        <>
           {loading && (
-            <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
               {[...Array(5)].map((_, i) => (
                 <div key={i}>
                   <div className="sm:hidden bg-white dark:bg-gray-800 rounded-xl border-2 border-black shadow-cartoon-sm overflow-hidden">
@@ -122,7 +167,7 @@ export default function ArtistCard({
                   </div>
                 </div>
               ))}
-            </>
+            </div>
           )}
           {error && <p className="text-rose-500 text-sm">{error}</p>}
           {!loading && !error && albums.length === 0 && (
@@ -130,27 +175,16 @@ export default function ArtistCard({
               No albums found.
             </p>
           )}
-          {!loading &&
-            albums.map((rg, index) => (
-              <div
-                key={rg.id}
-                className={
-                  animatingOut ? "cascade-deal-out" : "cascade-deal-in"
-                }
-                style={
-                  {
-                    "--deal-index": index,
-                    "--deal-rotate": `${DEAL_ROTATIONS[index % DEAL_ROTATIONS.length]}deg`,
-                  } as React.CSSProperties
-                }
-              >
-                <ReleaseGroupCard
-                  releaseGroup={rg}
-                  inLibrary={isAlbumInLibrary(rg.id)}
-                />
-              </div>
-            ))}
-        </div>
+          {!loading && primary.length > 0 && renderAlbumGrid(primary, 0)}
+          {!loading && featured.length > 0 && (
+            <>
+              <h4 className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase tracking-wide">
+                Featured
+              </h4>
+              {renderAlbumGrid(featured, primary.length)}
+            </>
+          )}
+        </>
       )}
     </>
   );
