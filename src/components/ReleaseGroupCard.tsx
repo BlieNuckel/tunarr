@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import MonitorButton from "./MonitorButton";
 import TrackList from "./TrackList";
 import PurchaseLinksModal from "./PurchaseLinksModal";
@@ -57,6 +57,19 @@ export default function ReleaseGroupCard({
     fetchTracks,
   } = useReleaseTracks();
   const { toggle, stop, isTrackPlaying } = useAudioPreview();
+
+  const expandContentRef = useRef<HTMLDivElement>(null);
+  const [expandHeight, setExpandHeight] = useState(0);
+
+  useEffect(() => {
+    const el = expandContentRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      setExpandHeight(el.offsetHeight);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const effectiveState: MonitorState = inLibrary
     ? "already_monitored"
@@ -181,12 +194,14 @@ export default function ReleaseGroupCard({
           </button>
         </div>
         <div
-          className={`grid transition-[grid-template-rows] duration-300 ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+          className="overflow-hidden transition-[height] duration-300"
+          data-expanded={isExpanded}
           style={{
+            height: isExpanded ? expandHeight : 0,
             transitionTimingFunction: "cubic-bezier(0.34, 1.3, 0.64, 1)",
           }}
         >
-          <div className="overflow-hidden">
+          <div ref={expandContentRef}>
             <div
               className="border-t-2 border-black p-3 overlay-scrollbar max-h-64 overflow-y-auto"
               data-testid="mobile-tracklist"

@@ -152,13 +152,15 @@ describe("ReleaseGroupCard", () => {
     it("expands to show tracklist when card is clicked", () => {
       render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
 
-      const grid = screen.getByTestId("mobile-tracklist").closest(".grid")!;
-      expect(grid).toHaveClass("grid-rows-[0fr]");
+      const expandContainer = screen
+        .getByTestId("mobile-tracklist")
+        .closest("[data-expanded]")!;
+      expect(expandContainer).toHaveAttribute("data-expanded", "false");
 
       const mobileCard = screen.getByTestId("release-group-card-mobile");
       fireEvent.click(mobileCard.querySelector(".flex.items-center")!);
 
-      expect(grid).toHaveClass("grid-rows-[1fr]");
+      expect(expandContainer).toHaveAttribute("data-expanded", "true");
       expect(mockFetchTracks).toHaveBeenCalledWith("abc-123", "Test Artist");
     });
 
@@ -168,13 +170,15 @@ describe("ReleaseGroupCard", () => {
       const clickTarget = screen
         .getByTestId("release-group-card-mobile")
         .querySelector(".flex.items-center")!;
-      const grid = screen.getByTestId("mobile-tracklist").closest(".grid")!;
+      const expandContainer = screen
+        .getByTestId("mobile-tracklist")
+        .closest("[data-expanded]")!;
 
       fireEvent.click(clickTarget);
-      expect(grid).toHaveClass("grid-rows-[1fr]");
+      expect(expandContainer).toHaveAttribute("data-expanded", "true");
 
       fireEvent.click(clickTarget);
-      expect(grid).toHaveClass("grid-rows-[0fr]");
+      expect(expandContainer).toHaveAttribute("data-expanded", "false");
       expect(mockStop).toHaveBeenCalled();
     });
 
@@ -191,8 +195,10 @@ describe("ReleaseGroupCard", () => {
 
       fireEvent.click(screen.getByTestId("mobile-monitor-button"));
 
-      const grid = screen.getByTestId("mobile-tracklist").closest(".grid")!;
-      expect(grid).toHaveClass("grid-rows-[0fr]");
+      const expandContainer = screen
+        .getByTestId("mobile-tracklist")
+        .closest("[data-expanded]")!;
+      expect(expandContainer).toHaveAttribute("data-expanded", "false");
     });
 
     it("fetches tracks on expand but not on collapse", () => {
