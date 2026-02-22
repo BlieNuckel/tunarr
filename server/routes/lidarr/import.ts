@@ -4,13 +4,13 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { createLogger } from "../../logger";
-
-const log = createLogger("Import");
 import { getConfigValue } from "../../config";
 import { lidarrGet } from "../../api/lidarr/get";
 import { lidarrPost } from "../../api/lidarr/post";
-import { LidarrManualImportItem } from "../../api/lidarr/types";
+import type { LidarrManualImportItem } from "../../api/lidarr/types";
 import { getAlbumByMbid, getOrAddArtist, getOrAddAlbum } from "./helpers";
+
+const log = createLogger("Import");
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -85,7 +85,6 @@ const requireImportPath = (_req: Request, res: Response, next: () => void) => {
   next();
 };
 
-/** Upload files, ensure artist+album exist in Lidarr, scan with manual import */
 router.post(
   "/import/upload",
   requireImportPath,
@@ -157,7 +156,6 @@ router.post(
   }
 );
 
-/** Confirm manual import — trigger the actual import via Lidarr's command API */
 router.post("/import/confirm", async (req: Request, res: Response) => {
   const { items }: { items: LidarrManualImportItem[] } = req.body;
   if (!items?.length) {
@@ -197,7 +195,6 @@ router.post("/import/confirm", async (req: Request, res: Response) => {
   res.json({ status: "success" });
 });
 
-/** Cancel upload — clean up temp files */
 router.delete(
   "/import/:uploadId",
   async (req: Request<{ uploadId: string }>, res: Response) => {

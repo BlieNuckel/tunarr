@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { lidarrGet } from "../../api/lidarr/get.js";
-import { LidarrRootFolder } from "../../api/lidarr/types";
+import type { LidarrRootFolder } from "../../api/lidarr/types";
 
 const router = express.Router();
 

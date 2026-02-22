@@ -153,7 +153,6 @@ export default function useDiscover() {
     }
   }, []);
 
-  // Auto-discover: when Plex top artists load, pick the top one and fetch similar
   useEffect(() => {
     if (hasAutoTriggered.current) return;
     if (plexLoading) return;

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { lidarrGet } from "../../api/lidarr/get.js";
-import {
+import type {
   LidarrPaginatedResponse,
   LidarrHistoryRecord,
 } from "../../api/lidarr/types";

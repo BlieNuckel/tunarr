@@ -3,8 +3,8 @@ import { lidarrGet } from "../../api/lidarr/get";
 import { lidarrPost } from "../../api/lidarr/post";
 import { lidarrPut } from "../../api/lidarr/put";
 import {
-  LidarrAlbum,
-  LidarrArtist,
+  type LidarrAlbum,
+  type LidarrArtist,
   extractLidarrError,
 } from "../../api/lidarr/types";
 import { AsyncLock } from "../../api/asyncLock";

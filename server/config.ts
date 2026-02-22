@@ -56,7 +56,6 @@ export const setConfig = (newConfig: Partial<IConfig>) => {
   const currentConfig = getConfig();
   const mergedConfig = { ...currentConfig, ...newConfig };
 
-  // Validate the merged config
   if (typeof mergedConfig.lidarrUrl !== "string") {
     throw new Error("lidarrUrl must be a string");
   }

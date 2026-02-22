@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { lidarrGet } from "../../api/lidarr/get";
-import { LidarrArtist } from "../../api/lidarr/types";
+import type { LidarrArtist } from "../../api/lidarr/types";
 
 const router = express.Router();
 

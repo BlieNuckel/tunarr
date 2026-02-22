@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import {
   ThemeContext,
@@ -24,6 +24,26 @@ const resolveTheme = (theme: Theme): ActualTheme => {
   return theme;
 };
 
+async function loadTheme(
+  setThemeState: (t: Theme) => void,
+  setActualTheme: (t: ActualTheme) => void,
+  setIsLoading: (v: boolean) => void
+) {
+  try {
+    const response = await fetch("/api/settings");
+    if (response.ok) {
+      const settings = await response.json();
+      const loadedTheme = settings.theme || "system";
+      setThemeState(loadedTheme);
+      setActualTheme(resolveTheme(loadedTheme));
+    }
+  } catch (error) {
+    console.error("Failed to load theme from backend:", error);
+  } finally {
+    setIsLoading(false);
+  }
+}
+
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>("system");
   const [actualTheme, setActualTheme] = useState<ActualTheme>(() =>
@@ -32,23 +52,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const response = await fetch("/api/settings");
-        if (response.ok) {
-          const settings = await response.json();
-          const loadedTheme = settings.theme || "system";
-          setThemeState(loadedTheme);
-          setActualTheme(resolveTheme(loadedTheme));
-        }
-      } catch (error) {
-        console.error("Failed to load theme from backend:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTheme();
+    loadTheme(setThemeState, setActualTheme, setIsLoading);
   }, []);
 
   useEffect(() => {
@@ -99,12 +103,4 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
-};
-
-export const useTheme = (): ThemeContextValue => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
 };

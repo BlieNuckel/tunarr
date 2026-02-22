@@ -2,8 +2,6 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createLogger } from "./logger";
-
-const log = createLogger("Server");
 import lastfmRoutes from "./routes/lastfm";
 import lidarrRoutes from "./routes/lidarr";
 import musicbrainzRoutes from "./routes/musicbrainz";
@@ -11,6 +9,8 @@ import plexRoutes from "./routes/plex";
 import promotedAlbumRoutes from "./routes/promotedAlbum";
 import settingsRoutes from "./routes/settings";
 import { errorHandler } from "./middleware/errorHandler";
+
+const log = createLogger("Server");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

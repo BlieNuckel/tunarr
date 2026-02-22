@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { createLogger } from "../logger";
-
-const log = createLogger("Last.fm");
 import {
   getSimilarArtists,
   getArtistTopTags,
@@ -11,6 +9,8 @@ import {
 import { getTopAlbumsByTag } from "../api/lastfm/albums";
 import { getAlbumsArtwork } from "../api/apple/artists";
 import { getArtistsImages } from "../api/deezer/artists";
+
+const log = createLogger("Last.fm");
 
 const router = express.Router();
 
