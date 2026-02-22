@@ -1,4 +1,10 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+
+vi.mock("@/hooks/usePlexLogin", () => ({
+  default: () => ({ loading: false, login: vi.fn() }),
+  fetchAccount: () => Promise.resolve(null),
+}));
+
 import SettingsPage from "../SettingsPage";
 import {
   LidarrContext,

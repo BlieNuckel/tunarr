@@ -7,9 +7,15 @@ export type PlexServer = {
   local: boolean;
 };
 
+export type PlexAccount = {
+  username: string;
+  thumb: string;
+};
+
 interface UsePlexLoginOptions {
   onToken: (token: string) => void;
   onServers?: (servers: PlexServer[]) => void;
+  onAccount?: (account: PlexAccount) => void;
 }
 
 interface UsePlexLoginResult {
@@ -17,9 +23,18 @@ interface UsePlexLoginResult {
   login: () => void;
 }
 
+async function fetchAccount(token: string): Promise<PlexAccount | null> {
+  const res = await fetch(
+    `/api/plex/account?token=${encodeURIComponent(token)}&clientId=${encodeURIComponent(getClientId())}`,
+  );
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export default function usePlexLogin({
   onToken,
   onServers,
+  onAccount,
 }: UsePlexLoginOptions): UsePlexLoginResult {
   const [loading, setLoading] = useState(false);
 
@@ -31,12 +46,24 @@ export default function usePlexLogin({
 
       onToken(token);
 
-      const res = await fetch(
-        `/api/plex/servers?token=${encodeURIComponent(token)}&clientId=${encodeURIComponent(getClientId())}`,
+      const clientId = getClientId();
+      const serversPromise = fetch(
+        `/api/plex/servers?token=${encodeURIComponent(token)}&clientId=${encodeURIComponent(clientId)}`,
       );
-      if (res.ok) {
-        const data = await res.json();
+      const accountPromise = fetchAccount(token);
+
+      const [serversRes, account] = await Promise.all([
+        serversPromise,
+        accountPromise,
+      ]);
+
+      if (serversRes.ok) {
+        const data = await serversRes.json();
         onServers?.(data.servers ?? []);
+      }
+
+      if (account) {
+        onAccount?.(account);
       }
     } finally {
       setLoading(false);
@@ -45,3 +72,5 @@ export default function usePlexLogin({
 
   return { loading, login: handleLogin };
 }
+
+export { fetchAccount };
