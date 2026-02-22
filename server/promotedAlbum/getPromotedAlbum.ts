@@ -161,7 +161,9 @@ export async function getPromotedAlbum(
   // Do this sequentially (not in parallel) to avoid MusicBrainz rate limiting
   // Prefer non-library albums, but fall back to in-library if all are in library
   let chosenAlbum: { album: (typeof shuffled)[0]; rgMbid: string } | undefined;
-  let fallbackAlbum: { album: (typeof shuffled)[0]; rgMbid: string } | undefined;
+  let fallbackAlbum:
+    | { album: (typeof shuffled)[0]; rgMbid: string }
+    | undefined;
 
   for (const album of shuffled) {
     const releaseGroupId = await getReleaseGroupIdFromRelease(album.mbid);
