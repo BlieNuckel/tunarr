@@ -169,6 +169,12 @@ export default function SettingsPage() {
       </div>
 
       <form className="space-y-6" onSubmit={handleSave}>
+        <PlexSection
+          token={plexToken}
+          onUrlChange={setPlexUrl}
+          onTokenChange={setPlexToken}
+        />
+
         <LidarrConnectionSection
           url={url}
           apiKey={apiKey}
@@ -191,12 +197,6 @@ export default function SettingsPage() {
         />
 
         <LastfmSection apiKey={lastfmApiKey} onApiKeyChange={setLastfmApiKey} />
-
-        <PlexSection
-          token={plexToken}
-          onUrlChange={setPlexUrl}
-          onTokenChange={setPlexToken}
-        />
 
         <ImportSection
           importPath={importPath}
