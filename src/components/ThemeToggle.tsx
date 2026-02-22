@@ -102,7 +102,7 @@ const ThemeToggle = () => {
         aria-label={`Change theme (current: ${getLabel(theme)})`}
       >
         {getIcon(theme)}
-        <span className="hidden sm:inline">{getLabel(theme)}</span>
+        <span>{getLabel(theme)}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
