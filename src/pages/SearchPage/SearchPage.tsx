@@ -4,6 +4,8 @@ import SearchBar from "./components/SearchBar";
 import ReleaseGroupCard from "@/components/ReleaseGroupCard";
 import useSearch from "@/hooks/useSearch";
 
+const DEAL_ROTATIONS = [-4, 3.5, -3, 4.5, -3.5, 3];
+
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { results, loading, error, search } = useSearch();
@@ -40,8 +42,17 @@ export default function SearchPage() {
 
       {results.length > 0 && (
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
-          {results.map((rg) => (
-            <ReleaseGroupCard key={rg.id} releaseGroup={rg} />
+          {results.map((rg, index) => (
+            <div
+              key={rg.id}
+              className="cascade-deal-in"
+              style={{
+                "--deal-index": index,
+                "--deal-rotate": `${DEAL_ROTATIONS[index % DEAL_ROTATIONS.length]}deg`,
+              } as React.CSSProperties}
+            >
+              <ReleaseGroupCard releaseGroup={rg} />
+            </div>
           ))}
         </div>
       )}
