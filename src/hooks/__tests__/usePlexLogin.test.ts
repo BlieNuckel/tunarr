@@ -4,6 +4,7 @@ import { renderHook, act } from "@testing-library/react";
 const mockLogin = vi.fn();
 vi.mock("@/utils/plexOAuth", () => ({
   login: () => mockLogin(),
+  getClientId: () => "test-client-id",
 }));
 
 const mockFetch = vi.fn();
@@ -40,7 +41,7 @@ describe("usePlexLogin", () => {
       { name: "My Server", uri: "http://plex:32400", local: true },
     ]);
     expect(mockFetch).toHaveBeenCalledWith(
-      "/api/plex/servers?token=my-token",
+      "/api/plex/servers?token=my-token&clientId=test-client-id",
     );
   });
 

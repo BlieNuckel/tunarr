@@ -37,12 +37,13 @@ router.get("/thumb", async (req: Request, res: Response) => {
 
 router.get("/servers", async (req: Request, res: Response) => {
   const token = req.query.token as string;
-  if (!token) {
-    res.status(400).json({ error: "Missing token parameter" });
+  const clientId = req.query.clientId as string;
+  if (!token || !clientId) {
+    res.status(400).json({ error: "Missing token or clientId parameter" });
     return;
   }
 
-  const servers = await getPlexServers(token);
+  const servers = await getPlexServers(token, clientId);
   res.json({ servers });
 });
 

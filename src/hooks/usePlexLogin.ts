@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "@/utils/plexOAuth";
+import { login, getClientId } from "@/utils/plexOAuth";
 
 export type PlexServer = {
   name: string;
@@ -32,7 +32,7 @@ export default function usePlexLogin({
       onToken(token);
 
       const res = await fetch(
-        `/api/plex/servers?token=${encodeURIComponent(token)}`,
+        `/api/plex/servers?token=${encodeURIComponent(token)}&clientId=${encodeURIComponent(getClientId())}`,
       );
       if (res.ok) {
         const data = await res.json();

@@ -10,13 +10,17 @@ export type PlexServer = {
   local: boolean;
 };
 
-export async function getPlexServers(token: string): Promise<PlexServer[]> {
+export async function getPlexServers(
+  token: string,
+  clientId: string,
+): Promise<PlexServer[]> {
   const res = await fetch(
     "https://plex.tv/api/v2/resources?includeHttps=1",
     {
       headers: {
         Accept: "application/json",
         "X-Plex-Token": token,
+        "X-Plex-Client-Identifier": clientId,
       },
     },
   );

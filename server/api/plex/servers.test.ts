@@ -30,7 +30,7 @@ describe("getPlexServers", () => {
       ],
     });
 
-    const servers = await getPlexServers("test-token");
+    const servers = await getPlexServers("test-token", "client-123");
 
     expect(servers).toEqual([
       {
@@ -47,6 +47,7 @@ describe("getPlexServers", () => {
         headers: {
           Accept: "application/json",
           "X-Plex-Token": "test-token",
+          "X-Plex-Client-Identifier": "client-123",
         },
       },
     );
@@ -64,14 +65,14 @@ describe("getPlexServers", () => {
       ],
     });
 
-    const servers = await getPlexServers("token");
+    const servers = await getPlexServers("token", "client-123");
     expect(servers).toEqual([]);
   });
 
   it("throws when plex.tv returns an error", async () => {
     mockFetch.mockResolvedValue({ ok: false, status: 401 });
 
-    await expect(getPlexServers("bad-token")).rejects.toThrow(
+    await expect(getPlexServers("bad-token", "client-123")).rejects.toThrow(
       "Plex returned 401",
     );
   });

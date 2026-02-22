@@ -24,7 +24,7 @@ function generateUUID(): string {
     .join("");
 }
 
-function getClientId(): string {
+export function getClientId(): string {
   let clientId = localStorage.getItem(CLIENT_ID_KEY);
   if (!clientId) {
     clientId = generateUUID();
