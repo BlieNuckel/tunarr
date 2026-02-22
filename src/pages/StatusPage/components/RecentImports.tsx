@@ -24,10 +24,11 @@ export default function RecentImports({ items }: RecentImportsProps) {
 
   return (
     <div className="space-y-2">
-      {groupedItems.map((item) => (
+      {groupedItems.map((item, index) => (
         <div
           key={item.id}
-          className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl px-4 py-3 border-2 border-black shadow-cartoon-md hover:translate-y-[-2px] hover:shadow-cartoon-lg transition-all"
+          className="stagger-fade-in flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl px-4 py-3 border-2 border-black shadow-cartoon-md hover:translate-y-[-2px] hover:shadow-cartoon-lg transition-all"
+          style={{ "--stagger-index": index } as React.CSSProperties}
         >
           <div>
             <p className="text-gray-900 dark:text-gray-100 font-medium">

@@ -181,6 +181,11 @@
   animation: fade-in 0.3s ease-out both;
 }
 
+.stagger-fade-in {
+  animation: slide-up-fade-in 0.25s ease-out backwards;
+  animation-delay: calc(var(--stagger-index, 0) * 40ms);
+}
+
 .flip-card {
   perspective: 800px;
 }

@@ -31,11 +31,12 @@ export default function TagList({
 
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {tags.map((tag) => (
+          {tags.map((tag, index) => (
             <button
               key={tag.name}
               onClick={() => onTagClick(tag.name)}
-              className={`px-2.5 py-1 rounded-full text-xs border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all ${
+              style={{ "--stagger-index": index } as React.CSSProperties}
+              className={`stagger-fade-in px-2.5 py-1 rounded-full text-xs border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all ${
                 activeTag === tag.name
                   ? "bg-amber-300 text-black font-bold dark:text-black"
                   : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-gray-700"

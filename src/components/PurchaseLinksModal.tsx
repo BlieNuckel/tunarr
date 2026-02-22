@@ -59,11 +59,13 @@ export default function PurchaseLinksModal({
           </p>
 
           {step === "idle" && (
-            <FileUploadZone onFiles={(files) => upload(files, albumMbid)} />
+            <div className="animate-fade-in">
+              <FileUploadZone onFiles={(files) => upload(files, albumMbid)} />
+            </div>
           )}
 
           {step === "uploading" && (
-            <div className="flex items-center justify-center gap-2 py-6">
+            <div className="flex items-center justify-center gap-2 py-6 animate-fade-in">
               <Spinner className="h-5 w-5 text-amber-400" />
               <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Uploading and scanning files...
@@ -72,15 +74,17 @@ export default function PurchaseLinksModal({
           )}
 
           {step === "reviewing" && (
-            <ImportReview
-              items={items}
-              onConfirm={() => confirm(items)}
-              onCancel={cancel}
-            />
+            <div className="animate-fade-in">
+              <ImportReview
+                items={items}
+                onConfirm={() => confirm(items)}
+                onCancel={cancel}
+              />
+            </div>
           )}
 
           {step === "importing" && (
-            <div className="flex items-center justify-center gap-2 py-6">
+            <div className="flex items-center justify-center gap-2 py-6 animate-fade-in">
               <Spinner className="h-5 w-5 text-emerald-500" />
               <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Importing to Lidarr...
@@ -89,13 +93,13 @@ export default function PurchaseLinksModal({
           )}
 
           {step === "done" && (
-            <div className="bg-emerald-400 text-black border-2 border-black rounded-xl p-3 text-sm font-medium shadow-cartoon-sm">
+            <div className="bg-emerald-400 text-black border-2 border-black rounded-xl p-3 text-sm font-medium shadow-cartoon-sm animate-slide-up">
               Files imported successfully!
             </div>
           )}
 
           {step === "error" && (
-            <div className="space-y-2">
+            <div className="space-y-2 animate-fade-in">
               <div className="bg-rose-400 text-white border-2 border-black rounded-xl p-3 text-sm font-medium shadow-cartoon-sm">
                 {error}
               </div>

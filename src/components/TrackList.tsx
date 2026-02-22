@@ -57,7 +57,7 @@ export default function TrackList({
             </p>
           )}
           <ol className="space-y-1">
-            {medium.tracks.map((track) => {
+            {medium.tracks.map((track, trackIndex) => {
               const hasPreview =
                 !!track.previewUrl && !!onTogglePreview && !!isTrackPlaying;
               const playing = hasPreview && isTrackPlaying(track.previewUrl!);
@@ -99,7 +99,11 @@ export default function TrackList({
               );
 
               return (
-                <li key={track.position}>
+                <li
+                  key={track.position}
+                  className="stagger-fade-in"
+                  style={{ "--stagger-index": trackIndex } as React.CSSProperties}
+                >
                   {hasPreview ? (
                     <button
                       onClick={(e) => {

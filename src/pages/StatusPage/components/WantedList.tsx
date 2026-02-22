@@ -23,11 +23,12 @@ export default function WantedList({
   return (
     <>
       <div className="space-y-2">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
             key={item.id}
             onClick={() => setSelectedItem(item)}
-            className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl px-4 py-3 border-2 border-black shadow-cartoon-md hover:-translate-y-0.5 hover:shadow-cartoon-lg transition-all cursor-pointer"
+            className="stagger-fade-in flex items-center justify-between bg-white dark:bg-gray-800 rounded-xl px-4 py-3 border-2 border-black shadow-cartoon-md hover:-translate-y-0.5 hover:shadow-cartoon-lg transition-all cursor-pointer"
+            style={{ "--stagger-index": index } as React.CSSProperties}
           >
             <div>
               <p className="text-gray-900 dark:text-gray-100 font-medium">

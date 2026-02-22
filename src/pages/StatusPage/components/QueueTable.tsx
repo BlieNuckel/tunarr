@@ -23,8 +23,12 @@ export default function QueueTable({ items }: QueueTableProps) {
           </tr>
         </thead>
         <tbody className="divide-y-2 divide-gray-200 dark:divide-gray-700">
-          {items.map((item) => (
-            <tr key={item.id}>
+          {items.map((item, index) => (
+            <tr
+              key={item.id}
+              className="stagger-fade-in"
+              style={{ "--stagger-index": index } as React.CSSProperties}
+            >
               <td className="py-2 text-gray-600 dark:text-gray-400">
                 {item.artist?.artistName || "Unknown"}
               </td>
