@@ -31,6 +31,9 @@ importers:
       multer:
         specifier: ^2.0.2
         version: 2.0.2
+      node-cache:
+        specifier: ^5.1.2
+        version: 5.1.2
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -1780,6 +1783,13 @@ packages:
       }
     engines: { node: ">=12" }
 
+  clone@2.1.2:
+    resolution:
+      {
+        integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==,
+      }
+    engines: { node: ">=0.8" }
+
   color-convert@2.0.1:
     resolution:
       {
@@ -3002,6 +3012,13 @@ packages:
         integrity: sha512-8Ofs/AUQh8MaEcrlq5xOX0CQ9ypTF5dl78mjlMNfOK08fzpgTHQRQPBxcPlEtIw0yRpws+Zo/3r+5WRby7u3Gg==,
       }
     engines: { node: ">= 0.6" }
+
+  node-cache@5.1.2:
+    resolution:
+      {
+        integrity: sha512-t1QzWwnk4sjLWaQAS8CHgOJ+RAfmHpxFWmc36IWTiWHQfs0w5JDMBS1b1ZxQteo0vVVuWJvIUKHDkkeK7vIGCg==,
+      }
+    engines: { node: ">= 8.0.0" }
 
   node-releases@2.0.27:
     resolution:
@@ -4914,6 +4931,8 @@ snapshots:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
 
+  clone@2.1.2: {}
+
   color-convert@2.0.1:
     dependencies:
       color-name: 1.1.4
@@ -5637,6 +5656,10 @@ snapshots:
   natural-compare@1.4.0: {}
 
   negotiator@1.0.0: {}
+
+  node-cache@5.1.2:
+    dependencies:
+      clone: 2.1.2
 
   node-releases@2.0.27: {}
 
