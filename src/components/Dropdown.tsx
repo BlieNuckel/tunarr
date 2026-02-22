@@ -85,7 +85,7 @@ export default function Dropdown({
         </button>
       )}
       {open && (
-        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl border-2 border-black p-2 shadow-cartoon-lg">
+        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl border-2 border-black p-2 shadow-cartoon-lg animate-dropdown-in origin-top">
           <div className="max-h-64 overflow-y-auto space-y-1">
             {filteredOptions.length === 0 ? (
               <p className="text-gray-400 dark:text-gray-500 text-sm px-3 py-2">

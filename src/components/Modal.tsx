@@ -21,7 +21,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   return createPortal(
     <div
       data-testid="modal-backdrop"
-      className="fixed inset-0 flex items-center justify-center z-50 md:p-4 bg-black/60 dark:bg-black/80"
+      className={`fixed inset-0 flex items-center justify-center z-50 md:p-4 bg-black/60 dark:bg-black/80 ${closing ? "animate-backdrop-out" : "animate-backdrop-in"}`}
       onClick={onClose}
     >
       <div

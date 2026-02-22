@@ -199,7 +199,7 @@ export default function SettingsPage() {
 
       {testResult && (
         <div
-          className={`mt-4 p-3 rounded-xl text-sm font-medium border-2 border-black shadow-cartoon-sm ${
+          className={`mt-4 p-3 rounded-xl text-sm font-medium border-2 border-black shadow-cartoon-sm animate-slide-up ${
             testResult.success
               ? "bg-emerald-400 text-black"
               : "bg-rose-400 text-white"
@@ -212,7 +212,7 @@ export default function SettingsPage() {
       )}
 
       {error && (
-        <div className="mt-4 p-3 rounded-xl text-sm font-medium bg-rose-400 text-white border-2 border-black shadow-cartoon-sm">
+        <div className="mt-4 p-3 rounded-xl text-sm font-medium bg-rose-400 text-white border-2 border-black shadow-cartoon-sm animate-slide-up">
           {error}
         </div>
       )}

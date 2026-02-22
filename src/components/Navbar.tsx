@@ -99,7 +99,7 @@ export default function Navbar() {
           </button>
 
           {open && (
-            <div className="absolute right-0 top-full mt-1 w-40 bg-white border-2 border-black rounded-lg shadow-lg overflow-hidden z-50">
+            <div className="absolute right-0 top-full mt-1 w-40 bg-white border-2 border-black rounded-lg shadow-lg overflow-hidden z-50 animate-dropdown-in origin-top-right">
               {links.map((link) => (
                 <NavLink
                   key={link.to}

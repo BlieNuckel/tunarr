@@ -152,7 +152,7 @@ export default function DiscoverPage() {
       )}
 
       {!effectiveSelectedArtist && !similarLoading && (
-        <div className="mt-16 flex flex-col items-center text-gray-400">
+        <div className="mt-16 flex flex-col items-center text-gray-400 animate-fade-in">
           {plexLoading ? (
             <p className="text-gray-500 dark:text-gray-400">
               Loading your listening data...

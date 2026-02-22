@@ -58,7 +58,7 @@ export default function SearchPage() {
       )}
 
       {!loading && !error && results.length === 0 && (
-        <div className="mt-16 flex flex-col items-center text-gray-400">
+        <div className="mt-16 flex flex-col items-center text-gray-400 animate-fade-in">
           <svg
             className="w-16 h-16 mb-4"
             fill="none"
