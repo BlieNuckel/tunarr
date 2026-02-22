@@ -222,12 +222,10 @@ async function handleAddFile(req: Request, res: Response): Promise<void> {
     res.json({ status: true, nzo_ids: [nzoId] });
   } catch (err) {
     log.error("addfile failed:", err);
-    res
-      .status(400)
-      .json({
-        status: false,
-        error: err instanceof Error ? err.message : "Unknown error",
-      });
+    res.status(400).json({
+      status: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    });
   }
 }
 
