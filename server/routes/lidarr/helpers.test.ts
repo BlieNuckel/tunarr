@@ -5,27 +5,27 @@ import {
   getAlbumByMbid,
   removeAlbum,
 } from "./helpers";
-import type { LidarrArtist, LidarrAlbum } from "../../lidarrApi/types";
+import type { LidarrArtist, LidarrAlbum } from "../../api/lidarr/types";
 
 vi.mock("../../config", () => ({
   getConfigValue: vi.fn(() => 1),
 }));
 
-vi.mock("../../lidarrApi/get", () => ({
+vi.mock("../../api/lidarr/get", () => ({
   lidarrGet: vi.fn(),
 }));
 
-vi.mock("../../lidarrApi/post", () => ({
+vi.mock("../../api/lidarr/post", () => ({
   lidarrPost: vi.fn(),
 }));
 
-vi.mock("../../lidarrApi/put", () => ({
+vi.mock("../../api/lidarr/put", () => ({
   lidarrPut: vi.fn(),
 }));
 
-import { lidarrGet } from "../../lidarrApi/get";
-import { lidarrPost } from "../../lidarrApi/post";
-import { lidarrPut } from "../../lidarrApi/put";
+import { lidarrGet } from "../../api/lidarr/get";
+import { lidarrPost } from "../../api/lidarr/post";
+import { lidarrPut } from "../../api/lidarr/put";
 
 const mockLidarrGet = vi.mocked(lidarrGet);
 const mockLidarrPost = vi.mocked(lidarrPost);

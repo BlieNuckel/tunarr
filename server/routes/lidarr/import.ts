@@ -4,9 +4,9 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { getConfigValue } from "../../config";
-import { lidarrGet } from "../../lidarrApi/get";
-import { lidarrPost } from "../../lidarrApi/post";
-import { LidarrManualImportItem } from "../../lidarrApi/types";
+import { lidarrGet } from "../../api/lidarr/get";
+import { lidarrPost } from "../../api/lidarr/post";
+import { LidarrManualImportItem } from "../../api/lidarr/types";
 import { getAlbumByMbid, getOrAddArtist, getOrAddAlbum } from "./helpers";
 
 declare global {

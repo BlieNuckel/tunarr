@@ -1,10 +1,11 @@
-import { ApiCache, withCache } from "../cache";
+import NodeCache from "node-cache";
+import { withCache } from "../../cache";
 import type { AppleSearchResponse } from "./types";
 
 const ITUNES_SEARCH_BASE = "https://itunes.apple.com/search";
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_DAY_SECONDS = 24 * 60 * 60;
 
-const appleCache = new ApiCache();
+const appleCache = new NodeCache({ stdTTL: 7 * ONE_DAY_SECONDS });
 
 /**
  * Search for an artist on Apple Music and return their artwork URL
@@ -104,7 +105,7 @@ const fetchAlbumArtwork = async (
 export const getArtistArtwork = withCache(fetchArtistArtwork, {
   cache: appleCache,
   key: (name) => name.toLowerCase(),
-  ttlMs: 7 * ONE_DAY_MS,
+  ttlMs: 7 * ONE_DAY_SECONDS * 1000,
   label: "Apple API",
 });
 
@@ -112,7 +113,7 @@ export const getAlbumArtwork = withCache(fetchAlbumArtwork, {
   cache: appleCache,
   key: (albumName, artistName) =>
     `${albumName.toLowerCase()}|${artistName.toLowerCase()}`,
-  ttlMs: 7 * ONE_DAY_MS,
+  ttlMs: 7 * ONE_DAY_SECONDS * 1000,
   label: "Apple API",
 });
 

@@ -4,10 +4,10 @@ import {
   getSimilarArtists,
   getArtistTopTags,
   getTopArtistsByTag,
-} from "../lastfmApi/artists";
-import { getTopAlbumsByTag } from "../lastfmApi/albums";
-import { getAlbumsArtwork } from "../appleApi/artists";
-import { getArtistsImages } from "../deezerApi/artists";
+} from "../api/lastfm/artists";
+import { getTopAlbumsByTag } from "../api/lastfm/albums";
+import { getAlbumsArtwork } from "../api/apple/artists";
+import { getArtistsImages } from "../api/deezer/artists";
 
 const router = express.Router();
 

@@ -1,12 +1,12 @@
 import { getConfigValue } from "../../config";
-import { lidarrGet } from "../../lidarrApi/get";
-import { lidarrPost } from "../../lidarrApi/post";
-import { lidarrPut } from "../../lidarrApi/put";
+import { lidarrGet } from "../../api/lidarr/get";
+import { lidarrPost } from "../../api/lidarr/post";
+import { lidarrPut } from "../../api/lidarr/put";
 import {
   LidarrAlbum,
   LidarrArtist,
   extractLidarrError,
-} from "../../lidarrApi/types";
+} from "../../api/lidarr/types";
 
 export const getAlbumByMbid = async (albumMbid: string) => {
   const result = await lidarrGet<LidarrAlbum[]>("/album/lookup", {

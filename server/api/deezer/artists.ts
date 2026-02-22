@@ -1,10 +1,11 @@
-import { ApiCache, withCache } from "../cache";
+import NodeCache from "node-cache";
+import { withCache } from "../../cache";
 import type { DeezerArtistSearchResponse } from "./types";
 
 const DEEZER_SEARCH_BASE = "https://api.deezer.com/search/artist";
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_DAY_SECONDS = 24 * 60 * 60;
 
-const deezerCache = new ApiCache();
+const deezerCache = new NodeCache({ stdTTL: 7 * ONE_DAY_SECONDS });
 
 /**
  * Search for an artist on Deezer and return their image URL
@@ -48,7 +49,7 @@ const fetchArtistImage = async (artistName: string): Promise<string> => {
 export const getArtistImage = withCache(fetchArtistImage, {
   cache: deezerCache,
   key: (name) => name.toLowerCase(),
-  ttlMs: 7 * ONE_DAY_MS,
+  ttlMs: 7 * ONE_DAY_SECONDS * 1000,
   label: "Deezer API",
 });
 
