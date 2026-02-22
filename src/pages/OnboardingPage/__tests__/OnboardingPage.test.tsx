@@ -17,6 +17,7 @@ import {
   LidarrContext,
   type LidarrContextValue,
 } from "@/context/lidarrContextDef";
+import { ThemeContext } from "@/context/themeContextDef";
 
 const mockTestConnection = vi.fn();
 const mockSaveSettings = vi.fn();
@@ -24,7 +25,10 @@ const mockFetch = vi.fn();
 
 vi.stubGlobal("fetch", mockFetch);
 
-function renderOnboarding(overrides: Partial<LidarrContextValue> = {}) {
+function renderOnboarding(
+  overrides: Partial<LidarrContextValue> = {},
+  themeOverrides?: { isLoading?: boolean }
+) {
   const defaultContext: LidarrContextValue = {
     options: { qualityProfiles: [], metadataProfiles: [], rootFolderPaths: [] },
     settings: {
@@ -48,14 +52,23 @@ function renderOnboarding(overrides: Partial<LidarrContextValue> = {}) {
   };
 
   return render(
-    <LidarrContext.Provider value={defaultContext}>
-      <MemoryRouter initialEntries={["/onboarding"]}>
-        <Routes>
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/" element={<div>Home Page</div>} />
-        </Routes>
-      </MemoryRouter>
-    </LidarrContext.Provider>
+    <ThemeContext.Provider
+      value={{
+        theme: "system",
+        actualTheme: "light",
+        setTheme: vi.fn(),
+        isLoading: themeOverrides?.isLoading ?? false,
+      }}
+    >
+      <LidarrContext.Provider value={defaultContext}>
+        <MemoryRouter initialEntries={["/onboarding"]}>
+          <Routes>
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/" element={<div>Home Page</div>} />
+          </Routes>
+        </MemoryRouter>
+      </LidarrContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 
@@ -66,6 +79,11 @@ beforeEach(() => {
 describe("OnboardingPage", () => {
   it("renders nothing while loading", () => {
     const { container } = renderOnboarding({ isLoading: true });
+    expect(container.textContent).toBe("");
+  });
+
+  it("renders nothing while theme is loading", () => {
+    const { container } = renderOnboarding({}, { isLoading: true });
     expect(container.textContent).toBe("");
   });
 
