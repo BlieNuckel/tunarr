@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Spinner from "./Spinner";
 import usePlexLogin, { fetchAccount } from "@/hooks/usePlexLogin";
 import type { PlexAccount, PlexServer } from "@/hooks/usePlexLogin";
@@ -46,14 +46,25 @@ function SignedInCard({
   );
 }
 
+type AccountFetch =
+  | { status: "idle" }
+  | { status: "fetching"; forToken: string }
+  | { status: "done"; forToken: string; account: PlexAccount | null };
+
 export default function PlexAuth({
   token,
   onToken,
   onServerUrl,
 }: PlexAuthProps) {
-  const [account, setAccount] = useState<PlexAccount | null>(null);
+  const [fetchState, setFetchState] = useState<AccountFetch>({ status: "idle" });
   const [serverName, setServerName] = useState("");
-  const [loadingAccount, setLoadingAccount] = useState(false);
+
+  const handleAccount = useCallback(
+    (acct: PlexAccount) => {
+      setFetchState({ status: "done", forToken: token, account: acct });
+    },
+    [token],
+  );
 
   const { loading, login } = usePlexLogin({
     onToken,
@@ -63,34 +74,48 @@ export default function PlexAuth({
         setServerName(servers[0].name);
       }
     },
-    onAccount: (acct: PlexAccount) => {
-      setAccount(acct);
-    },
+    onAccount: handleAccount,
   });
 
   useEffect(() => {
-    if (!token) {
-      setAccount(null);
-      setServerName("");
+    if (!token) return;
+    if (
+      (fetchState.status === "fetching" && fetchState.forToken === token) ||
+      (fetchState.status === "done" && fetchState.forToken === token)
+    ) {
       return;
     }
-    if (account) return;
 
-    setLoadingAccount(true);
+    let cancelled = false;
+    setFetchState({ status: "fetching", forToken: token });
+
     fetchAccount(token).then((acct) => {
-      setAccount(acct);
-      setLoadingAccount(false);
+      if (cancelled) return;
+      setFetchState({ status: "done", forToken: token, account: acct });
     });
+
+    return () => {
+      cancelled = true;
+    };
+    // fetchState is intentionally omitted — we only want to re-run when token changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleSignOut = () => {
-    setAccount(null);
+    setFetchState({ status: "idle" });
     setServerName("");
     onToken("");
     onServerUrl("");
   };
 
-  if (loadingAccount) {
+  const isLoading =
+    fetchState.status === "fetching" && fetchState.forToken === token;
+  const account =
+    token && fetchState.status === "done" && fetchState.forToken === token
+      ? fetchState.account
+      : null;
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-lg shadow-cartoon-md">
         <Spinner className="w-4 h-4" />
@@ -101,7 +126,7 @@ export default function PlexAuth({
     );
   }
 
-  if (account && token) {
+  if (account) {
     return (
       <SignedInCard
         account={account}
