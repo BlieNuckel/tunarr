@@ -150,18 +150,45 @@ describe("getPromotedAlbum", () => {
     expect(result).toBeNull();
   });
 
-  it("marks inLibrary true when all albums are in library", async () => {
+  it("marks inLibrary true when the album is in the Lidarr album list", async () => {
     mockGetTopArtists.mockResolvedValue(plexArtists);
     mockGetArtistTopTags.mockResolvedValue(tags);
     mockGetTopAlbumsByTag.mockResolvedValue(albumsPage);
-    mockLidarrGet.mockResolvedValue({
-      ok: true,
-      data: [{ foreignArtistId: "art-1" }],
+    mockLidarrGet.mockImplementation((path: string) => {
+      if (path === "/artist") {
+        return Promise.resolve({
+          ok: true,
+          data: [{ foreignArtistId: "art-1" }],
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        data: [{ foreignAlbumId: "rg-alb-1" }, { foreignAlbumId: "rg-alb-2" }],
+      });
     });
 
     const result = await getPromotedAlbum();
     expect(result).not.toBeNull();
     expect(result!.inLibrary).toBe(true);
+  });
+
+  it("marks inLibrary false when artist is in library but album is not", async () => {
+    mockGetTopArtists.mockResolvedValue(plexArtists);
+    mockGetArtistTopTags.mockResolvedValue(tags);
+    mockGetTopAlbumsByTag.mockResolvedValue(albumsPage);
+    mockLidarrGet.mockImplementation((path: string) => {
+      if (path === "/artist") {
+        return Promise.resolve({
+          ok: true,
+          data: [{ foreignArtistId: "art-1" }],
+        });
+      }
+      return Promise.resolve({ ok: true, data: [] });
+    });
+
+    const result = await getPromotedAlbum();
+    expect(result).not.toBeNull();
+    expect(result!.inLibrary).toBe(false);
   });
 
   it("returns cached result within 30 minutes", async () => {

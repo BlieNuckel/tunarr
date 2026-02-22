@@ -2,7 +2,7 @@ import { getTopArtists } from "../api/plex/topArtists";
 import { getArtistTopTags } from "../api/lastfm/artists";
 import { getTopAlbumsByTag } from "../api/lastfm/albums";
 import { lidarrGet } from "../api/lidarr/get";
-import type { LidarrArtist } from "../api/lidarr/types";
+import type { LidarrAlbum, LidarrArtist } from "../api/lidarr/types";
 import { getReleaseGroupIdFromRelease } from "../api/musicbrainz/releaseGroups";
 
 export type PromotedAlbumResult = {
@@ -92,16 +92,29 @@ export async function getPromotedAlbum(
   }
 
   let libraryArtistMbids = new Set<string>();
+  let libraryAlbumMbids = new Set<string>();
   try {
-    const result = await lidarrGet<LidarrArtist[]>("/artist");
-    if (result.ok) {
-      libraryArtistMbids = new Set(result.data.map((a) => a.foreignArtistId));
+    const [artistResult, albumResult] = await Promise.all([
+      lidarrGet<LidarrArtist[]>("/artist"),
+      lidarrGet<LidarrAlbum[]>("/album"),
+    ]);
+    if (artistResult.ok) {
+      libraryArtistMbids = new Set(
+        artistResult.data.map((a) => a.foreignArtistId)
+      );
+    }
+    if (albumResult.ok) {
+      libraryAlbumMbids = new Set(
+        albumResult.data.map((a) => a.foreignAlbumId)
+      );
     }
   } catch {
     // Lidarr unavailable — treat all as not in library
   }
 
-  const inLibrary = (artistMbid: string) => libraryArtistMbids.has(artistMbid);
+  const artistInLibrary = (artistMbid: string) =>
+    libraryArtistMbids.has(artistMbid);
+  const albumInLibrary = (rgMbid: string) => libraryAlbumMbids.has(rgMbid);
 
   const plexArtists = await getTopArtists(10);
   if (plexArtists.length === 0) return null;
@@ -169,7 +182,7 @@ export async function getPromotedAlbum(
     const releaseGroupId = await getReleaseGroupIdFromRelease(album.mbid);
     if (!releaseGroupId) continue;
 
-    if (!inLibrary(album.artistMbid)) {
+    if (!artistInLibrary(album.artistMbid)) {
       chosenAlbum = { album, rgMbid: releaseGroupId };
       break;
     }
@@ -190,7 +203,7 @@ export async function getPromotedAlbum(
       coverUrl: `https://coverartarchive.org/release-group/${picked.rgMbid}/front-500`,
     },
     tag: chosenTag.name,
-    inLibrary: inLibrary(picked.album.artistMbid),
+    inLibrary: albumInLibrary(picked.rgMbid),
   };
 
   cachedResult = result;
