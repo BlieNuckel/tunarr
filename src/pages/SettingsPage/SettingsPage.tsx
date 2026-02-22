@@ -130,6 +130,57 @@ export default function SettingsPage() {
     }
   };
 
+  const handlePlexLoginComplete = async (token: string, serverUrl: string) => {
+    setSaving(true);
+    setError(null);
+
+    try {
+      await saveSettings({
+        lidarrUrl: url,
+        lidarrApiKey: apiKey,
+        lidarrQualityProfileId: qualityProfileId,
+        lidarrRootFolderPath: rootFolderPath,
+        lidarrMetadataProfileId: metadataProfileId,
+        lastfmApiKey,
+        plexUrl: serverUrl,
+        plexToken: token,
+        importPath,
+        theme: settings.theme,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePlexSignOut = async () => {
+    setPlexToken("");
+    setPlexUrl("");
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      await saveSettings({
+        lidarrUrl: url,
+        lidarrApiKey: apiKey,
+        lidarrQualityProfileId: qualityProfileId,
+        lidarrRootFolderPath: rootFolderPath,
+        lidarrMetadataProfileId: metadataProfileId,
+        lastfmApiKey,
+        plexUrl: "",
+        plexToken: "",
+        importPath,
+        theme: settings.theme,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
@@ -169,6 +220,14 @@ export default function SettingsPage() {
       </div>
 
       <form className="space-y-6" onSubmit={handleSave}>
+        <PlexSection
+          token={plexToken}
+          onUrlChange={setPlexUrl}
+          onTokenChange={setPlexToken}
+          onSignOut={handlePlexSignOut}
+          onLoginComplete={handlePlexLoginComplete}
+        />
+
         <LidarrConnectionSection
           url={url}
           apiKey={apiKey}
@@ -191,13 +250,6 @@ export default function SettingsPage() {
         />
 
         <LastfmSection apiKey={lastfmApiKey} onApiKeyChange={setLastfmApiKey} />
-
-        <PlexSection
-          url={plexUrl}
-          token={plexToken}
-          onUrlChange={setPlexUrl}
-          onTokenChange={setPlexToken}
-        />
 
         <ImportSection
           importPath={importPath}

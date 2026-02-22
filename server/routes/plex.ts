@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import express from "express";
 import { getTopArtists } from "../api/plex/topArtists";
 import { getPlexConfig } from "../api/plex/config";
+import { getPlexServers } from "../api/plex/servers";
+import { getPlexAccount } from "../api/plex/account";
 
 const router = express.Router();
 
@@ -32,6 +34,30 @@ router.get("/thumb", async (req: Request, res: Response) => {
 
   const buffer = await upstream.arrayBuffer();
   res.send(Buffer.from(buffer));
+});
+
+router.get("/servers", async (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const clientId = req.query.clientId as string;
+  if (!token || !clientId) {
+    res.status(400).json({ error: "Missing token or clientId parameter" });
+    return;
+  }
+
+  const servers = await getPlexServers(token, clientId);
+  res.json({ servers });
+});
+
+router.get("/account", async (req: Request, res: Response) => {
+  const token = req.query.token as string;
+  const clientId = req.query.clientId as string;
+  if (!token || !clientId) {
+    res.status(400).json({ error: "Missing token or clientId parameter" });
+    return;
+  }
+
+  const account = await getPlexAccount(token, clientId);
+  res.json(account);
 });
 
 export default router;

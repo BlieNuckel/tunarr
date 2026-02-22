@@ -1,11 +1,18 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+
+vi.mock("@/hooks/usePlexLogin", () => ({
+  default: () => ({ loading: false, login: vi.fn() }),
+  fetchAccount: () => Promise.resolve(null),
+}));
+
 import PlexSection from "../PlexSection";
 
 const defaultProps = {
-  url: "",
   token: "",
   onUrlChange: vi.fn(),
   onTokenChange: vi.fn(),
+  onSignOut: vi.fn(),
+  onLoginComplete: vi.fn(),
 };
 
 beforeEach(() => {
@@ -18,28 +25,9 @@ describe("PlexSection", () => {
     expect(screen.getByText("Plex")).toBeInTheDocument();
   });
 
-  it("renders URL and token inputs", () => {
+  it("renders Sign in with Plex button", () => {
     render(<PlexSection {...defaultProps} />);
-    expect(
-      screen.getByPlaceholderText("http://localhost:32400")
-    ).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Enter Plex token")).toBeInTheDocument();
-  });
-
-  it("calls onUrlChange on URL input change", () => {
-    render(<PlexSection {...defaultProps} />);
-    fireEvent.change(screen.getByPlaceholderText("http://localhost:32400"), {
-      target: { value: "http://plex:32400" },
-    });
-    expect(defaultProps.onUrlChange).toHaveBeenCalledWith("http://plex:32400");
-  });
-
-  it("calls onTokenChange on token input change", () => {
-    render(<PlexSection {...defaultProps} />);
-    fireEvent.change(screen.getByPlaceholderText("Enter Plex token"), {
-      target: { value: "token123" },
-    });
-    expect(defaultProps.onTokenChange).toHaveBeenCalledWith("token123");
+    expect(screen.getByText("Sign in with Plex")).toBeInTheDocument();
   });
 
   it("renders help text", () => {
@@ -47,5 +35,16 @@ describe("PlexSection", () => {
     expect(
       screen.getByText(/Used to show your most-played artists/)
     ).toBeInTheDocument();
+  });
+
+  it("does not render manual input fields", () => {
+    render(<PlexSection {...defaultProps} />);
+    expect(
+      screen.queryByPlaceholderText("http://localhost:32400")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText("Enter Plex token")
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("or enter manually")).not.toBeInTheDocument();
   });
 });
