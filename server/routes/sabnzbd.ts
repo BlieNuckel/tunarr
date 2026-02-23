@@ -176,7 +176,7 @@ async function handleHistory(req: Request, res: Response): Promise<void> {
         bytes: dl.totalSize,
         status,
         completed: Math.floor(Date.now() / 1000),
-        storage: `${downloadPath}/${dl.username}`,
+        storage: `${downloadPath}/${dl.title}`,
       });
     }
 
