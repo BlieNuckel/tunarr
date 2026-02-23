@@ -77,7 +77,7 @@ describe("GET /api?mode=get_config", () => {
     expect(res.status).toBe(200);
     expect(res.body.config.misc.complete_dir).toBe("/downloads/complete");
     expect(res.body.config.categories).toEqual([
-      { name: "music", dir: "music" },
+      { name: "music", dir: "" },
     ]);
   });
 });

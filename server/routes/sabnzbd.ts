@@ -79,7 +79,7 @@ function handleGetConfig(res: Response): void {
       misc: {
         complete_dir: downloadPath,
       },
-      categories: [{ name: "music", dir: "music" }],
+      categories: [{ name: "music", dir: "" }],
     },
   });
 }
