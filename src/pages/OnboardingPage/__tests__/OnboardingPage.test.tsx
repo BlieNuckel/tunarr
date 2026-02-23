@@ -49,6 +49,7 @@ function renderOnboarding(
     isConnected: false,
     isLoading: false,
     saveSettings: mockSaveSettings,
+    savePartialSettings: vi.fn(),
     testConnection: mockTestConnection,
     loadLidarrOptionValues: vi.fn(),
     ...overrides,

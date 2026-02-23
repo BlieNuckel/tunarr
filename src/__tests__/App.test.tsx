@@ -27,6 +27,7 @@ const connectedContext: LidarrContextValue = {
   isConnected: true,
   isLoading: false,
   saveSettings: vi.fn(),
+  savePartialSettings: vi.fn(),
   testConnection: vi.fn(),
   loadLidarrOptionValues: vi.fn(),
 };

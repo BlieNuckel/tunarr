@@ -15,7 +15,6 @@ interface TrackListProps {
   media: Medium[];
   loading: boolean;
   error: string | null;
-  dark?: boolean;
   onTogglePreview?: (url: string) => void;
   isTrackPlaying?: (url: string) => boolean;
 }
@@ -24,7 +23,6 @@ export default function TrackList({
   media,
   loading,
   error,
-  dark,
   onTogglePreview,
   isTrackPlaying,
 }: TrackListProps) {
@@ -41,13 +39,11 @@ export default function TrackList({
     );
   if (error)
     return (
-      <p className={`text-sm ${dark ? "text-red-300" : "text-red-400"}`}>
-        {error}
-      </p>
+      <p className="text-sm text-red-400 dark:text-red-300">{error}</p>
     );
   if (media.length === 0)
     return (
-      <p className={`text-sm ${dark ? "text-gray-300" : "text-gray-500"}`}>
+      <p className="text-sm text-gray-500 dark:text-gray-300">
         No tracks found.
       </p>
     );
@@ -75,9 +71,7 @@ export default function TrackList({
                       className={`w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full transition-colors ${
                         playing
                           ? "text-amber-500"
-                          : dark
-                            ? "text-gray-400 group-hover:text-amber-400"
-                            : "text-gray-500 group-hover:text-amber-500"
+                          : "text-gray-500 dark:text-gray-400 group-hover:text-amber-500 dark:group-hover:text-amber-400"
                       }`}
                       data-testid={`preview-button-${track.position}`}
                     >
@@ -89,14 +83,14 @@ export default function TrackList({
                     </span>
                   )}
                   <span
-                    className={`flex-1 min-w-0 truncate ${dark ? "text-gray-200" : "text-gray-700"}`}
+                    className="flex-1 min-w-0 truncate text-gray-700 dark:text-gray-200"
                   >
                     {track.title}
                   </span>
                   {track.length && (
                     <span
                       data-testid="track-duration"
-                      className={`text-xs flex-shrink-0 ${dark ? "text-gray-400" : "text-gray-600"}`}
+                      className="text-xs flex-shrink-0 text-gray-600 dark:text-gray-400"
                     >
                       {formatDuration(track.length)}
                     </span>

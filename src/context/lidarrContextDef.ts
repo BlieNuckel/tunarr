@@ -28,6 +28,7 @@ export interface LidarrContextValue {
   isConnected: boolean;
   isLoading: boolean;
   saveSettings: (newSettings: LidarrSettings) => Promise<void>;
+  savePartialSettings: (partial: Partial<LidarrSettings>) => Promise<void>;
   testConnection: (testSettings: LidarrSettings) => Promise<{
     success: boolean;
     version?: string;
