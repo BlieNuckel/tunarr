@@ -154,7 +154,9 @@ async function getOrSearchResults(
   const cached = searchCache.get(cacheKey);
 
   if (cached && cached.expiresAt > Date.now()) {
-    log.info(`Search "${query}": serving from cache (${cached.results.length} results)`);
+    log.info(
+      `Search "${query}": serving from cache (${cached.results.length} results)`
+    );
     return cached.results;
   }
 

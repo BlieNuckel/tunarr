@@ -137,9 +137,7 @@ describe("pagination", () => {
     }));
     setupSearchMocks(results);
 
-    const res1 = await request(app).get(
-      "/?t=search&q=test&offset=0&limit=2"
-    );
+    const res1 = await request(app).get("/?t=search&q=test&offset=0&limit=2");
     expect(res1.status).toBe(200);
     expect(res1.text).toContain('offset="0" total="3"');
     expect(res1.text).toContain("user0");
@@ -147,9 +145,7 @@ describe("pagination", () => {
     expect(res1.text).not.toContain("user2");
     expect(mockStartSearch).toHaveBeenCalledTimes(1);
 
-    const res2 = await request(app).get(
-      "/?t=search&q=test&offset=2&limit=2"
-    );
+    const res2 = await request(app).get("/?t=search&q=test&offset=2&limit=2");
     expect(res2.status).toBe(200);
     expect(res2.text).toContain('offset="2" total="3"');
     expect(res2.text).toContain("user2");
