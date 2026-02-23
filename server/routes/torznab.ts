@@ -111,15 +111,26 @@ async function handleSearch(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  log.info(`Searching slskd for: ${query}`);
+  log.info(`Searching slskd for: "${query}"`);
 
   try {
     const searchState = await startSearch(query);
-    await waitForSearch(searchState.id);
+    const waitResult = await waitForSearch(searchState.id);
+
+    if (!waitResult.completed) {
+      log.warn(`Search timed out for "${query}", returning partial results`);
+    }
+
     const responses = await getSearchResponses(searchState.id);
+    log.info(
+      `Search "${query}": ${responses.length} responses, ${responses.reduce((n, r) => n + r.fileCount, 0)} files`
+    );
     deleteSearch(searchState.id).catch(() => {});
 
     const results = groupSearchResults(responses);
+    log.info(
+      `Search "${query}": ${results.length} grouped results after filtering`
+    );
 
     cleanExpiredCache();
     const baseUrl = buildBaseUrl(req);

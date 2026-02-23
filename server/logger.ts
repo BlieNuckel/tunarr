@@ -14,6 +14,13 @@ const LEVEL_LABELS: Record<LogLevel, string> = {
   error: "ERROR",
 };
 
+function formatData(data: unknown): string {
+  if (data instanceof Error) {
+    return data.stack || `${data.name}: ${data.message}`;
+  }
+  return JSON.stringify(data, null, 2);
+}
+
 function formatMessage(
   level: LogLevel,
   label: string,
@@ -32,7 +39,7 @@ export function createLogger(label: string): Logger {
     info(message: string, data?: unknown) {
       const line = formatMessage("info", label, message);
       if (data !== undefined) {
-        console.log(line, "\n" + JSON.stringify(data, null, 2));
+        console.log(line, "\n" + formatData(data));
       } else {
         console.log(line);
       }
@@ -41,7 +48,7 @@ export function createLogger(label: string): Logger {
     warn(message: string, data?: unknown) {
       const line = formatMessage("warn", label, message);
       if (data !== undefined) {
-        console.warn(line, "\n" + JSON.stringify(data, null, 2));
+        console.warn(line, "\n" + formatData(data));
       } else {
         console.warn(line);
       }
@@ -50,7 +57,7 @@ export function createLogger(label: string): Logger {
     error(message: string, data?: unknown) {
       const line = formatMessage("error", label, message);
       if (data !== undefined) {
-        console.error(line, "\n" + JSON.stringify(data, null, 2));
+        console.error(line, "\n" + formatData(data));
       } else {
         console.error(line);
       }

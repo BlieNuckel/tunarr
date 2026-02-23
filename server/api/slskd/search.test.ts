@@ -51,7 +51,12 @@ describe("startSearch", () => {
   });
 
   it("throws on non-ok response", async () => {
-    mockFetch.mockResolvedValue({ ok: false, status: 500 });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      text: async () => "error body",
+    });
     await expect(startSearch("test")).rejects.toThrow(
       "slskd search failed: 500"
     );
@@ -59,13 +64,19 @@ describe("startSearch", () => {
 });
 
 describe("waitForSearch", () => {
-  it("resolves when search is complete", async () => {
+  it("returns completed when search is complete", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => ({ id: "abc", isComplete: true }),
+      json: async () => ({
+        id: "abc",
+        isComplete: true,
+        responseCount: 5,
+        fileCount: 20,
+      }),
     });
 
-    await waitForSearch("abc");
+    const result = await waitForSearch("abc");
+    expect(result).toEqual({ completed: true, fileCount: 20 });
     expect(mockFetch).toHaveBeenCalledWith(
       "http://slskd:5030/api/v0/searches/abc",
       { headers: CONFIG.headers }
@@ -73,7 +84,12 @@ describe("waitForSearch", () => {
   });
 
   it("throws on non-ok response", async () => {
-    mockFetch.mockResolvedValue({ ok: false, status: 404 });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+      text: async () => "",
+    });
     await expect(waitForSearch("abc")).rejects.toThrow(
       "slskd search status failed: 404"
     );

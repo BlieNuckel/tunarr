@@ -61,7 +61,7 @@ describe("GET /?t=music", () => {
       id: "s1",
       searchText: "Radiohead OK Computer",
     });
-    mockWaitForSearch.mockResolvedValue(undefined);
+    mockWaitForSearch.mockResolvedValue({ completed: true, fileCount: 0 });
     mockGetSearchResponses.mockResolvedValue([]);
     mockDeleteSearch.mockResolvedValue(undefined);
     mockGroupSearchResults.mockReturnValue([]);
@@ -77,7 +77,7 @@ describe("GET /?t=music", () => {
 
   it("returns results as RSS items", async () => {
     mockStartSearch.mockResolvedValue({ id: "s1" });
-    mockWaitForSearch.mockResolvedValue(undefined);
+    mockWaitForSearch.mockResolvedValue({ completed: true, fileCount: 0 });
     mockGetSearchResponses.mockResolvedValue([{}]);
     mockDeleteSearch.mockResolvedValue(undefined);
     mockGroupSearchResults.mockReturnValue([
@@ -117,7 +117,7 @@ describe("GET /?t=music", () => {
 describe("GET /?t=search", () => {
   it("searches with q parameter", async () => {
     mockStartSearch.mockResolvedValue({ id: "s1" });
-    mockWaitForSearch.mockResolvedValue(undefined);
+    mockWaitForSearch.mockResolvedValue({ completed: true, fileCount: 0 });
     mockGetSearchResponses.mockResolvedValue([]);
     mockDeleteSearch.mockResolvedValue(undefined);
     mockGroupSearchResults.mockReturnValue([]);
@@ -137,7 +137,7 @@ describe("GET /download/:guid", () => {
 
   it("returns NZB for cached result", async () => {
     mockStartSearch.mockResolvedValue({ id: "s1" });
-    mockWaitForSearch.mockResolvedValue(undefined);
+    mockWaitForSearch.mockResolvedValue({ completed: true, fileCount: 0 });
     mockGetSearchResponses.mockResolvedValue([]);
     mockDeleteSearch.mockResolvedValue(undefined);
 
