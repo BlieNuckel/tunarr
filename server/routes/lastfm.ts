@@ -49,23 +49,43 @@ router.get("/artist/tags", async (req: Request, res: Response) => {
 });
 
 router.get("/tag/artists", async (req: Request, res: Response) => {
-  const { tag, page } = req.query;
-  if (typeof tag !== "string") {
-    return res.status(400).json({ error: "tag query parameter is required" });
+  const { tags, page } = req.query;
+  if (typeof tags !== "string") {
+    return res.status(400).json({ error: "tags query parameter is required" });
   }
 
+  const tagList = decodeURIComponent(tags)
+    .split(",")
+    .map((t) => t.trim());
   const result = await getTopArtistsByTag(
-    tag,
+    tagList,
     typeof page === "string" ? page : "1"
   );
 
-  const imageMap = await getArtistsImages(result.artists.map((a) => a.name));
-  const enrichedArtists = result.artists.map((a) => ({
-    ...a,
-    imageUrl: imageMap.get(a.name.toLowerCase()) || a.imageUrl,
-  }));
+  if (result.sections.length > 0) {
+    const allArtistNames = result.sections.flatMap((s) =>
+      s.artists.map((a) => a.name)
+    );
+    const imageMap = await getArtistsImages(allArtistNames);
 
-  res.json({ ...result, artists: enrichedArtists });
+    const enrichedSections = result.sections.map((section) => ({
+      ...section,
+      artists: section.artists.map((a) => ({
+        ...a,
+        imageUrl: imageMap.get(a.name.toLowerCase()) || a.imageUrl,
+      })),
+    }));
+
+    res.json({ ...result, sections: enrichedSections });
+  } else {
+    const imageMap = await getArtistsImages(result.artists.map((a) => a.name));
+    const enrichedArtists = result.artists.map((a) => ({
+      ...a,
+      imageUrl: imageMap.get(a.name.toLowerCase()) || a.imageUrl,
+    }));
+
+    res.json({ ...result, artists: enrichedArtists });
+  }
 });
 
 router.get("/tag/albums", async (req: Request, res: Response) => {

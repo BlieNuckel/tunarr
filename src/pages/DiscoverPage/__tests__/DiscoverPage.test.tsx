@@ -45,6 +45,7 @@ vi.mock("@/hooks/useDiscover", () => ({
     artistTags: [{ name: "rock", count: 100 }],
     tagsLoading: false,
     tagArtists: [],
+    tagArtistSections: [],
     tagArtistsLoading: false,
     tagArtistsError: null,
     tagPagination: { page: 1, totalPages: 1 },
@@ -120,7 +121,7 @@ describe("DiscoverPage", () => {
   it("calls fetchTagArtists when tag clicked", () => {
     render(<DiscoverPage />);
     fireEvent.click(screen.getByText("rock"));
-    expect(mockFetchTagArtists).toHaveBeenCalledWith("rock");
+    expect(mockFetchTagArtists).toHaveBeenCalledWith(["rock"]);
   });
 
   it("renders promoted album when data is available", () => {
@@ -161,5 +162,14 @@ describe("DiscoverPage", () => {
     render(<DiscoverPage />);
     fireEvent.click(screen.getByText("Refresh"));
     expect(mockRefreshPromotedAlbum).toHaveBeenCalled();
+  });
+
+  it("toggles tags on and off when clicked multiple times", () => {
+    render(<DiscoverPage />);
+    fireEvent.click(screen.getByText("rock"));
+    expect(mockFetchTagArtists).toHaveBeenCalledWith(["rock"]);
+
+    fireEvent.click(screen.getByText("rock"));
+    expect(mockFetchTagArtists).toHaveBeenCalledTimes(1);
   });
 });
