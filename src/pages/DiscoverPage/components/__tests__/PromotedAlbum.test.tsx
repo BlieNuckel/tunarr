@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import PromotedAlbum from "../PromotedAlbum";
 import type { PromotedAlbumData } from "@/hooks/usePromotedAlbum";
 
@@ -56,6 +57,10 @@ const albumData: PromotedAlbumData = {
 
 const mockRefresh = vi.fn();
 
+function renderWithRouter(ui: React.ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
+
 beforeEach(() => {
   mockLidarrState = "idle";
   mockLidarrError = null;
@@ -64,7 +69,7 @@ beforeEach(() => {
 
 describe("PromotedAlbum", () => {
   it("renders album info", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     expect(screen.getByText("OK Computer")).toBeInTheDocument();
@@ -74,8 +79,19 @@ describe("PromotedAlbum", () => {
     ).toBeInTheDocument();
   });
 
+  it("links artist name to search page with artist search type", () => {
+    renderWithRouter(
+      <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
+    );
+    const artistLink = screen.getByText("Radiohead").closest("a");
+    expect(artistLink).toHaveAttribute(
+      "href",
+      "/search?q=Radiohead&searchType=artist"
+    );
+  });
+
   it("renders cover image", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     const img = screen.getByAltText("OK Computer cover");
@@ -83,7 +99,7 @@ describe("PromotedAlbum", () => {
   });
 
   it("shows pastel fallback on cover error", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     const img = screen.getByAltText("OK Computer cover");
@@ -93,7 +109,7 @@ describe("PromotedAlbum", () => {
 
   it("calls onRefresh when shuffle button clicked", () => {
     vi.useFakeTimers();
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     fireEvent.click(screen.getByLabelText("Shuffle recommendation"));
@@ -111,7 +127,7 @@ describe("PromotedAlbum", () => {
 
   it("disables shuffle button during animation", () => {
     vi.useFakeTimers();
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     const button = screen.getByLabelText("Shuffle recommendation");
@@ -129,7 +145,7 @@ describe("PromotedAlbum", () => {
   });
 
   it("opens modal on monitor button click", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     fireEvent.click(screen.getByTestId("monitor-button"));
@@ -137,7 +153,7 @@ describe("PromotedAlbum", () => {
   });
 
   it("calls addToLidarr via modal", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     fireEvent.click(screen.getByTestId("monitor-button"));
@@ -147,7 +163,7 @@ describe("PromotedAlbum", () => {
 
   it("shows already_monitored state when inLibrary", () => {
     const inLibraryData = { ...albumData, inLibrary: true };
-    render(
+    renderWithRouter(
       <PromotedAlbum
         data={inLibraryData}
         loading={false}
@@ -162,7 +178,7 @@ describe("PromotedAlbum", () => {
 
   it("does not open modal when inLibrary is true", () => {
     const inLibraryData = { ...albumData, inLibrary: true };
-    render(
+    renderWithRouter(
       <PromotedAlbum
         data={inLibraryData}
         loading={false}
@@ -174,7 +190,7 @@ describe("PromotedAlbum", () => {
   });
 
   it("closes modal when close button clicked", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     fireEvent.click(screen.getByTestId("monitor-button"));
@@ -184,14 +200,14 @@ describe("PromotedAlbum", () => {
   });
 
   it("renders section heading", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     expect(screen.getByText("Recommended for you")).toBeInTheDocument();
   });
 
   it("shows skeleton loaders when loading is true with no data", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={null} loading={true} onRefresh={mockRefresh} />
     );
 
@@ -204,7 +220,7 @@ describe("PromotedAlbum", () => {
   });
 
   it("shows skeleton loaders when loading is true even with existing data (shuffle)", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={true} onRefresh={mockRefresh} />
     );
 
@@ -219,7 +235,7 @@ describe("PromotedAlbum", () => {
   });
 
   it("disables shuffle button when loading", () => {
-    render(
+    renderWithRouter(
       <PromotedAlbum data={albumData} loading={true} onRefresh={mockRefresh} />
     );
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import type { PromotedAlbumData } from "@/hooks/usePromotedAlbum";
 import type { MonitorState } from "@/types";
 import MonitorButton from "@/components/MonitorButton";
@@ -129,9 +130,12 @@ export default function PromotedAlbum({
                   <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">
                     {album.name}
                   </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
+                  <Link
+                    to={`/search?q=${encodeURIComponent(album.artistName)}&searchType=artist`}
+                    className="text-gray-500 dark:text-gray-400 text-sm truncate block hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                  >
                     {album.artistName}
-                  </p>
+                  </Link>
                   {tag && (
                     <span className="inline-block mt-2 px-2 py-0.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs font-medium rounded-full border border-violet-200 dark:border-violet-700">
                       Because you listen to {tag}
