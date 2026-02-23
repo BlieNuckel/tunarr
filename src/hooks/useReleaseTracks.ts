@@ -36,5 +36,10 @@ export default function useReleaseTracks() {
     []
   );
 
-  return { media, loading, error, fetchTracks };
+  const reset = useCallback(() => {
+    setMedia([]);
+    setError(null);
+  }, []);
+
+  return { media, loading, error, fetchTracks, reset };
 }
