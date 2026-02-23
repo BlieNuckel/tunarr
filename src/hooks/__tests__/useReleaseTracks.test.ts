@@ -68,4 +68,19 @@ describe("useReleaseTracks", () => {
     expect(result.current.error).toBe("Not found");
     expect(result.current.media).toEqual([]);
   });
+
+  it("reset clears media and error", async () => {
+    const media = [{ position: 1, format: "CD", title: "", tracks: [] }];
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ media }), { status: 200 })
+    );
+
+    const { result } = renderHook(() => useReleaseTracks());
+    await act(() => result.current.fetchTracks("release-123"));
+    expect(result.current.media).toEqual(media);
+
+    act(() => result.current.reset());
+    expect(result.current.media).toEqual([]);
+    expect(result.current.error).toBeNull();
+  });
 });

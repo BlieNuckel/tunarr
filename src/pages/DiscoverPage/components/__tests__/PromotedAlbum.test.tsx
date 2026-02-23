@@ -5,6 +5,10 @@ import type { PromotedAlbumData } from "@/hooks/usePromotedAlbum";
 
 const mockAddToLidarr = vi.fn();
 const mockReset = vi.fn();
+const mockFetchTracks = vi.fn();
+const mockResetTracks = vi.fn();
+const mockStop = vi.fn();
+const mockToggle = vi.fn();
 let mockLidarrState = "idle";
 let mockLidarrError: string | null = null;
 
@@ -14,6 +18,24 @@ vi.mock("@/hooks/useLidarr", () => ({
     errorMsg: mockLidarrError,
     addToLidarr: mockAddToLidarr,
     reset: mockReset,
+  }),
+}));
+
+vi.mock("@/hooks/useReleaseTracks", () => ({
+  default: () => ({
+    media: [],
+    loading: false,
+    error: null,
+    fetchTracks: mockFetchTracks,
+    reset: mockResetTracks,
+  }),
+}));
+
+vi.mock("@/hooks/useAudioPreview", () => ({
+  default: () => ({
+    toggle: mockToggle,
+    stop: mockStop,
+    isTrackPlaying: () => false,
   }),
 }));
 
@@ -52,6 +74,10 @@ vi.mock("../RecommendationTraceModal", () => ({
         <button onClick={onClose}>Close Trace</button>
       </div>
     ) : null,
+}));
+
+vi.mock("@/components/TrackList", () => ({
+  default: () => <div data-testid="track-list" />,
 }));
 
 const albumData: PromotedAlbumData = {
@@ -319,5 +345,127 @@ describe("PromotedAlbum", () => {
     expect(screen.getByTestId("trace-modal")).toBeInTheDocument();
     fireEvent.click(screen.getByText("Close Trace"));
     expect(screen.queryByTestId("trace-modal")).not.toBeInTheDocument();
+  });
+
+  describe("track preview", () => {
+    it("renders preview button when album is loaded", () => {
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      expect(screen.getByLabelText("Preview tracks")).toBeInTheDocument();
+      expect(screen.getByText("Preview")).toBeInTheDocument();
+    });
+
+    it("does not render preview button when loading", () => {
+      renderWithRouter(
+        <PromotedAlbum data={null} loading={true} onRefresh={mockRefresh} />
+      );
+      expect(
+        screen.queryByLabelText("Preview tracks")
+      ).not.toBeInTheDocument();
+    });
+
+    it("fetches tracks when preview button is clicked the first time", () => {
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      fireEvent.click(screen.getByLabelText("Preview tracks"));
+      expect(mockFetchTracks).toHaveBeenCalledWith("alb-1", "Radiohead");
+    });
+
+    it("does not re-fetch tracks when already fetched for the same album", () => {
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      fireEvent.click(screen.getByLabelText("Preview tracks"));
+      expect(mockFetchTracks).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByLabelText("Hide tracks"));
+      fireEvent.click(screen.getByLabelText("Preview tracks"));
+      expect(mockFetchTracks).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows track list after clicking preview", () => {
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      fireEvent.click(screen.getByLabelText("Preview tracks"));
+      expect(screen.getByTestId("track-list")).toBeInTheDocument();
+    });
+
+    it("toggles label to Hide tracks when open", () => {
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      fireEvent.click(screen.getByLabelText("Preview tracks"));
+      expect(screen.getByLabelText("Hide tracks")).toBeInTheDocument();
+      expect(screen.getByText("Hide tracks")).toBeInTheDocument();
+    });
+
+    it("stops audio when closing track list", () => {
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      fireEvent.click(screen.getByLabelText("Preview tracks"));
+      fireEvent.click(screen.getByLabelText("Hide tracks"));
+      expect(mockStop).toHaveBeenCalled();
+    });
+
+    it("stops audio and closes track list on shuffle", () => {
+      vi.useFakeTimers();
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      fireEvent.click(screen.getByLabelText("Preview tracks"));
+      expect(screen.getByText("Hide tracks")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText("Shuffle recommendation"));
+      expect(mockStop).toHaveBeenCalled();
+      expect(screen.queryByText("Hide tracks")).not.toBeInTheDocument();
+
+      vi.useRealTimers();
+    });
+
+    it("resets track state on shuffle so new album re-fetches", () => {
+      vi.useFakeTimers();
+      renderWithRouter(
+        <PromotedAlbum
+          data={albumData}
+          loading={false}
+          onRefresh={mockRefresh}
+        />
+      );
+      fireEvent.click(screen.getByLabelText("Shuffle recommendation"));
+      expect(mockResetTracks).toHaveBeenCalled();
+      vi.useRealTimers();
+    });
   });
 });
