@@ -43,8 +43,8 @@ export const getArtistTopTags = async (artist: string) => {
   }));
 };
 
-const fetchSingleTagArtists = async (tag: string, page = "1") => {
-  const url = buildUrl("tag.getTopArtists", { tag, limit: "30", page });
+const fetchSingleTagArtists = async (tag: string, page = "1", limit = "30") => {
+  const url = buildUrl("tag.getTopArtists", { tag, limit, page });
   const response = await fetch(url);
   const data: LastfmTagArtistsResponse = await response.json();
 
@@ -89,12 +89,16 @@ export const getTopArtistsByTag = async (tags: string[], page = "1") => {
   }
 
   const results = await Promise.all(
-    tags.map((tag) => fetchSingleTagArtists(tag, page))
+    tags.map((tag) => fetchSingleTagArtists(tag, "1", "250"))
   );
 
   const artistsByName = new Map<
     string,
-    { count: number; artist: (typeof results)[0]["artists"][0] }
+    {
+      count: number;
+      totalRank: number;
+      artist: (typeof results)[0]["artists"][0];
+    }
   >();
 
   for (const result of results) {
@@ -103,6 +107,7 @@ export const getTopArtistsByTag = async (tags: string[], page = "1") => {
       const existing = artistsByName.get(key);
       if (existing) {
         existing.count += 1;
+        existing.totalRank += artist.rank;
         if (artist.mbid && !existing.artist.mbid) {
           existing.artist.mbid = artist.mbid;
         }
@@ -110,7 +115,11 @@ export const getTopArtistsByTag = async (tags: string[], page = "1") => {
           existing.artist.imageUrl = artist.imageUrl;
         }
       } else {
-        artistsByName.set(key, { count: 1, artist });
+        artistsByName.set(key, {
+          count: 1,
+          totalRank: artist.rank,
+          artist,
+        });
       }
     }
   }
@@ -119,8 +128,11 @@ export const getTopArtistsByTag = async (tags: string[], page = "1") => {
     .filter((entry) => entry.count === tags.length)
     .sort((a, b) => {
       if (a.count !== b.count) return b.count - a.count;
-      return a.artist.rank - b.artist.rank;
+      const avgRankA = a.totalRank / a.count;
+      const avgRankB = b.totalRank / b.count;
+      return avgRankA - avgRankB;
     })
+    .slice(0, 30)
     .map((entry, index) => ({
       ...entry.artist,
       rank: index + 1,
