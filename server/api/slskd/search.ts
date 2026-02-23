@@ -6,8 +6,8 @@ import { createLogger } from "../../logger";
 const log = createLogger("slskd-search");
 const searchLock = new AsyncLock();
 
-const POLL_INTERVAL_MS = 1000;
-const MAX_POLL_DURATION_MS = 15000;
+const POLL_INTERVAL_MS = 2000;
+const MAX_POLL_DURATION_MS = 45000;
 
 export function startSearch(searchText: string): Promise<SlskdSearchState> {
   return searchLock.acquire("slskd-search", async () => {
@@ -60,6 +60,12 @@ export async function waitForSearch(searchId: string): Promise<WaitResult> {
         `Search ${searchId} completed: ${state.responseCount} responses, ${state.fileCount} files`
       );
       return { completed: true, fileCount: state.fileCount };
+    }
+
+    if (state.responseCount > 0) {
+      log.info(
+        `Search ${searchId} in progress: ${state.responseCount} responses, ${state.fileCount} files so far`
+      );
     }
 
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
