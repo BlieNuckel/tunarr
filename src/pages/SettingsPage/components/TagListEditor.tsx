@@ -40,13 +40,13 @@ export default function TagListEditor({
         {tags.map((tag, i) => (
           <span
             key={`${tag}-${i}`}
-            className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-200 rounded-lg border border-pink-300 dark:border-pink-700"
+            className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded-lg border border-amber-300 dark:border-amber-700"
           >
             {tag}
             <button
               type="button"
               onClick={() => handleRemove(i)}
-              className="ml-0.5 text-pink-500 hover:text-pink-700 dark:hover:text-pink-300 font-bold"
+              className="ml-0.5 text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 font-bold"
               aria-label={`Remove ${tag}`}
             >
               &times;
@@ -66,7 +66,7 @@ export default function TagListEditor({
         <button
           type="button"
           onClick={handleAdd}
-          className="px-3 py-2 text-sm font-bold bg-pink-400 text-black border-2 border-black rounded-lg shadow-cartoon-sm hover:bg-pink-500 transition-colors"
+          className="px-3 py-2 text-sm font-bold bg-amber-300 text-black border-2 border-black rounded-lg shadow-cartoon-sm hover:bg-amber-200 transition-colors"
         >
           Add
         </button>

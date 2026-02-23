@@ -172,8 +172,8 @@ export default function RecommendationsSection({
               onClick={() => update("libraryPreference", opt.value)}
               className={`flex-1 px-3 py-2 text-sm font-bold transition-colors ${
                 config.libraryPreference === opt.value
-                  ? "bg-pink-400 text-black"
-                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-pink-50 dark:hover:bg-gray-700"
+                  ? "bg-amber-300 text-black"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-gray-700"
               }`}
             >
               {opt.label}

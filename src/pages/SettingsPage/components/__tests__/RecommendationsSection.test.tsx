@@ -89,10 +89,10 @@ describe("RecommendationsSection", () => {
     );
 
     const preferNewBtn = screen.getByText("Prefer New");
-    expect(preferNewBtn.className).toContain("bg-pink-400");
+    expect(preferNewBtn.className).toContain("bg-amber-300");
 
     const preferLibBtn = screen.getByText("Prefer Library");
-    expect(preferLibBtn.className).not.toContain("bg-pink-400");
+    expect(preferLibBtn.className).not.toContain("bg-amber-300");
   });
 
   it("renders generic tags", () => {
