@@ -96,8 +96,8 @@ describe("GET /?t=music", () => {
     );
     expect(res.status).toBe(200);
     expect(res.text).toContain("<item>");
-    expect(res.text).toContain("user1");
-    expect(res.text).toContain("OK Computer");
+    expect(res.text).toContain("Radiohead - OK Computer");
+    expect(res.text).not.toContain("user1");
     expect(res.text).toContain('value="3040"');
     expect(res.text).toContain('offset="0" total="1"');
   });
@@ -124,10 +124,11 @@ describe("GET /?t=search", () => {
 
 describe("pagination", () => {
   it("serves subsequent pages from cache without re-searching", async () => {
-    const results = Array.from({ length: 3 }, (_, i) => ({
+    const artists = ["Radiohead", "Portishead", "Massive Attack"];
+    const results = artists.map((artist, i) => ({
       guid: `guid-${i}`,
       username: `user${i}`,
-      directory: `Music\\Album${i}`,
+      directory: `Music\\${artist}\\Album`,
       files: [{ filename: `track${i}.flac`, size: 1000 }],
       totalSize: 1000,
       hasFreeUploadSlot: true,
@@ -140,16 +141,16 @@ describe("pagination", () => {
     const res1 = await request(app).get("/?t=search&q=test&offset=0&limit=2");
     expect(res1.status).toBe(200);
     expect(res1.text).toContain('offset="0" total="3"');
-    expect(res1.text).toContain("user0");
-    expect(res1.text).toContain("user1");
-    expect(res1.text).not.toContain("user2");
+    expect(res1.text).toContain("Radiohead");
+    expect(res1.text).toContain("Portishead");
+    expect(res1.text).not.toContain("Massive Attack");
     expect(mockStartSearch).toHaveBeenCalledTimes(1);
 
     const res2 = await request(app).get("/?t=search&q=test&offset=2&limit=2");
     expect(res2.status).toBe(200);
     expect(res2.text).toContain('offset="2" total="3"');
-    expect(res2.text).toContain("user2");
-    expect(res2.text).not.toContain("user0");
+    expect(res2.text).toContain("Massive Attack");
+    expect(res2.text).not.toContain("Radiohead");
     expect(mockStartSearch).toHaveBeenCalledTimes(1);
   });
 

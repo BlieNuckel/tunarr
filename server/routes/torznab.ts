@@ -75,7 +75,7 @@ router.get("/download/:guid", (req: Request, res: Response) => {
   }
 
   const { result } = cached;
-  const title = `${result.username} - ${result.directory.split("\\").pop() || result.directory}`;
+  const title = buildReleaseTitle(result.directory);
   const metadata = {
     username: result.username,
     files: result.files.map((f) => ({ filename: f.filename, size: f.size })),
@@ -246,9 +246,7 @@ function buildResultsXml(
 }
 
 function buildItemXml(result: GroupedSearchResult, baseUrl: string): string {
-  const title = escapeXml(
-    `${result.username} - ${result.directory.split("\\").pop() || result.directory}`
-  );
+  const title = escapeXml(buildReleaseTitle(result.directory));
   const downloadUrl = `${baseUrl}/api/torznab/download/${result.guid}`;
 
   return [
@@ -266,6 +264,35 @@ function buildItemXml(result: GroupedSearchResult, baseUrl: string): string {
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+const GENERIC_DIR_NAMES = new Set([
+  "music",
+  "downloads",
+  "complete",
+  "shared",
+  "soulseek",
+  "slsk",
+  "incoming",
+  "files",
+  "media",
+  "audio",
+  "my music",
+]);
+
+function buildReleaseTitle(directory: string): string {
+  const parts = directory.split(/[/\\]/).filter(Boolean);
+  const lastPart = parts[parts.length - 1] || directory;
+
+  if (lastPart.includes(" - ")) return lastPart;
+
+  for (let i = parts.length - 2; i >= 0; i--) {
+    if (!GENERIC_DIR_NAMES.has(parts[i].toLowerCase())) {
+      return `${parts[i]} - ${lastPart}`;
+    }
+  }
+
+  return lastPart;
 }
 
 function escapeXml(str: string): string {
