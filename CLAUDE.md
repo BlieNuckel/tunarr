@@ -4,30 +4,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-- `npm run dev` — Run both Vite client (port 3002) and Express server (port 3001) concurrently
-- `npm run start:client` — Vite dev server only
-- `npm run start:server` — Express server only (via tsx)
-- `npm run build` — Vite production build to `/build`
-- `npm run lint` — ESLint (flat config, TypeScript + React)
-- `npm run typecheck:server` — TypeScript type checking for server code (`cd server && tsc --noEmit`)
-- `npm test` — Run frontend tests (Vitest + jsdom + testing-library, config: `vitest.config.ts`)
-- `npm run test:server` — Run server tests (Vitest + node, config: `server/vitest.config.ts`)
-- `npx vitest run src/components/__tests__/Modal.test.tsx` — Run a single frontend test file
-- `npx vitest run --config server/vitest.config.ts server/config.test.ts` — Run a single server test file
+- `pnpm dev` — Run both Vite client (port 3002) and Express server (port 3001) concurrently
+- `pnpm start:client` — Vite dev server only
+- `pnpm start:server` — Express server only (via tsx)
+- `pnpm build` — Vite production build to `/build`
+- `pnpm lint` — ESLint (flat config, TypeScript + React)
+- `pnpm typecheck` — TypeScript type checking for both frontend and server
+- `pnpm typecheck:server` — TypeScript type checking for server code only (`cd server && tsc --noEmit`)
+- `pnpm test` — Run frontend tests (Vitest + jsdom + testing-library, config: `vitest.config.ts`)
+- `pnpm test:server` — Run server tests (Vitest + node, config: `server/vitest.config.ts`)
+- `pnpm vitest run src/components/__tests__/Modal.test.tsx` — Run a single frontend test file
+- `pnpm vitest run --config server/vitest.config.ts server/config.test.ts` — Run a single server test file
 
 ## Architecture
 
 Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `/api/*` to the Express server in development. In production, Express serves the built frontend as static files from `/build`.
 
-**Frontend (`/src`):** React with React Router DOM, Tailwind CSS for styling. Path alias `@/*` maps to `./src/*`. Pages live under `src/pages/` (Discover at `/`, Search at `/search`, Status, Settings), each with co-located sub-components. Shared components in `src/components/`. Frontend uses plain `fetch()` to relative `/api/...` paths — no shared HTTP client.
+**Frontend (`/src`):** React with React Router DOM, Tailwind CSS v4 for styling. Path alias `@/*` maps to `./src/*`. Pages live under `src/pages/` (Discover at `/`, Search at `/search`, Status, Settings), each with co-located sub-components. Shared components in `src/components/`. Frontend uses plain `fetch()` to relative `/api/...` paths — no shared HTTP client.
 
-**State management:** Single `LidarrContext` holds global settings, connection status, and Lidarr options (profiles, root paths). All other state is page-local via custom hooks in `src/hooks/` — each hook owns its own loading/error/data lifecycle.
+**Tailwind CSS v4:** Uses `@tailwindcss/postcss` — the legacy `tailwind.config.cjs` is ignored. All custom theme values, keyframes, and animations are defined in `src/index.css` using `@theme` blocks and plain CSS.
+
+**State management:** `LidarrContext` holds global settings, connection status, and Lidarr options (profiles, root paths). `ThemeContext` manages light/dark/system theme. All other state is page-local via custom hooks in `src/hooks/` — each hook owns its own loading/error/data lifecycle.
 
 **Backend (`/server`):** Express with three layers:
 
 - **Service layer** — each external API has a `<name>Api/` directory (e.g., `lidarrApi/`, `lastfmApi/`, `musicbrainzApi/`, `plexApi/`, `deezerApi/`) containing `types.ts`, usually `config.ts`, and function files. Service configs read from `getConfig()` lazily at request time (no restart needed after settings change).
-- **Route layer** (`/server/routes/`) — maps Express routes to service functions. Routes mount at `/api/settings`, `/api/lidarr`, `/api/musicbrainz`, `/api/lastfm`, `/api/plex`. The Lidarr router is an aggregator that mounts sub-routers (add, artists, history, import, queue, wanted, qualityProfile, rootPath, metadataProfile) plus a shared `helpers.ts` for upsert logic.
+- **Route layer** (`/server/routes/`) — maps Express routes to service functions. Routes mount at `/api/settings`, `/api/lidarr`, `/api/musicbrainz`, `/api/lastfm`, `/api/plex`, `/api/promoted-album`, `/api/torznab`, `/api/sabnzbd`. The Lidarr router is an aggregator that mounts sub-routers (add, albums, artists, history, import, queue, search, wanted, qualityProfile, rootPath, metadataProfile) plus a shared `helpers.ts` for upsert logic.
 - **Middleware** (`/server/middleware/`) — `errorHandler.ts` (global Express error handler) and `rateLimiter.ts` (MusicBrainz 1 req/sec).
+
+**Soulseek integration via torznab/SABnzbd emulation (`/server/api/slskd/`):** The app integrates Soulseek (via an external slskd daemon) into Lidarr's standard indexer+download-client workflow by emulating two services:
+
+- **Torznab indexer** (`/api/torznab`) — Newznab-compatible endpoint that Lidarr queries for music searches. Translates search requests into slskd queries, groups results by user+directory into logical releases (`groupResults.ts`), and returns RSS/XML. Results are cached for 30 minutes. Download URLs point back to `/api/torznab/download/{guid}`, which returns a fake NZB containing base64-encoded slskd metadata (username + file list) via `nzb.ts`.
+- **SABnzbd emulator** (`/api/sabnzbd`) — Lidarr sends the NZB here as a "download client". The router decodes the embedded metadata, enqueues P2P downloads with slskd (`transfer.ts`), and tracks progress in-memory (`downloadTracker.ts`). Lidarr polls queue/history endpoints; the emulator maps slskd transfer states to SABnzbd format (`statusMap.ts`).
+
+The result: Lidarr sees a normal indexer and download client, but downloads actually come from Soulseek P2P via slskd.
 
 **Config system** (`server/config.ts`): Persisted as JSON at `APP_CONFIG_DIR/config.json`. `getConfig()` reads from disk and merges with defaults on every call. `setConfig()` validates and writes. `getConfigValue<K>(key)` provides typed single-field access.
 
@@ -38,6 +48,7 @@ Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `
 - Functional components with custom hooks — no class components
 - Tailwind utility classes only — no custom CSS files
 - `Promise.all()` for concurrent independent requests
+- Prettier enforced in CI (auto-commits formatting fixes)
 
 ## Environment Variables
 
@@ -49,10 +60,10 @@ Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `
 
 **Every feature MUST have full test coverage — both frontend and backend — before it is considered complete.** No feature is done until its tests are written and passing.
 
-- **Frontend tests** (`npm test`): Use Vitest + jsdom + React Testing Library. Test files go in `__tests__/` directories co-located with the code they test. Cover component rendering, user interactions, loading/error states, and hook behavior.
-- **Backend tests** (`npm run test:server`): Use Vitest in node mode. Test files go alongside the code they test (e.g., `server/config.test.ts`). Cover service functions, route handlers, middleware, and edge cases. Mock external API calls — never make real network requests in tests.
+- **Frontend tests** (`pnpm test`): Use Vitest + jsdom + React Testing Library. Test files go in `__tests__/` directories co-located with the code they test. Cover component rendering, user interactions, loading/error states, and hook behavior.
+- **Backend tests** (`pnpm test:server`): Use Vitest in node mode. Test files go alongside the code they test (e.g., `server/config.test.ts`). Cover service functions, route handlers, middleware, and edge cases. Mock external API calls — never make real network requests in tests.
 - **When modifying existing features**, update or add tests to cover the changes. Never leave existing tests broken.
-- **Run both test suites** (`npm test` and `npm run test:server`) before considering any work complete. All tests must pass.
+- **Run both test suites** (`pnpm test` and `pnpm test:server`) before considering any work complete. All tests must pass.
 
 ## Code Style
 
