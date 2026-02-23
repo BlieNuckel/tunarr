@@ -22,6 +22,7 @@ import {
 import { ThemeContext } from "@/context/themeContextDef";
 
 const mockSaveSettings = vi.fn();
+const mockSavePartialSettings = vi.fn();
 const mockTestConnection = vi.fn();
 const mockLoadOptions = vi.fn();
 
@@ -46,6 +47,7 @@ function renderSettingsPage(overrides: Partial<LidarrContextValue> = {}) {
     isConnected: true,
     isLoading: false,
     saveSettings: mockSaveSettings,
+    savePartialSettings: mockSavePartialSettings,
     testConnection: mockTestConnection,
     loadLidarrOptionValues: mockLoadOptions,
     ...overrides,
@@ -72,6 +74,7 @@ beforeEach(() => {
   mockLoadOptions.mockResolvedValue(undefined);
   mockFetchAccount.mockResolvedValue(null);
   mockUsePlexLogin.mockReturnValue({ loading: false, login: mockLogin });
+  mockSavePartialSettings.mockResolvedValue(undefined);
 });
 
 describe("SettingsPage", () => {
@@ -87,23 +90,68 @@ describe("SettingsPage", () => {
     expect(screen.getByText("Settings")).toBeInTheDocument();
   });
 
-  it("renders all sections", () => {
+  it("renders General tab by default with Theme and Import", () => {
     renderSettingsPage();
+    expect(screen.getByText("Theme")).toBeInTheDocument();
+    expect(screen.getByText("Manual Import")).toBeInTheDocument();
+    expect(screen.queryByText("Lidarr Connection")).not.toBeInTheDocument();
+  });
+
+  it("shows Integrations sections when Integrations tab clicked", () => {
+    renderSettingsPage();
+    fireEvent.click(screen.getByText("Integrations"));
+
     expect(screen.getByText("Lidarr Connection")).toBeInTheDocument();
     expect(screen.getByText("Last.fm")).toBeInTheDocument();
     expect(screen.getByText("Plex")).toBeInTheDocument();
-    expect(screen.getByText("Manual Import")).toBeInTheDocument();
+    expect(screen.queryByText("Theme")).not.toBeInTheDocument();
   });
 
-  it("renders save button", () => {
+  it("renders search input", () => {
     renderSettingsPage();
-    expect(screen.getByText("Save")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Search settings...")
+    ).toBeInTheDocument();
+  });
+
+  it("filters sections by search query across tabs", () => {
+    renderSettingsPage();
+    fireEvent.change(screen.getByPlaceholderText("Search settings..."), {
+      target: { value: "lidarr" },
+    });
+
+    expect(screen.getByText("Lidarr Connection")).toBeInTheDocument();
+    expect(screen.queryByText("Theme")).not.toBeInTheDocument();
+  });
+
+  it("hides tabs when searching", () => {
+    renderSettingsPage();
+    fireEvent.change(screen.getByPlaceholderText("Search settings..."), {
+      target: { value: "plex" },
+    });
+
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+  });
+
+  it("shows tab-origin badges during search", () => {
+    renderSettingsPage();
+    fireEvent.change(screen.getByPlaceholderText("Search settings..."), {
+      target: { value: "plex" },
+    });
+
+    expect(screen.getByText("Integrations")).toBeInTheDocument();
+  });
+
+  it("does not render the old Save button", () => {
+    renderSettingsPage();
+    expect(screen.queryByText("Save")).not.toBeInTheDocument();
   });
 
   it("calls testConnection when test button clicked", async () => {
     mockTestConnection.mockResolvedValue({ success: true, version: "2.0.0" });
 
     renderSettingsPage();
+    fireEvent.click(screen.getByText("Integrations"));
     fireEvent.click(screen.getByText("Test Connection"));
 
     await waitFor(() => {
@@ -115,6 +163,7 @@ describe("SettingsPage", () => {
     mockTestConnection.mockResolvedValue({ success: true, version: "2.0.0" });
 
     renderSettingsPage();
+    fireEvent.click(screen.getByText("Integrations"));
     fireEvent.click(screen.getByText("Test Connection"));
 
     await waitFor(() => {
@@ -129,6 +178,7 @@ describe("SettingsPage", () => {
     });
 
     renderSettingsPage();
+    fireEvent.click(screen.getByText("Integrations"));
     fireEvent.click(screen.getByText("Test Connection"));
 
     await waitFor(() => {
@@ -138,57 +188,55 @@ describe("SettingsPage", () => {
     });
   });
 
-  it("calls saveSettings on form submit", async () => {
-    mockSaveSettings.mockResolvedValue(undefined);
+  it("auto-saves text fields after debounce", async () => {
+    vi.useFakeTimers();
 
     renderSettingsPage();
-    fireEvent.submit(screen.getByText("Save").closest("form")!);
 
-    await waitFor(() => {
-      expect(mockSaveSettings).toHaveBeenCalled();
+    const importInput = screen.getByDisplayValue("/imports");
+    fireEvent.change(importInput, { target: { value: "/new-imports" } });
+
+    expect(mockSavePartialSettings).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(800);
     });
-  });
 
-  it("shows error on save failure", async () => {
-    mockSaveSettings.mockRejectedValue(new Error("Save failed"));
-
-    renderSettingsPage();
-    fireEvent.submit(screen.getByText("Save").closest("form")!);
-
-    await waitFor(() => {
-      expect(screen.getByText("Save failed")).toBeInTheDocument();
+    expect(mockSavePartialSettings).toHaveBeenCalledWith({
+      importPath: "/new-imports",
     });
+
+    vi.useRealTimers();
   });
 
   it("automatically saves settings when signing out of Plex", async () => {
-    mockSaveSettings.mockResolvedValue(undefined);
     mockFetchAccount.mockResolvedValue({
       username: "testuser",
       thumb: "https://plex.tv/thumb.jpg",
     });
 
     renderSettingsPage();
+    fireEvent.click(screen.getByText("Integrations"));
 
     await waitFor(() => {
       expect(screen.getByText("Sign out")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Sign out"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Sign out"));
+    });
 
     await waitFor(() => {
-      expect(mockSaveSettings).toHaveBeenCalledWith(
-        expect.objectContaining({
-          plexToken: "",
-          plexUrl: "",
-        })
-      );
+      expect(mockSavePartialSettings).toHaveBeenCalledWith({
+        plexToken: "",
+        plexUrl: "",
+      });
     });
   });
 
   it("automatically saves settings when signing in to Plex", async () => {
-    mockSaveSettings.mockResolvedValue(undefined);
-
     renderSettingsPage();
+    fireEvent.click(screen.getByText("Integrations"));
 
     await waitFor(() => {
       expect(screen.getByText("Sign in with Plex")).toBeInTheDocument();
@@ -205,12 +253,26 @@ describe("SettingsPage", () => {
     });
 
     await waitFor(() => {
-      expect(mockSaveSettings).toHaveBeenCalledWith(
-        expect.objectContaining({
-          plexToken: "new-token",
-          plexUrl: "http://plex:32400",
-        })
-      );
+      expect(mockSavePartialSettings).toHaveBeenCalledWith({
+        plexToken: "new-token",
+        plexUrl: "http://plex:32400",
+      });
     });
+  });
+
+  it("returns to previously active tab when clearing search", () => {
+    renderSettingsPage();
+    fireEvent.click(screen.getByText("Integrations"));
+
+    fireEvent.change(screen.getByPlaceholderText("Search settings..."), {
+      target: { value: "theme" },
+    });
+    expect(screen.getByText("Theme")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText("Search settings..."), {
+      target: { value: "" },
+    });
+    expect(screen.getByText("Lidarr Connection")).toBeInTheDocument();
+    expect(screen.queryByText("Theme")).not.toBeInTheDocument();
   });
 });

@@ -30,6 +30,7 @@ function renderWithContext(
     isConnected: false,
     isLoading: false,
     saveSettings: vi.fn(),
+    savePartialSettings: vi.fn(),
     testConnection: vi.fn(),
     loadLidarrOptionValues: vi.fn(),
     ...contextValue,

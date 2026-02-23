@@ -116,11 +116,11 @@ export const LidarrContextProvider = ({
     loadSettings(setSettings, setIsConnected, setIsLoading);
   }, []);
 
-  const saveSettings = async (newSettings: LidarrSettings) => {
+  const savePartialSettings = async (partial: Partial<LidarrSettings>) => {
     const res = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newSettings),
+      body: JSON.stringify(partial),
     });
 
     if (!res.ok) {
@@ -128,26 +128,23 @@ export const LidarrContextProvider = ({
       throw new Error(data.error || "Failed to save settings");
     }
 
-    setSettings({
-      lidarrUrl: newSettings.lidarrUrl,
-      lidarrApiKey: newSettings.lidarrApiKey,
-      lidarrQualityProfileId: newSettings.lidarrQualityProfileId,
-      lidarrRootFolderPath: newSettings.lidarrRootFolderPath,
-      lidarrMetadataProfileId: newSettings.lidarrMetadataProfileId,
-      lastfmApiKey: newSettings.lastfmApiKey || "",
-      plexUrl: newSettings.plexUrl || "",
-      plexToken: newSettings.plexToken || "",
-      importPath: newSettings.importPath || "",
-      slskdUrl: newSettings.slskdUrl || "",
-      slskdApiKey: newSettings.slskdApiKey || "",
-      slskdDownloadPath: newSettings.slskdDownloadPath || "",
-      theme: newSettings.theme || "system",
-    });
+    const merged = { ...settings, ...partial };
+    setSettings(merged);
 
-    await loadLidarrOptionValues(options, setOptions);
-    await loadSettings(setSettings, setIsConnected, setIsLoading);
-    const testResult = await testConnection(newSettings);
-    setIsConnected(testResult.success);
+    const lidarrFieldsChanged =
+      "lidarrUrl" in partial || "lidarrApiKey" in partial;
+
+    if (lidarrFieldsChanged && merged.lidarrUrl && merged.lidarrApiKey) {
+      const testResult = await testConnection(merged);
+      setIsConnected(testResult.success);
+      if (testResult.success) {
+        await loadLidarrOptionValues(options, setOptions);
+      }
+    }
+  };
+
+  const saveSettings = async (newSettings: LidarrSettings) => {
+    await savePartialSettings(newSettings);
   };
 
   const testConnection = async (testSettings: LidarrSettings) => {
@@ -178,6 +175,7 @@ export const LidarrContextProvider = ({
     isConnected,
     isLoading,
     saveSettings,
+    savePartialSettings,
     testConnection,
     loadLidarrOptionValues: () => loadLidarrOptionValues(options, setOptions),
   };
