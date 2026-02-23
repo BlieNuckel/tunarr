@@ -8,6 +8,7 @@ import metadaProfilestaRouter from "./lidarr/metadataProfile";
 import qualityProfilesRouter from "./lidarr/qualityProfile";
 import queueRouter from "./lidarr/queue";
 import rootPathRouter from "./lidarr/rootPath";
+import searchRouter from "./lidarr/search";
 import wantedRouter from "./lidarr/wanted";
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.use(artistsRouter);
 router.use(historyRouter);
 router.use(importRouter);
 router.use(queueRouter);
+router.use(searchRouter);
 router.use(wantedRouter);
 router.use(qualityProfilesRouter);
 router.use(rootPathRouter);

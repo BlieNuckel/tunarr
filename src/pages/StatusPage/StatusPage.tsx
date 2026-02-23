@@ -49,10 +49,10 @@ export default function StatusPage() {
 
   const handleAlbumSearch = async (albumId: number) => {
     try {
-      await fetch("/api/lidarr/command", {
+      await fetch("/api/lidarr/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "AlbumSearch", albumIds: [albumId] }),
+        body: JSON.stringify({ albumIds: [albumId] }),
       });
     } catch {
       // Silently fail — user can retry

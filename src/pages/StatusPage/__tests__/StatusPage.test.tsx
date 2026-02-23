@@ -119,6 +119,38 @@ describe("StatusPage", () => {
     });
   });
 
+  it("calls /api/lidarr/search when Search button is clicked", async () => {
+    const wantedItem = {
+      id: 42,
+      title: "In Rainbows",
+      foreignAlbumId: "mbid-f1",
+      artist: { artistName: "Radiohead" },
+    };
+
+    mockAllEndpoints({ wanted: [wantedItem] });
+
+    render(<StatusPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("In Rainbows")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Search" }));
+
+    await waitFor(() => {
+      const searchCall = vi.mocked(fetch).mock.calls.find(
+        ([input]) =>
+          typeof input === "string" && input.includes("/api/lidarr/search")
+      );
+      expect(searchCall).toBeDefined();
+      const options = searchCall![1] as RequestInit;
+      expect(options.method).toBe("POST");
+      expect(JSON.parse(options.body as string)).toEqual({
+        albumIds: [42],
+      });
+    });
+  });
+
   it("removes wanted item from list when Unmonitor succeeds", async () => {
     const wantedItem = {
       id: 1,
