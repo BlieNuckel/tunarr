@@ -67,12 +67,20 @@ describe("GET /history", () => {
       data: { indexer: "Prowlarr" },
     });
 
-    mockLidarrGet.mockImplementation((_path: string, query: Record<string, unknown>) => {
-      if (query.eventType === 3) {
-        return Promise.resolve({ status: 200, data: paginatedResponse([imported]) });
+    mockLidarrGet.mockImplementation(
+      (_path: string, query: Record<string, unknown>) => {
+        if (query.eventType === 3) {
+          return Promise.resolve({
+            status: 200,
+            data: paginatedResponse([imported]),
+          });
+        }
+        return Promise.resolve({
+          status: 200,
+          data: paginatedResponse([grabbed]),
+        });
       }
-      return Promise.resolve({ status: 200, data: paginatedResponse([grabbed]) });
-    });
+    );
 
     const res = await request(app).get("/history");
 
@@ -83,12 +91,17 @@ describe("GET /history", () => {
   it("returns sourceIndexer null when no matching grabbed event exists", async () => {
     const imported = makeRecord({ downloadId: "dl-no-match" });
 
-    mockLidarrGet.mockImplementation((_path: string, query: Record<string, unknown>) => {
-      if (query.eventType === 3) {
-        return Promise.resolve({ status: 200, data: paginatedResponse([imported]) });
+    mockLidarrGet.mockImplementation(
+      (_path: string, query: Record<string, unknown>) => {
+        if (query.eventType === 3) {
+          return Promise.resolve({
+            status: 200,
+            data: paginatedResponse([imported]),
+          });
+        }
+        return Promise.resolve({ status: 200, data: paginatedResponse([]) });
       }
-      return Promise.resolve({ status: 200, data: paginatedResponse([]) });
-    });
+    );
 
     const res = await request(app).get("/history");
 
@@ -98,12 +111,17 @@ describe("GET /history", () => {
   it("returns sourceIndexer null when grabbed fetch fails", async () => {
     const imported = makeRecord();
 
-    mockLidarrGet.mockImplementation((_path: string, query: Record<string, unknown>) => {
-      if (query.eventType === 3) {
-        return Promise.resolve({ status: 200, data: paginatedResponse([imported]) });
+    mockLidarrGet.mockImplementation(
+      (_path: string, query: Record<string, unknown>) => {
+        if (query.eventType === 3) {
+          return Promise.resolve({
+            status: 200,
+            data: paginatedResponse([imported]),
+          });
+        }
+        return Promise.reject(new Error("Lidarr down"));
       }
-      return Promise.reject(new Error("Lidarr down"));
-    });
+    );
 
     const res = await request(app).get("/history");
 
@@ -120,17 +138,21 @@ describe("GET /history", () => {
     await request(app).get("/history?page=3&pageSize=50");
 
     for (const call of mockLidarrGet.mock.calls) {
-      expect(call[1]).toEqual(expect.objectContaining({ page: "3", pageSize: "50" }));
+      expect(call[1]).toEqual(
+        expect.objectContaining({ page: "3", pageSize: "50" })
+      );
     }
   });
 
   it("proxies status code from imported result", async () => {
-    mockLidarrGet.mockImplementation((_path: string, query: Record<string, unknown>) => {
-      if (query.eventType === 3) {
-        return Promise.resolve({ status: 404, data: paginatedResponse([]) });
+    mockLidarrGet.mockImplementation(
+      (_path: string, query: Record<string, unknown>) => {
+        if (query.eventType === 3) {
+          return Promise.resolve({ status: 404, data: paginatedResponse([]) });
+        }
+        return Promise.resolve({ status: 200, data: paginatedResponse([]) });
       }
-      return Promise.resolve({ status: 200, data: paginatedResponse([]) });
-    });
+    );
 
     const res = await request(app).get("/history");
     expect(res.status).toBe(404);

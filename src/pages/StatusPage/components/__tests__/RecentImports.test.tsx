@@ -56,9 +56,7 @@ describe("RecentImports", () => {
   });
 
   it("does not display via text when sourceIndexer is null", () => {
-    render(
-      <RecentImports items={[makeImport({ sourceIndexer: null })]} />
-    );
+    render(<RecentImports items={[makeImport({ sourceIndexer: null })]} />);
     expect(screen.queryByText(/^via /)).not.toBeInTheDocument();
   });
 });

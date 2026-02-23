@@ -35,9 +35,7 @@ export default function QueueTable({ items }: QueueTableProps) {
             </p>
           </div>
           <StatusBadge
-            status={
-              item.trackedDownloadStatus?.toLowerCase() || "downloading"
-            }
+            status={item.trackedDownloadStatus?.toLowerCase() || "downloading"}
           />
         </div>
       ))}

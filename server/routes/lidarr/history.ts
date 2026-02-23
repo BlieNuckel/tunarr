@@ -6,7 +6,10 @@ import type {
   LidarrHistoryRecord,
 } from "../../api/lidarr/types";
 
-type EnrichedHistoryRecord = Omit<LidarrHistoryRecord, "downloadId" | "data"> & {
+type EnrichedHistoryRecord = Omit<
+  LidarrHistoryRecord,
+  "downloadId" | "data"
+> & {
   sourceIndexer: string | null;
 };
 
