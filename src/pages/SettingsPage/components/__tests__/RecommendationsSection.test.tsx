@@ -24,10 +24,7 @@ function getInputByLabel(label: string): HTMLInputElement {
 describe("RecommendationsSection", () => {
   it("renders the heading and all controls", () => {
     render(
-      <RecommendationsSection
-        config={defaultConfig}
-        onConfigChange={vi.fn()}
-      />
+      <RecommendationsSection config={defaultConfig} onConfigChange={vi.fn()} />
     );
 
     expect(screen.getByText("Recommendations")).toBeInTheDocument();
@@ -43,10 +40,7 @@ describe("RecommendationsSection", () => {
 
   it("displays current config values in the correct fields", () => {
     render(
-      <RecommendationsSection
-        config={defaultConfig}
-        onConfigChange={vi.fn()}
-      />
+      <RecommendationsSection config={defaultConfig} onConfigChange={vi.fn()} />
     );
 
     expect(getInputByLabel("Cache Duration (minutes)").value).toBe("30");
@@ -91,10 +85,7 @@ describe("RecommendationsSection", () => {
 
   it("highlights the active library preference button", () => {
     render(
-      <RecommendationsSection
-        config={defaultConfig}
-        onConfigChange={vi.fn()}
-      />
+      <RecommendationsSection config={defaultConfig} onConfigChange={vi.fn()} />
     );
 
     const preferNewBtn = screen.getByText("Prefer New");
@@ -106,10 +97,7 @@ describe("RecommendationsSection", () => {
 
   it("renders generic tags", () => {
     render(
-      <RecommendationsSection
-        config={defaultConfig}
-        onConfigChange={vi.fn()}
-      />
+      <RecommendationsSection config={defaultConfig} onConfigChange={vi.fn()} />
     );
 
     expect(screen.getByText("seen live")).toBeInTheDocument();
@@ -145,10 +133,7 @@ describe("RecommendationsSection", () => {
     const config = { ...defaultConfig, deepPageMin: 3, deepPageMax: 5 };
 
     render(
-      <RecommendationsSection
-        config={config}
-        onConfigChange={onConfigChange}
-      />
+      <RecommendationsSection config={config} onConfigChange={onConfigChange} />
     );
 
     const minInput = getInputByLabel("Deep Page Min");

@@ -1,6 +1,9 @@
 import { createContext } from "react";
 
-export type LibraryPreference = "prefer_new" | "prefer_library" | "no_preference";
+export type LibraryPreference =
+  | "prefer_new"
+  | "prefer_library"
+  | "no_preference";
 
 export interface PromotedAlbumSettings {
   cacheDurationMinutes: number;

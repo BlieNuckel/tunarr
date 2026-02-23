@@ -21,7 +21,10 @@ describe("TagListEditor", () => {
   it("removes a tag when its remove button is clicked", async () => {
     const onTagsChange = vi.fn();
     render(
-      <TagListEditor tags={["rock", "jazz", "pop"]} onTagsChange={onTagsChange} />
+      <TagListEditor
+        tags={["rock", "jazz", "pop"]}
+        onTagsChange={onTagsChange}
+      />
     );
 
     await userEvent.click(screen.getByRole("button", { name: "Remove jazz" }));
@@ -30,9 +33,7 @@ describe("TagListEditor", () => {
 
   it("adds a tag via the Add button", async () => {
     const onTagsChange = vi.fn();
-    render(
-      <TagListEditor tags={["rock"]} onTagsChange={onTagsChange} />
-    );
+    render(<TagListEditor tags={["rock"]} onTagsChange={onTagsChange} />);
 
     await userEvent.type(screen.getByPlaceholderText("Add a tag..."), "blues");
     await userEvent.click(screen.getByRole("button", { name: "Add" }));
@@ -42,9 +43,7 @@ describe("TagListEditor", () => {
 
   it("adds a tag on Enter key", async () => {
     const onTagsChange = vi.fn();
-    render(
-      <TagListEditor tags={["rock"]} onTagsChange={onTagsChange} />
-    );
+    render(<TagListEditor tags={["rock"]} onTagsChange={onTagsChange} />);
 
     const input = screen.getByPlaceholderText("Add a tag...");
     await userEvent.type(input, "blues{Enter}");
@@ -53,9 +52,7 @@ describe("TagListEditor", () => {
   });
 
   it("clears input after adding a tag", async () => {
-    render(
-      <TagListEditor tags={[]} onTagsChange={vi.fn()} />
-    );
+    render(<TagListEditor tags={[]} onTagsChange={vi.fn()} />);
 
     const input = screen.getByPlaceholderText("Add a tag...");
     await userEvent.type(input, "blues{Enter}");
@@ -65,19 +62,18 @@ describe("TagListEditor", () => {
 
   it("rejects duplicate tags case-insensitively", async () => {
     const onTagsChange = vi.fn();
-    render(
-      <TagListEditor tags={["Rock"]} onTagsChange={onTagsChange} />
-    );
+    render(<TagListEditor tags={["Rock"]} onTagsChange={onTagsChange} />);
 
-    await userEvent.type(screen.getByPlaceholderText("Add a tag..."), "rock{Enter}");
+    await userEvent.type(
+      screen.getByPlaceholderText("Add a tag..."),
+      "rock{Enter}"
+    );
     expect(onTagsChange).not.toHaveBeenCalled();
   });
 
   it("rejects empty input", async () => {
     const onTagsChange = vi.fn();
-    render(
-      <TagListEditor tags={[]} onTagsChange={onTagsChange} />
-    );
+    render(<TagListEditor tags={[]} onTagsChange={onTagsChange} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Add" }));
     expect(onTagsChange).not.toHaveBeenCalled();
@@ -85,18 +81,21 @@ describe("TagListEditor", () => {
 
   it("rejects whitespace-only input", async () => {
     const onTagsChange = vi.fn();
-    render(
-      <TagListEditor tags={[]} onTagsChange={onTagsChange} />
-    );
+    render(<TagListEditor tags={[]} onTagsChange={onTagsChange} />);
 
-    await userEvent.type(screen.getByPlaceholderText("Add a tag..."), "   {Enter}");
+    await userEvent.type(
+      screen.getByPlaceholderText("Add a tag..."),
+      "   {Enter}"
+    );
     expect(onTagsChange).not.toHaveBeenCalled();
   });
 
   it("renders empty state with no tags", () => {
     render(<TagListEditor tags={[]} onTagsChange={vi.fn()} />);
 
-    expect(screen.queryAllByRole("button", { name: /remove/i })).toHaveLength(0);
+    expect(screen.queryAllByRole("button", { name: /remove/i })).toHaveLength(
+      0
+    );
     expect(screen.getByPlaceholderText("Add a tag...")).toBeInTheDocument();
   });
 });

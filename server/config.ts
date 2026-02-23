@@ -8,7 +8,10 @@ const log = createLogger("Config");
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export type LibraryPreference = "prefer_new" | "prefer_library" | "no_preference";
+export type LibraryPreference =
+  | "prefer_new"
+  | "prefer_library"
+  | "no_preference";
 
 export type PromotedAlbumConfig = {
   cacheDurationMinutes: number;

@@ -167,25 +167,64 @@ function buildTrace(
 }
 
 function selectAlbumPreferNew(
-  shuffled: { mbid: string; artistMbid: string; name: string; artistName: string }[],
+  shuffled: {
+    mbid: string;
+    artistMbid: string;
+    name: string;
+    artistName: string;
+  }[],
   artistInLibrary: (mbid: string) => boolean,
   getRgId: (mbid: string) => Promise<string | null>
-): Promise<{ album: (typeof shuffled)[0]; rgMbid: string; reason: TraceSelectionReason } | null> {
-  return selectAlbumWithPreference(shuffled, (a) => !artistInLibrary(a.artistMbid), getRgId, "preferred_non_library", "fallback_in_library");
+): Promise<{
+  album: (typeof shuffled)[0];
+  rgMbid: string;
+  reason: TraceSelectionReason;
+} | null> {
+  return selectAlbumWithPreference(
+    shuffled,
+    (a) => !artistInLibrary(a.artistMbid),
+    getRgId,
+    "preferred_non_library",
+    "fallback_in_library"
+  );
 }
 
 function selectAlbumPreferLibrary(
-  shuffled: { mbid: string; artistMbid: string; name: string; artistName: string }[],
+  shuffled: {
+    mbid: string;
+    artistMbid: string;
+    name: string;
+    artistName: string;
+  }[],
   artistInLibrary: (mbid: string) => boolean,
   getRgId: (mbid: string) => Promise<string | null>
-): Promise<{ album: (typeof shuffled)[0]; rgMbid: string; reason: TraceSelectionReason } | null> {
-  return selectAlbumWithPreference(shuffled, (a) => artistInLibrary(a.artistMbid), getRgId, "preferred_library", "fallback_non_library");
+): Promise<{
+  album: (typeof shuffled)[0];
+  rgMbid: string;
+  reason: TraceSelectionReason;
+} | null> {
+  return selectAlbumWithPreference(
+    shuffled,
+    (a) => artistInLibrary(a.artistMbid),
+    getRgId,
+    "preferred_library",
+    "fallback_non_library"
+  );
 }
 
 async function selectAlbumNoPreference(
-  shuffled: { mbid: string; artistMbid: string; name: string; artistName: string }[],
+  shuffled: {
+    mbid: string;
+    artistMbid: string;
+    name: string;
+    artistName: string;
+  }[],
   getRgId: (mbid: string) => Promise<string | null>
-): Promise<{ album: (typeof shuffled)[0]; rgMbid: string; reason: TraceSelectionReason } | null> {
+): Promise<{
+  album: (typeof shuffled)[0];
+  rgMbid: string;
+  reason: TraceSelectionReason;
+} | null> {
   for (const album of shuffled) {
     const releaseGroupId = await getRgId(album.mbid);
     if (releaseGroupId) {
@@ -196,12 +235,21 @@ async function selectAlbumNoPreference(
 }
 
 async function selectAlbumWithPreference(
-  shuffled: { mbid: string; artistMbid: string; name: string; artistName: string }[],
+  shuffled: {
+    mbid: string;
+    artistMbid: string;
+    name: string;
+    artistName: string;
+  }[],
   isPreferred: (album: (typeof shuffled)[0]) => boolean,
   getRgId: (mbid: string) => Promise<string | null>,
   preferredReason: TraceSelectionReason,
   fallbackReason: TraceSelectionReason
-): Promise<{ album: (typeof shuffled)[0]; rgMbid: string; reason: TraceSelectionReason } | null> {
+): Promise<{
+  album: (typeof shuffled)[0];
+  rgMbid: string;
+  reason: TraceSelectionReason;
+} | null> {
   let fallback: { album: (typeof shuffled)[0]; rgMbid: string } | undefined;
 
   for (const album of shuffled) {
@@ -220,7 +268,12 @@ async function selectAlbumWithPreference(
 }
 
 function selectAlbum(
-  shuffled: { mbid: string; artistMbid: string; name: string; artistName: string }[],
+  shuffled: {
+    mbid: string;
+    artistMbid: string;
+    name: string;
+    artistName: string;
+  }[],
   artistInLibrary: (mbid: string) => boolean,
   libraryPreference: LibraryPreference,
   getRgId: (mbid: string) => Promise<string | null>
@@ -241,7 +294,11 @@ export async function getPromotedAlbum(
   const config = getConfigValue("promotedAlbum");
   const cacheDurationMs = config.cacheDurationMinutes * 60 * 1000;
 
-  if (!forceRefresh && cachedResult && Date.now() - cachedAt < cacheDurationMs) {
+  if (
+    !forceRefresh &&
+    cachedResult &&
+    Date.now() - cachedAt < cacheDurationMs
+  ) {
     return cachedResult;
   }
 

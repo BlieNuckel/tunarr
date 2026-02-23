@@ -48,7 +48,8 @@ function NumberField({
         value={value}
         onChange={(e) => {
           const parsed = Number(e.target.value);
-          if (!Number.isNaN(parsed)) onChange(Math.max(min, Math.min(max, parsed)));
+          if (!Number.isNaN(parsed))
+            onChange(Math.max(min, Math.min(max, parsed)));
         }}
         min={min}
         max={max}
