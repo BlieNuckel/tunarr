@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockGetConfig = vi.fn();
 const mockSetConfig = vi.fn();
 const mockExistsSync = vi.fn();
+const mockClearPromotedAlbumCache = vi.fn();
+const mockTestLidarrConnection = vi.fn();
 
 vi.mock("../config", () => ({
   getConfig: (...args: unknown[]) => mockGetConfig(...args),
@@ -14,8 +16,15 @@ vi.mock("fs", () => ({
   existsSync: (p: string) => mockExistsSync(p),
 }));
 
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
+vi.mock("../promotedAlbum/getPromotedAlbum", () => ({
+  clearPromotedAlbumCache: (...args: unknown[]) =>
+    mockClearPromotedAlbumCache(...args),
+}));
+
+vi.mock("../services/settings", () => ({
+  testLidarrConnection: (...args: unknown[]) =>
+    mockTestLidarrConnection(...args),
+}));
 
 import express from "express";
 import request from "supertest";
@@ -113,11 +122,11 @@ describe("POST /settings/test", () => {
   });
 
   it("returns error on failed Lidarr connection", async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
+    mockTestLidarrConnection.mockResolvedValue({
+      error: "Lidarr returned 401",
       status: 401,
-      json: async () => ({}),
     });
+
     const res = await request(app)
       .post("/settings/test")
       .send({ lidarrUrl: "http://lidarr:8686", lidarrApiKey: "badkey" });
@@ -126,23 +135,13 @@ describe("POST /settings/test", () => {
   });
 
   it("returns success with version and profiles", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ version: "2.0.0" }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [{ id: 1, name: "Any", items: [] }],
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [{ id: 1, name: "Standard", extra: true }],
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [{ id: 1, path: "/music", freeSpace: 100 }],
-      });
+    mockTestLidarrConnection.mockResolvedValue({
+      success: true,
+      version: "2.0.0",
+      qualityProfiles: [{ id: 1, name: "Any" }],
+      metadataProfiles: [{ id: 1, name: "Standard" }],
+      rootFolderPaths: [{ id: 1, path: "/music" }],
+    });
 
     const res = await request(app)
       .post("/settings/test")
@@ -156,65 +155,9 @@ describe("POST /settings/test", () => {
       metadataProfiles: [{ id: 1, name: "Standard" }],
       rootFolderPaths: [{ id: 1, path: "/music" }],
     });
-  });
-
-  it("returns empty arrays when profile fetches fail", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ version: "2.0.0" }),
-      })
-      .mockResolvedValueOnce({ ok: false })
-      .mockResolvedValueOnce({ ok: false })
-      .mockResolvedValueOnce({ ok: false });
-
-    const res = await request(app)
-      .post("/settings/test")
-      .send({ lidarrUrl: "http://lidarr:8686", lidarrApiKey: "key" });
-
-    expect(res.status).toBe(200);
-    expect(res.body.qualityProfiles).toEqual([]);
-    expect(res.body.metadataProfiles).toEqual([]);
-    expect(res.body.rootFolderPaths).toEqual([]);
-  });
-
-  it("returns empty arrays when profile fetches throw", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ version: "2.0.0" }),
-      })
-      .mockRejectedValueOnce(new Error("network error"))
-      .mockRejectedValueOnce(new Error("network error"))
-      .mockRejectedValueOnce(new Error("network error"));
-
-    const res = await request(app)
-      .post("/settings/test")
-      .send({ lidarrUrl: "http://lidarr:8686", lidarrApiKey: "key" });
-
-    expect(res.status).toBe(200);
-    expect(res.body.qualityProfiles).toEqual([]);
-    expect(res.body.metadataProfiles).toEqual([]);
-    expect(res.body.rootFolderPaths).toEqual([]);
-  });
-
-  it("strips trailing slashes from URL", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ version: "1.0" }),
-      })
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      .mockResolvedValueOnce({ ok: true, json: async () => [] })
-      .mockResolvedValueOnce({ ok: true, json: async () => [] });
-
-    await request(app)
-      .post("/settings/test")
-      .send({ lidarrUrl: "http://lidarr:8686///", lidarrApiKey: "key" });
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      "http://lidarr:8686/api/v1/system/status",
-      expect.any(Object)
+    expect(mockTestLidarrConnection).toHaveBeenCalledWith(
+      "http://lidarr:8686",
+      "goodkey"
     );
   });
 });

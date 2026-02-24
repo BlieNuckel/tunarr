@@ -1,22 +1,43 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockStartSearch = vi.fn();
-const mockWaitForSearch = vi.fn();
-const mockGetSearchResponses = vi.fn();
-const mockDeleteSearch = vi.fn();
-const mockGroupSearchResults = vi.fn();
+const mockGetOrSearchResults = vi.fn();
 const mockEncodeNzb = vi.fn();
 
-vi.mock("../api/slskd/search", () => ({
-  startSearch: (...args: unknown[]) => mockStartSearch(...args),
-  waitForSearch: (...args: unknown[]) => mockWaitForSearch(...args),
-  getSearchResponses: (...args: unknown[]) => mockGetSearchResponses(...args),
-  deleteSearch: (...args: unknown[]) => mockDeleteSearch(...args),
-}));
+vi.mock("../services/torznab/search", async () => {
+  const resultCache = new Map<string, { result: unknown }>();
+  return {
+    cleanExpiredCaches: vi.fn(),
+    getCachedResult: (guid: string) => resultCache.get(guid)?.result ?? null,
+    cacheResultsForDownload: (results: { guid: string }[]) => {
+      for (const r of results) {
+        resultCache.set(r.guid, { result: r });
+      }
+    },
+    getOrSearchResults: (...args: unknown[]) => mockGetOrSearchResults(...args),
+    buildSearchQuery: (params: {
+      q?: string;
+      artist?: string;
+      album?: string;
+    }) => {
+      if (params.q) return params.q;
+      if (params.artist && params.album)
+        return `${params.artist} ${params.album}`;
+      if (params.artist) return params.artist;
+      return "";
+    },
+    DEFAULT_LIMIT: 100,
+  };
+});
 
-vi.mock("../api/slskd/groupResults", () => ({
-  groupSearchResults: (...args: unknown[]) => mockGroupSearchResults(...args),
-}));
+vi.mock("../services/torznab/xml", async () => {
+  const actual = await vi.importActual("../services/torznab/xml");
+  return actual;
+});
+
+vi.mock("../services/torznab/releaseTitle", async () => {
+  const actual = await vi.importActual("../services/torznab/releaseTitle");
+  return actual;
+});
 
 vi.mock("../api/slskd/nzb", () => ({
   encodeNzb: (...args: unknown[]) => mockEncodeNzb(...args),
@@ -39,14 +60,6 @@ app.use(
   }
 );
 
-function setupSearchMocks(results: unknown[] = []) {
-  mockStartSearch.mockResolvedValue({ id: "s1" });
-  mockWaitForSearch.mockResolvedValue({ completed: true, fileCount: 0 });
-  mockGetSearchResponses.mockResolvedValue([]);
-  mockDeleteSearch.mockResolvedValue(undefined);
-  mockGroupSearchResults.mockReturnValue(results);
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -65,19 +78,19 @@ describe("GET /?t=caps", () => {
 
 describe("GET /?t=music", () => {
   it("searches with artist and album", async () => {
-    setupSearchMocks();
+    mockGetOrSearchResults.mockResolvedValue([]);
 
     const res = await request(app).get(
       "/?t=music&artist=Portishead&album=Dummy"
     );
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toContain("xml");
-    expect(mockStartSearch).toHaveBeenCalledWith("Portishead Dummy");
+    expect(mockGetOrSearchResults).toHaveBeenCalledWith("Portishead Dummy");
     expect(res.text).toContain("<rss");
   });
 
   it("returns results as RSS items with newznab:response", async () => {
-    setupSearchMocks([
+    mockGetOrSearchResults.mockResolvedValue([
       {
         guid: "abc123",
         username: "user1",
@@ -108,17 +121,17 @@ describe("GET /?t=music", () => {
     expect(res.text).toContain("<rss");
     expect(res.text).toContain("<item>");
     expect(res.text).toContain('value="3000"');
-    expect(mockStartSearch).not.toHaveBeenCalled();
+    expect(mockGetOrSearchResults).not.toHaveBeenCalled();
   });
 });
 
 describe("GET /?t=search", () => {
   it("searches with q parameter", async () => {
-    setupSearchMocks();
+    mockGetOrSearchResults.mockResolvedValue([]);
 
     const res = await request(app).get("/?t=search&q=radiohead");
     expect(res.status).toBe(200);
-    expect(mockStartSearch).toHaveBeenCalledWith("radiohead");
+    expect(mockGetOrSearchResults).toHaveBeenCalledWith("radiohead");
   });
 });
 
@@ -136,7 +149,7 @@ describe("pagination", () => {
       bitRate: 320,
       category: 3040,
     }));
-    setupSearchMocks(results);
+    mockGetOrSearchResults.mockResolvedValue(results);
 
     const res1 = await request(app).get("/?t=search&q=test&offset=0&limit=2");
     expect(res1.status).toBe(200);
@@ -144,18 +157,18 @@ describe("pagination", () => {
     expect(res1.text).toContain("Radiohead");
     expect(res1.text).toContain("Portishead");
     expect(res1.text).not.toContain("Massive Attack");
-    expect(mockStartSearch).toHaveBeenCalledTimes(1);
+    expect(mockGetOrSearchResults).toHaveBeenCalledTimes(1);
 
     const res2 = await request(app).get("/?t=search&q=test&offset=2&limit=2");
     expect(res2.status).toBe(200);
     expect(res2.text).toContain('offset="2" total="3"');
     expect(res2.text).toContain("Massive Attack");
     expect(res2.text).not.toContain("Radiohead");
-    expect(mockStartSearch).toHaveBeenCalledTimes(1);
+    expect(mockGetOrSearchResults).toHaveBeenCalledTimes(2);
   });
 
   it("returns empty page when offset exceeds results", async () => {
-    setupSearchMocks([
+    mockGetOrSearchResults.mockResolvedValue([
       {
         guid: "g1",
         username: "user1",
@@ -199,7 +212,7 @@ describe("GET /download/:guid", () => {
       bitRate: 320,
       category: 3040,
     };
-    setupSearchMocks([result]);
+    mockGetOrSearchResults.mockResolvedValue([result]);
     mockEncodeNzb.mockReturnValue("<nzb>test</nzb>");
 
     await request(app).get("/?t=search&q=dltest");

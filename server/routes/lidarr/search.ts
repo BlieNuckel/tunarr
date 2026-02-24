@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { lidarrPost } from "../../api/lidarr/post";
+import { triggerAlbumSearch } from "../../services/lidarr/search";
 
 const router = express.Router();
 
@@ -12,11 +12,7 @@ router.post("/search", async (req: Request, res: Response) => {
       .json({ error: "albumIds must be a non-empty array" });
   }
 
-  await lidarrPost("/command", {
-    name: "AlbumSearch",
-    albumIds,
-  });
-
+  await triggerAlbumSearch(albumIds);
   res.json({ status: "success" });
 });
 

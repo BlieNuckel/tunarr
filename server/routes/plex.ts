@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 import express from "express";
 import { getTopArtists } from "../api/plex/topArtists";
-import { getPlexConfig } from "../api/plex/config";
 import { getPlexServers } from "../api/plex/servers";
 import { getPlexAccount } from "../api/plex/account";
+import { fetchPlexThumbnail } from "../services/plex";
 
 const router = express.Router();
 
@@ -20,20 +20,15 @@ router.get("/thumb", async (req: Request, res: Response) => {
     return;
   }
 
-  const { baseUrl, headers } = getPlexConfig();
-  const upstream = await fetch(`${baseUrl}${path}`, { headers });
-
-  if (!upstream.ok) {
-    res.status(upstream.status).end();
+  const result = await fetchPlexThumbnail(path);
+  if (!result.ok) {
+    res.status(result.status).end();
     return;
   }
 
-  const contentType = upstream.headers.get("content-type");
-  if (contentType) res.setHeader("Content-Type", contentType);
+  if (result.contentType) res.setHeader("Content-Type", result.contentType);
   res.setHeader("Cache-Control", "public, max-age=86400");
-
-  const buffer = await upstream.arrayBuffer();
-  res.send(Buffer.from(buffer));
+  res.send(result.buffer);
 });
 
 router.get("/servers", async (req: Request, res: Response) => {

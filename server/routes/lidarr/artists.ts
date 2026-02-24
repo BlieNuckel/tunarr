@@ -1,25 +1,16 @@
 import express, { Request, Response } from "express";
-import { lidarrGet } from "../../api/lidarr/get";
-import type { LidarrArtist } from "../../api/lidarr/types";
+import { getArtistList } from "../../services/lidarr/artists";
 
 const router = express.Router();
 
 router.get("/artists", async (_req: Request, res: Response) => {
-  const result = await lidarrGet<LidarrArtist[]>("/artist");
+  const result = await getArtistList();
 
   if (!result.ok) {
-    return res
-      .status(result.status)
-      .json({ error: "Failed to fetch artists from Lidarr" });
+    return res.status(result.status).json({ error: result.error });
   }
 
-  const artists = result.data.map((a) => ({
-    id: a.id,
-    name: a.artistName,
-    foreignArtistId: a.foreignArtistId,
-  }));
-
-  res.json(artists);
+  res.json(result.data);
 });
 
 export default router;

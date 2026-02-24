@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockLidarrGet = vi.fn();
+const mockGetWantedMissing = vi.fn();
 
-vi.mock("../../api/lidarr/get", () => ({
-  lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
+vi.mock("../../services/lidarr/wanted", () => ({
+  getWantedMissing: (...args: unknown[]) => mockGetWantedMissing(...args),
 }));
 
 import express from "express";
@@ -25,33 +25,24 @@ const mockData = {
 };
 
 describe("GET /wanted/missing", () => {
-  it("passes default query params to Lidarr", async () => {
-    mockLidarrGet.mockResolvedValue({ status: 200, data: mockData });
+  it("passes default page and pageSize to service", async () => {
+    mockGetWantedMissing.mockResolvedValue({ status: 200, data: mockData });
 
     await request(app).get("/wanted/missing");
 
-    expect(mockLidarrGet).toHaveBeenCalledWith("/wanted/missing", {
-      page: 1,
-      pageSize: 20,
-      includeArtist: true,
-      sortKey: "title",
-      sortDirection: "ascending",
-    });
+    expect(mockGetWantedMissing).toHaveBeenCalledWith(1, 20);
   });
 
   it("forwards page and pageSize from request query", async () => {
-    mockLidarrGet.mockResolvedValue({ status: 200, data: mockData });
+    mockGetWantedMissing.mockResolvedValue({ status: 200, data: mockData });
 
     await request(app).get("/wanted/missing?page=2&pageSize=50");
 
-    expect(mockLidarrGet).toHaveBeenCalledWith(
-      "/wanted/missing",
-      expect.objectContaining({ page: "2", pageSize: "50" })
-    );
+    expect(mockGetWantedMissing).toHaveBeenCalledWith("2", "50");
   });
 
-  it("proxies status and data from Lidarr", async () => {
-    mockLidarrGet.mockResolvedValue({ status: 200, data: mockData });
+  it("proxies status and data from service", async () => {
+    mockGetWantedMissing.mockResolvedValue({ status: 200, data: mockData });
 
     const res = await request(app).get("/wanted/missing");
     expect(res.status).toBe(200);

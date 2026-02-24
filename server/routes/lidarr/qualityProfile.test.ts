@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockLidarrGet = vi.fn();
+const mockGetQualityProfiles = vi.fn();
 
-vi.mock("../../api/lidarr/get.js", () => ({
-  lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
+vi.mock("../../services/lidarr/profiles", () => ({
+  getQualityProfiles: (...args: unknown[]) => mockGetQualityProfiles(...args),
 }));
 
 import express from "express";
@@ -18,23 +18,20 @@ beforeEach(() => {
 });
 
 describe("GET /qualityprofiles", () => {
-  it("returns 200 with data from Lidarr", async () => {
+  it("returns 200 with data from service", async () => {
     const profiles = [
       { id: 1, name: "Any" },
       { id: 2, name: "Lossless" },
     ];
-    mockLidarrGet.mockResolvedValue({ status: 200, data: profiles });
+    mockGetQualityProfiles.mockResolvedValue(profiles);
 
     const res = await request(app).get("/qualityprofiles");
     expect(res.status).toBe(200);
     expect(res.body).toEqual(profiles);
   });
 
-  it("always returns 200 even when Lidarr returns error data", async () => {
-    mockLidarrGet.mockResolvedValue({
-      status: 500,
-      data: { error: "internal" },
-    });
+  it("returns data even when service returns error data", async () => {
+    mockGetQualityProfiles.mockResolvedValue({ error: "internal" });
 
     const res = await request(app).get("/qualityprofiles");
     expect(res.status).toBe(200);

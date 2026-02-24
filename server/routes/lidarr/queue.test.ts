@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockLidarrGet = vi.fn();
+const mockGetLidarrQueue = vi.fn();
 
-vi.mock("../../api/lidarr/get", () => ({
-  lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
+vi.mock("../../services/lidarr/queue", () => ({
+  getLidarrQueue: (...args: unknown[]) => mockGetLidarrQueue(...args),
 }));
 
 import express from "express";
@@ -25,32 +25,24 @@ const mockData = {
 };
 
 describe("GET /queue", () => {
-  it("passes default query params to Lidarr", async () => {
-    mockLidarrGet.mockResolvedValue({ status: 200, data: mockData });
+  it("passes default page and pageSize to service", async () => {
+    mockGetLidarrQueue.mockResolvedValue({ status: 200, data: mockData });
 
     await request(app).get("/queue");
 
-    expect(mockLidarrGet).toHaveBeenCalledWith("/queue", {
-      page: 1,
-      pageSize: 20,
-      includeArtist: true,
-      includeAlbum: true,
-    });
+    expect(mockGetLidarrQueue).toHaveBeenCalledWith(1, 20);
   });
 
   it("forwards page and pageSize from request query", async () => {
-    mockLidarrGet.mockResolvedValue({ status: 200, data: mockData });
+    mockGetLidarrQueue.mockResolvedValue({ status: 200, data: mockData });
 
     await request(app).get("/queue?page=2&pageSize=10");
 
-    expect(mockLidarrGet).toHaveBeenCalledWith(
-      "/queue",
-      expect.objectContaining({ page: "2", pageSize: "10" })
-    );
+    expect(mockGetLidarrQueue).toHaveBeenCalledWith("2", "10");
   });
 
-  it("proxies status and data from Lidarr", async () => {
-    mockLidarrGet.mockResolvedValue({ status: 200, data: mockData });
+  it("proxies status and data from service", async () => {
+    mockGetLidarrQueue.mockResolvedValue({ status: 200, data: mockData });
 
     const res = await request(app).get("/queue");
     expect(res.status).toBe(200);

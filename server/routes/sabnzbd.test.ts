@@ -1,37 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockDecodeNzb = vi.fn();
-const mockAddDownload = vi.fn();
-const mockGetDownload = vi.fn();
-const mockGetAllDownloads = vi.fn();
+const mockGetQueueSlots = vi.fn();
+const mockGetHistorySlots = vi.fn();
+const mockProcessAddFile = vi.fn();
+const mockDeleteQueueItem = vi.fn();
 const mockRemoveDownload = vi.fn();
-const mockEnqueueDownload = vi.fn();
-const mockGetDownloadTransfers = vi.fn();
-const mockCancelDownload = vi.fn();
 const mockGetSlskdConfig = vi.fn();
 
-vi.mock("../api/slskd/nzb", () => ({
-  decodeNzb: (...args: unknown[]) => mockDecodeNzb(...args),
+vi.mock("../services/sabnzbd/queue", () => ({
+  getQueueSlots: (...args: unknown[]) => mockGetQueueSlots(...args),
+}));
+
+vi.mock("../services/sabnzbd/history", () => ({
+  getHistorySlots: (...args: unknown[]) => mockGetHistorySlots(...args),
+}));
+
+vi.mock("../services/sabnzbd/addFile", () => ({
+  processAddFile: (...args: unknown[]) => mockProcessAddFile(...args),
+}));
+
+vi.mock("../services/sabnzbd/deleteQueue", () => ({
+  deleteQueueItem: (...args: unknown[]) => mockDeleteQueueItem(...args),
 }));
 
 vi.mock("../api/slskd/downloadTracker", () => ({
-  addDownload: (...args: unknown[]) => mockAddDownload(...args),
-  getDownload: (...args: unknown[]) => mockGetDownload(...args),
-  getAllDownloads: (...args: unknown[]) => mockGetAllDownloads(...args),
   removeDownload: (...args: unknown[]) => mockRemoveDownload(...args),
 }));
-
-vi.mock("../api/slskd/transfer", () => ({
-  enqueueDownload: (...args: unknown[]) => mockEnqueueDownload(...args),
-  getDownloadTransfers: (...args: unknown[]) =>
-    mockGetDownloadTransfers(...args),
-  cancelDownload: (...args: unknown[]) => mockCancelDownload(...args),
-}));
-
-vi.mock("../api/slskd/statusMap", async () => {
-  const actual = await vi.importActual("../api/slskd/statusMap");
-  return actual;
-});
 
 vi.mock("../api/slskd/config", () => ({
   getSlskdConfig: (...args: unknown[]) => mockGetSlskdConfig(...args),
@@ -89,38 +83,17 @@ describe("GET /api?mode=fullstatus", () => {
 });
 
 describe("GET /api?mode=queue", () => {
-  it("returns in-progress downloads as queue slots", async () => {
-    mockGetAllDownloads.mockReturnValue([
+  it("returns queue slots from service", async () => {
+    mockGetQueueSlots.mockResolvedValue([
       {
-        nzoId: "nzo1",
-        title: "Test Album",
-        category: "music",
-        username: "user1",
-        files: [{ filename: "Music\\track.flac", size: 10000000 }],
-        totalSize: 10000000,
-        addedAt: Date.now(),
-      },
-    ]);
-    mockGetDownloadTransfers.mockResolvedValue([
-      {
-        username: "user1",
-        directories: [
-          {
-            directory: "Music",
-            files: [
-              {
-                username: "user1",
-                filename: "Music\\track.flac",
-                size: 10000000,
-                state: "InProgress",
-                bytesTransferred: 5000000,
-                averageSpeed: 100000,
-                percentComplete: 50,
-                id: "t1",
-              },
-            ],
-          },
-        ],
+        nzo_id: "nzo1",
+        filename: "Test Album",
+        cat: "music",
+        mb: "9.5",
+        mbleft: "4.8",
+        percentage: "50",
+        status: "Downloading",
+        timeleft: "00:00:50",
       },
     ]);
 
@@ -132,8 +105,15 @@ describe("GET /api?mode=queue", () => {
   });
 
   it("returns empty queue when no downloads", async () => {
-    mockGetAllDownloads.mockReturnValue([]);
-    mockGetDownloadTransfers.mockResolvedValue([]);
+    mockGetQueueSlots.mockResolvedValue([]);
+
+    const res = await request(app).get("/api?mode=queue");
+    expect(res.status).toBe(200);
+    expect(res.body.queue.slots).toHaveLength(0);
+  });
+
+  it("returns empty queue on error", async () => {
+    mockGetQueueSlots.mockRejectedValue(new Error("failed"));
 
     const res = await request(app).get("/api?mode=queue");
     expect(res.status).toBe(200);
@@ -142,38 +122,16 @@ describe("GET /api?mode=queue", () => {
 });
 
 describe("GET /api?mode=history", () => {
-  it("returns completed downloads as history slots", async () => {
-    mockGetAllDownloads.mockReturnValue([
+  it("returns history slots from service", async () => {
+    mockGetHistorySlots.mockResolvedValue([
       {
-        nzoId: "nzo1",
-        title: "Test Album",
+        nzo_id: "nzo1",
+        name: "Test Album",
         category: "music",
-        username: "user1",
-        files: [{ filename: "Music\\track.flac", size: 10000000 }],
-        totalSize: 10000000,
-        addedAt: Date.now(),
-      },
-    ]);
-    mockGetDownloadTransfers.mockResolvedValue([
-      {
-        username: "user1",
-        directories: [
-          {
-            directory: "Music",
-            files: [
-              {
-                username: "user1",
-                filename: "Music\\track.flac",
-                size: 10000000,
-                state: "Completed, Succeeded",
-                bytesTransferred: 10000000,
-                averageSpeed: 100000,
-                percentComplete: 100,
-                id: "t1",
-              },
-            ],
-          },
-        ],
+        bytes: 10000000,
+        status: "Completed",
+        completed: 1700000000,
+        storage: "/downloads/complete/Test Album",
       },
     ]);
 
@@ -189,12 +147,11 @@ describe("GET /api?mode=history", () => {
 });
 
 describe("POST /api?mode=addfile", () => {
-  it("decodes NZB and queues download", async () => {
-    mockDecodeNzb.mockReturnValue({
-      username: "user1",
-      files: [{ filename: "Music\\track.flac", size: 5000000 }],
+  it("processes NZB and queues download", async () => {
+    mockProcessAddFile.mockResolvedValue({
+      nzoId: "slskd_123_abc",
+      title: "Test Album",
     });
-    mockEnqueueDownload.mockResolvedValue(undefined);
 
     const res = await request(app)
       .post("/api?mode=addfile&cat=music")
@@ -203,10 +160,7 @@ describe("POST /api?mode=addfile", () => {
     expect(res.status).toBe(200);
     expect(res.body.status).toBe(true);
     expect(res.body.nzo_ids).toHaveLength(1);
-    expect(mockEnqueueDownload).toHaveBeenCalledWith("user1", [
-      { filename: "Music\\track.flac", size: 5000000 },
-    ]);
-    expect(mockAddDownload).toHaveBeenCalled();
+    expect(mockProcessAddFile).toHaveBeenCalled();
   });
 
   it("returns 400 when no file uploaded", async () => {
@@ -217,40 +171,15 @@ describe("POST /api?mode=addfile", () => {
 });
 
 describe("GET /api?mode=queue&name=delete", () => {
-  it("cancels transfers and removes tracker", async () => {
-    mockGetDownload.mockReturnValue({
-      nzoId: "nzo1",
-      username: "user1",
-      files: [{ filename: "Music\\track.flac" }],
-    });
-    mockGetDownloadTransfers.mockResolvedValue([
-      {
-        username: "user1",
-        directories: [
-          {
-            directory: "Music",
-            files: [
-              {
-                username: "user1",
-                filename: "Music\\track.flac",
-                id: "t1",
-                state: "InProgress",
-              },
-            ],
-          },
-        ],
-      },
-    ]);
-    mockCancelDownload.mockResolvedValue(undefined);
-    mockRemoveDownload.mockReturnValue(true);
+  it("calls deleteQueueItem service", async () => {
+    mockDeleteQueueItem.mockResolvedValue(undefined);
 
     const res = await request(app).get(
       "/api?mode=queue&name=delete&value=nzo1"
     );
     expect(res.status).toBe(200);
     expect(res.body.status).toBe(true);
-    expect(mockCancelDownload).toHaveBeenCalledWith("user1", "t1");
-    expect(mockRemoveDownload).toHaveBeenCalledWith("nzo1");
+    expect(mockDeleteQueueItem).toHaveBeenCalledWith("nzo1");
   });
 });
 

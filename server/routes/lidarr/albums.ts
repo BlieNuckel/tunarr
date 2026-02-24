@@ -1,17 +1,16 @@
 import express, { Request, Response } from "express";
-import { lidarrGet } from "../../api/lidarr/get";
-import type { LidarrAlbum } from "../../api/lidarr/types";
+import { getMonitoredAlbums } from "../../services/lidarr/albums";
 
 const router = express.Router();
 
 router.get("/albums", async (_req: Request, res: Response) => {
-  const result = await lidarrGet<LidarrAlbum[]>("/album");
+  const result = await getMonitoredAlbums();
 
   if (!result.ok) {
-    return res.status(result.status).json({ error: "Failed to fetch albums" });
+    return res.status(result.status).json({ error: result.error });
   }
 
-  res.json(result.data.filter((album) => album.monitored));
+  res.json(result.data);
 });
 
 export default router;

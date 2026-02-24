@@ -1,23 +1,14 @@
 import type { Request, Response } from "express";
 import express from "express";
-import { lidarrGet } from "../../api/lidarr/get";
-import type {
-  LidarrPaginatedResponse,
-  LidarrQueueItem,
-} from "../../api/lidarr/types";
+import { getLidarrQueue } from "../../services/lidarr/queue";
 
 const router = express.Router();
 
 router.get("/queue", async (req: Request, res: Response) => {
-  const result = await lidarrGet<LidarrPaginatedResponse<LidarrQueueItem>>(
-    "/queue",
-    {
-      page: req.query.page || 1,
-      pageSize: req.query.pageSize || 20,
-      includeArtist: true,
-      includeAlbum: true,
-    }
-  );
+  const page = typeof req.query.page === "string" ? req.query.page : 1;
+  const pageSize = typeof req.query.pageSize === "string" ? req.query.pageSize : 20;
+
+  const result = await getLidarrQueue(page, pageSize);
   res.status(result.status).json(result.data);
 });
 

@@ -5,10 +5,12 @@ import path from "path";
 import crypto from "crypto";
 import { createLogger } from "../../logger";
 import { getConfigValue } from "../../config";
-import { lidarrGet } from "../../api/lidarr/get";
-import { lidarrPost } from "../../api/lidarr/post";
 import type { LidarrManualImportItem } from "../../api/lidarr/types";
-import { getAlbumByMbid, getOrAddArtist, getOrAddAlbum } from "./helpers";
+import {
+  ALLOWED_EXTENSIONS,
+  scanUploadedFiles,
+  confirmImport,
+} from "../../services/lidarr/import";
 
 const log = createLogger("Import");
 
@@ -21,8 +23,6 @@ declare global {
     }
   }
 }
-
-const ALLOWED_EXTENSIONS = [".flac", ".mp3", ".ogg", ".wav", ".m4a", ".aac"];
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -102,40 +102,13 @@ router.post(
       return res.status(500).json({ error: "Upload failed" });
     }
 
-    const lookupAlbum = await getAlbumByMbid(albumMbid);
-    const artistMbid = lookupAlbum.artist?.foreignArtistId;
-    if (!artistMbid) {
-      return res
-        .status(404)
-        .json({ error: "Could not determine artist from album lookup" });
+    const result = await scanUploadedFiles(albumMbid, uploadDir);
+
+    if (!result.ok) {
+      return res.status(result.status).json({ error: result.error });
     }
 
-    const artist = await getOrAddArtist(artistMbid);
-    const { album } = await getOrAddAlbum(albumMbid, artist);
-
-    const scanResult = await lidarrGet<LidarrManualImportItem[]>(
-      "/manualimport",
-      {
-        folder: uploadDir,
-        artistId: artist.id,
-        filterExistingFiles: true,
-      }
-    );
-
-    if (!scanResult.ok) {
-      return res
-        .status(502)
-        .json({ error: "Lidarr manual import scan failed" });
-    }
-
-    if (!scanResult.data?.length) {
-      return res.status(400).json({
-        error:
-          "Lidarr found no importable files. Make sure the import path is accessible to Lidarr.",
-      });
-    }
-
-    for (const item of scanResult.data) {
+    for (const item of result.items) {
       log.info("upload scan item", {
         path: item.path,
         name: item.name,
@@ -149,9 +122,9 @@ router.post(
 
     res.json({
       uploadId,
-      artistId: artist.id,
-      albumId: album.id,
-      items: scanResult.data,
+      artistId: result.artistId,
+      albumId: result.albumId,
+      items: result.items,
     });
   }
 );
@@ -162,25 +135,7 @@ router.post("/import/confirm", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "items array is required" });
   }
 
-  const files = items.map((item) => ({
-    path: item.path,
-    artistId: item.artist?.id,
-    albumId: item.album?.id,
-    albumReleaseId: item.albumReleaseId,
-    trackIds: Array.isArray(item.tracks) ? item.tracks.map((t) => t.id) : [],
-    quality: item.quality,
-    indexerFlags: item.indexerFlags ?? 0,
-    downloadId: item.downloadId ?? "",
-    disableReleaseSwitching: item.disableReleaseSwitching ?? false,
-  }));
-
-  log.info("confirm command payload", { files });
-
-  const result = await lidarrPost("/command", {
-    name: "ManualImport",
-    files,
-    importMode: "move",
-  });
+  const result = await confirmImport(items);
 
   log.info("confirm command response", {
     ok: result.ok,

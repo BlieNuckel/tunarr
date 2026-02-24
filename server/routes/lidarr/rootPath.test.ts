@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockLidarrGet = vi.fn();
+const mockGetRootFolders = vi.fn();
 
-vi.mock("../../api/lidarr/get.js", () => ({
-  lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
+vi.mock("../../services/lidarr/profiles", () => ({
+  getRootFolders: (...args: unknown[]) => mockGetRootFolders(...args),
 }));
 
 import express from "express";
@@ -18,20 +18,17 @@ beforeEach(() => {
 });
 
 describe("GET /rootfolders", () => {
-  it("returns 200 with data from Lidarr", async () => {
+  it("returns 200 with data from service", async () => {
     const folders = [{ id: 1, path: "/music" }];
-    mockLidarrGet.mockResolvedValue({ status: 200, data: folders });
+    mockGetRootFolders.mockResolvedValue(folders);
 
     const res = await request(app).get("/rootfolders");
     expect(res.status).toBe(200);
     expect(res.body).toEqual(folders);
   });
 
-  it("always returns 200 even when Lidarr returns error data", async () => {
-    mockLidarrGet.mockResolvedValue({
-      status: 500,
-      data: { error: "internal" },
-    });
+  it("returns data even when service returns error data", async () => {
+    mockGetRootFolders.mockResolvedValue({ error: "internal" });
 
     const res = await request(app).get("/rootfolders");
     expect(res.status).toBe(200);

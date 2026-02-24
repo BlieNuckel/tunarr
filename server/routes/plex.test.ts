@@ -1,17 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockGetTopArtists = vi.fn();
-const mockGetPlexConfig = vi.fn();
+const mockFetchPlexThumbnail = vi.fn();
 const mockGetPlexServers = vi.fn();
 const mockGetPlexAccount = vi.fn();
-const mockFetch = vi.fn();
 
 vi.mock("../api/plex/topArtists", () => ({
   getTopArtists: (...args: unknown[]) => mockGetTopArtists(...args),
 }));
 
-vi.mock("../api/plex/config", () => ({
-  getPlexConfig: (...args: unknown[]) => mockGetPlexConfig(...args),
+vi.mock("../services/plex", () => ({
+  fetchPlexThumbnail: (...args: unknown[]) => mockFetchPlexThumbnail(...args),
 }));
 
 vi.mock("../api/plex/servers", () => ({
@@ -21,8 +20,6 @@ vi.mock("../api/plex/servers", () => ({
 vi.mock("../api/plex/account", () => ({
   getPlexAccount: (...args: unknown[]) => mockGetPlexAccount(...args),
 }));
-
-vi.stubGlobal("fetch", mockFetch);
 
 import express from "express";
 import request from "supertest";
@@ -72,18 +69,10 @@ describe("GET /thumb", () => {
   });
 
   it("proxies image from Plex with correct headers", async () => {
-    mockGetPlexConfig.mockReturnValue({
-      baseUrl: "http://plex:32400",
-      headers: { "X-Plex-Token": "token123" },
-      token: "token123",
-    });
-
-    const imageBuffer = new ArrayBuffer(4);
-    mockFetch.mockResolvedValue({
+    mockFetchPlexThumbnail.mockResolvedValue({
       ok: true,
-      status: 200,
-      headers: new Map([["content-type", "image/jpeg"]]),
-      arrayBuffer: async () => imageBuffer,
+      buffer: Buffer.from([0, 0, 0, 0]),
+      contentType: "image/jpeg",
     });
 
     const res = await request(app).get(
@@ -92,24 +81,13 @@ describe("GET /thumb", () => {
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toContain("image/jpeg");
     expect(res.headers["cache-control"]).toBe("public, max-age=86400");
-    expect(mockFetch).toHaveBeenCalledWith(
-      "http://plex:32400/library/metadata/123/thumb",
-      { headers: { "X-Plex-Token": "token123" } }
+    expect(mockFetchPlexThumbnail).toHaveBeenCalledWith(
+      "/library/metadata/123/thumb"
     );
   });
 
   it("proxies non-ok upstream status", async () => {
-    mockGetPlexConfig.mockReturnValue({
-      baseUrl: "http://plex:32400",
-      headers: { "X-Plex-Token": "token123" },
-      token: "token123",
-    });
-
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 404,
-      headers: new Map(),
-    });
+    mockFetchPlexThumbnail.mockResolvedValue({ ok: false, status: 404 });
 
     const res = await request(app).get("/thumb?path=/bad/path");
     expect(res.status).toBe(404);

@@ -6,7 +6,7 @@ import {
   searchArtistReleaseGroups,
 } from "../api/musicbrainz/releaseGroups";
 import { getReleaseTracks } from "../api/musicbrainz/tracks";
-import { getTrackPreviews } from "../api/deezer/tracks";
+import { enrichTracksWithPreviews } from "../services/musicbrainz";
 
 const router = express.Router();
 
@@ -33,28 +33,11 @@ router.get(
       typeof req.query.artistName === "string" ? req.query.artistName : "";
     const media = await getReleaseTracks(releaseGroupId as string);
 
-    if (artistName) {
-      const allTracks = media.flatMap((m) =>
-        m.tracks.map((t: { title: string }) => ({
-          artistName,
-          title: t.title,
-        }))
-      );
+    const enrichedMedia = artistName
+      ? await enrichTracksWithPreviews(media, artistName)
+      : media;
 
-      const previews = await getTrackPreviews(allTracks);
-
-      for (const medium of media) {
-        for (const track of medium.tracks) {
-          const key = `${artistName.toLowerCase()}|${track.title.toLowerCase()}`;
-          const previewUrl = previews.get(key) || "";
-          if (previewUrl) {
-            (track as Record<string, unknown>).previewUrl = previewUrl;
-          }
-        }
-      }
-    }
-
-    res.json({ media });
+    res.json({ media: enrichedMedia });
   }
 );
 

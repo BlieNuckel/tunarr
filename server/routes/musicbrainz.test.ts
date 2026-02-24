@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockSearchReleaseGroups = vi.fn();
 const mockSearchArtistReleaseGroups = vi.fn();
 const mockGetReleaseTracks = vi.fn();
-const mockGetTrackPreviews = vi.fn();
+const mockEnrichTracksWithPreviews = vi.fn();
 
 vi.mock("../api/musicbrainz/releaseGroups", () => ({
   searchReleaseGroups: (...args: unknown[]) => mockSearchReleaseGroups(...args),
@@ -15,8 +15,9 @@ vi.mock("../api/musicbrainz/tracks", () => ({
   getReleaseTracks: (...args: unknown[]) => mockGetReleaseTracks(...args),
 }));
 
-vi.mock("../api/deezer/tracks", () => ({
-  getTrackPreviews: (...args: unknown[]) => mockGetTrackPreviews(...args),
+vi.mock("../services/musicbrainz", () => ({
+  enrichTracksWithPreviews: (...args: unknown[]) =>
+    mockEnrichTracksWithPreviews(...args),
 }));
 
 vi.mock("../middleware/rateLimiter", () => ({
@@ -75,7 +76,7 @@ describe("GET /tracks/:releaseGroupId", () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ media });
     expect(mockGetReleaseTracks).toHaveBeenCalledWith("rg-123");
-    expect(mockGetTrackPreviews).not.toHaveBeenCalled();
+    expect(mockEnrichTracksWithPreviews).not.toHaveBeenCalled();
   });
 
   it("enriches tracks with preview URLs when artistName is provided", async () => {
@@ -88,13 +89,17 @@ describe("GET /tracks/:releaseGroupId", () => {
         ],
       },
     ];
+    const enrichedMedia = [
+      {
+        position: 1,
+        tracks: [
+          { title: "Creep", position: 1, previewUrl: "https://example.com/creep.mp3" },
+          { title: "High and Dry", position: 2 },
+        ],
+      },
+    ];
     mockGetReleaseTracks.mockResolvedValue(media);
-    mockGetTrackPreviews.mockResolvedValue(
-      new Map([
-        ["radiohead|creep", "https://example.com/creep.mp3"],
-        ["radiohead|high and dry", ""],
-      ])
-    );
+    mockEnrichTracksWithPreviews.mockResolvedValue(enrichedMedia);
 
     const res = await request(app).get("/tracks/rg-123?artistName=Radiohead");
 
@@ -103,10 +108,7 @@ describe("GET /tracks/:releaseGroupId", () => {
       "https://example.com/creep.mp3"
     );
     expect(res.body.media[0].tracks[1].previewUrl).toBeUndefined();
-    expect(mockGetTrackPreviews).toHaveBeenCalledWith([
-      { artistName: "Radiohead", title: "Creep" },
-      { artistName: "Radiohead", title: "High and Dry" },
-    ]);
+    expect(mockEnrichTracksWithPreviews).toHaveBeenCalledWith(media, "Radiohead");
   });
 
   it("skips preview enrichment when artistName is absent", async () => {
@@ -117,6 +119,6 @@ describe("GET /tracks/:releaseGroupId", () => {
 
     await request(app).get("/tracks/rg-456");
 
-    expect(mockGetTrackPreviews).not.toHaveBeenCalled();
+    expect(mockEnrichTracksWithPreviews).not.toHaveBeenCalled();
   });
 });

@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockLidarrGet = vi.fn();
+const mockGetMetadataProfiles = vi.fn();
 
-vi.mock("../../api/lidarr/get.js", () => ({
-  lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
+vi.mock("../../services/lidarr/profiles", () => ({
+  getMetadataProfiles: (...args: unknown[]) =>
+    mockGetMetadataProfiles(...args),
 }));
 
 import express from "express";
@@ -18,23 +19,20 @@ beforeEach(() => {
 });
 
 describe("GET /metadataprofiles", () => {
-  it("returns 200 with data from Lidarr", async () => {
+  it("returns 200 with data from service", async () => {
     const profiles = [
       { id: 1, name: "Standard" },
       { id: 2, name: "Extended" },
     ];
-    mockLidarrGet.mockResolvedValue({ status: 200, data: profiles });
+    mockGetMetadataProfiles.mockResolvedValue(profiles);
 
     const res = await request(app).get("/metadataprofiles");
     expect(res.status).toBe(200);
     expect(res.body).toEqual(profiles);
   });
 
-  it("always returns 200 even when Lidarr returns error data", async () => {
-    mockLidarrGet.mockResolvedValue({
-      status: 500,
-      data: { error: "internal" },
-    });
+  it("returns data even when service returns error data", async () => {
+    mockGetMetadataProfiles.mockResolvedValue({ error: "internal" });
 
     const res = await request(app).get("/metadataprofiles");
     expect(res.status).toBe(200);

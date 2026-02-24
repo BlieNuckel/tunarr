@@ -13,7 +13,7 @@ vi.mock("../../promotedAlbum/getPromotedAlbum", () => ({
     mockClearPromotedAlbumCache(...args),
 }));
 
-vi.mock("./helpers", () => ({
+vi.mock("../../services/lidarr/helpers", () => ({
   getAlbumByMbid: (...args: unknown[]) => mockGetAlbumByMbid(...args),
   getOrAddArtist: (...args: unknown[]) => mockGetOrAddArtist(...args),
   getOrAddAlbum: (...args: unknown[]) => mockGetOrAddAlbum(...args),

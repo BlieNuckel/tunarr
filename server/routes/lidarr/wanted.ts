@@ -1,24 +1,14 @@
 import type { Request, Response } from "express";
 import express from "express";
-import { lidarrGet } from "../../api/lidarr/get";
-import type {
-  LidarrPaginatedResponse,
-  LidarrWantedRecord,
-} from "../../api/lidarr/types";
+import { getWantedMissing } from "../../services/lidarr/wanted";
 
 const router = express.Router();
 
 router.get("/wanted/missing", async (req: Request, res: Response) => {
-  const result = await lidarrGet<LidarrPaginatedResponse<LidarrWantedRecord>>(
-    "/wanted/missing",
-    {
-      page: req.query.page || 1,
-      pageSize: req.query.pageSize || 20,
-      includeArtist: true,
-      sortKey: "title",
-      sortDirection: "ascending",
-    }
-  );
+  const page = typeof req.query.page === "string" ? req.query.page : 1;
+  const pageSize = typeof req.query.pageSize === "string" ? req.query.pageSize : 20;
+
+  const result = await getWantedMissing(page, pageSize);
   res.status(result.status).json(result.data);
 });
 

@@ -4,8 +4,9 @@ const mockGetSimilarArtists = vi.fn();
 const mockGetArtistTopTags = vi.fn();
 const mockGetTopArtistsByTag = vi.fn();
 const mockGetTopAlbumsByTag = vi.fn();
-const mockGetArtistsImages = vi.fn();
-const mockGetAlbumsArtwork = vi.fn();
+const mockEnrichArtistsWithImages = vi.fn();
+const mockEnrichArtistSectionsWithImages = vi.fn();
+const mockEnrichAlbumsWithArtwork = vi.fn();
 
 vi.mock("../api/lastfm/artists", () => ({
   getSimilarArtists: (...args: unknown[]) => mockGetSimilarArtists(...args),
@@ -17,12 +18,13 @@ vi.mock("../api/lastfm/albums", () => ({
   getTopAlbumsByTag: (...args: unknown[]) => mockGetTopAlbumsByTag(...args),
 }));
 
-vi.mock("../api/apple/artists", () => ({
-  getAlbumsArtwork: (...args: unknown[]) => mockGetAlbumsArtwork(...args),
-}));
-
-vi.mock("../api/deezer/artists", () => ({
-  getArtistsImages: (...args: unknown[]) => mockGetArtistsImages(...args),
+vi.mock("../services/lastfm", () => ({
+  enrichArtistsWithImages: (...args: unknown[]) =>
+    mockEnrichArtistsWithImages(...args),
+  enrichArtistSectionsWithImages: (...args: unknown[]) =>
+    mockEnrichArtistSectionsWithImages(...args),
+  enrichAlbumsWithArtwork: (...args: unknown[]) =>
+    mockEnrichAlbumsWithArtwork(...args),
 }));
 
 import express from "express";
@@ -46,9 +48,13 @@ describe("GET /similar", () => {
   it("returns similar artists with images", async () => {
     const artists = [{ name: "Thom Yorke", match: 0.9, imageUrl: "" }];
     mockGetSimilarArtists.mockResolvedValue(artists);
-    mockGetArtistsImages.mockResolvedValue(
-      new Map([["thom yorke", "https://deezer.com/thom.jpg"]])
-    );
+    mockEnrichArtistsWithImages.mockResolvedValue([
+      {
+        name: "Thom Yorke",
+        match: 0.9,
+        imageUrl: "https://deezer.com/thom.jpg",
+      },
+    ]);
 
     const res = await request(app).get("/similar?artist=Radiohead");
     expect(res.status).toBe(200);
@@ -62,7 +68,7 @@ describe("GET /similar", () => {
       ],
     });
     expect(mockGetSimilarArtists).toHaveBeenCalledWith("Radiohead");
-    expect(mockGetArtistsImages).toHaveBeenCalledWith(["Thom Yorke"]);
+    expect(mockEnrichArtistsWithImages).toHaveBeenCalledWith(artists);
   });
 });
 
@@ -98,9 +104,9 @@ describe("GET /tag/artists", () => {
       pagination: { page: 1, totalPages: 5 },
     };
     mockGetTopArtistsByTag.mockResolvedValue(result);
-    mockGetArtistsImages.mockResolvedValue(
-      new Map([["radiohead", "https://deezer.com/radiohead.jpg"]])
-    );
+    mockEnrichArtistsWithImages.mockResolvedValue([
+      { name: "Radiohead", imageUrl: "https://deezer.com/radiohead.jpg" },
+    ]);
 
     const res = await request(app).get("/tag/artists?tags=rock");
     expect(res.status).toBe(200);
@@ -112,7 +118,6 @@ describe("GET /tag/artists", () => {
       pagination: { page: 1, totalPages: 5 },
     });
     expect(mockGetTopArtistsByTag).toHaveBeenCalledWith(["rock"], "1");
-    expect(mockGetArtistsImages).toHaveBeenCalledWith(["Radiohead"]);
   });
 
   it("returns artists by multiple tags with sections", async () => {
@@ -128,9 +133,20 @@ describe("GET /tag/artists", () => {
       pagination: { page: 1, totalPages: 1 },
     };
     mockGetTopArtistsByTag.mockResolvedValue(result);
-    mockGetArtistsImages.mockResolvedValue(
-      new Map([["nirvana", "https://deezer.com/nirvana.jpg"]])
-    );
+    mockEnrichArtistSectionsWithImages.mockResolvedValue([
+      {
+        tagCount: 2,
+        tagNames: ["grunge", "rock"],
+        artists: [
+          {
+            name: "Nirvana",
+            mbid: "n1",
+            imageUrl: "https://deezer.com/nirvana.jpg",
+            rank: 1,
+          },
+        ],
+      },
+    ]);
 
     const res = await request(app).get("/tag/artists?tags=grunge,rock");
     expect(res.status).toBe(200);
@@ -142,7 +158,6 @@ describe("GET /tag/artists", () => {
       ["grunge", "rock"],
       "1"
     );
-    expect(mockGetArtistsImages).toHaveBeenCalledWith(["Nirvana"]);
   });
 
   it("forwards page parameter", async () => {
@@ -152,7 +167,7 @@ describe("GET /tag/artists", () => {
       pagination: { page: 3, totalPages: 5 },
     };
     mockGetTopArtistsByTag.mockResolvedValue(result);
-    mockGetArtistsImages.mockResolvedValue(new Map());
+    mockEnrichArtistsWithImages.mockResolvedValue([]);
 
     await request(app).get("/tag/artists?tags=rock&page=3");
     expect(mockGetTopArtistsByTag).toHaveBeenCalledWith(["rock"], "3");
@@ -180,9 +195,15 @@ describe("GET /tag/albums", () => {
       pagination: { page: 1, totalPages: 3 },
     };
     mockGetTopAlbumsByTag.mockResolvedValue(result);
-    mockGetAlbumsArtwork.mockResolvedValue(
-      new Map([["ok computer|radiohead", "https://apple.com/okcomputer.jpg"]])
-    );
+    mockEnrichAlbumsWithArtwork.mockResolvedValue([
+      {
+        name: "OK Computer",
+        mbid: "a1",
+        artistName: "Radiohead",
+        artistMbid: "r1",
+        imageUrl: "https://apple.com/okcomputer.jpg",
+      },
+    ]);
 
     const res = await request(app).get("/tag/albums?tag=rock");
     expect(res.status).toBe(200);
@@ -199,9 +220,6 @@ describe("GET /tag/albums", () => {
       pagination: { page: 1, totalPages: 3 },
     });
     expect(mockGetTopAlbumsByTag).toHaveBeenCalledWith("rock", "1");
-    expect(mockGetAlbumsArtwork).toHaveBeenCalledWith([
-      { name: "OK Computer", artistName: "Radiohead" },
-    ]);
   });
 
   it("forwards page parameter", async () => {
@@ -210,7 +228,7 @@ describe("GET /tag/albums", () => {
       pagination: { page: 5, totalPages: 10 },
     };
     mockGetTopAlbumsByTag.mockResolvedValue(result);
-    mockGetAlbumsArtwork.mockResolvedValue(new Map());
+    mockEnrichAlbumsWithArtwork.mockResolvedValue([]);
 
     await request(app).get("/tag/albums?tag=rock&page=5");
     expect(mockGetTopAlbumsByTag).toHaveBeenCalledWith("rock", "5");

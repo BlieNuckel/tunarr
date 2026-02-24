@@ -7,7 +7,7 @@ import {
   getOrAddArtist,
   getOrAddAlbum,
   removeAlbum,
-} from "./helpers";
+} from "../../services/lidarr/helpers";
 
 const router = express.Router();
 

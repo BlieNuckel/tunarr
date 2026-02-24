@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockLidarrGet = vi.fn();
+const mockGetArtistList = vi.fn();
 
-vi.mock("../../api/lidarr/get", () => ({
-  lidarrGet: (...args: unknown[]) => mockLidarrGet(...args),
+vi.mock("../../services/lidarr/artists", () => ({
+  getArtistList: (...args: unknown[]) => mockGetArtistList(...args),
 }));
 
 import express from "express";
@@ -19,24 +19,11 @@ beforeEach(() => {
 
 describe("GET /artists", () => {
   it("returns mapped artist list on success", async () => {
-    mockLidarrGet.mockResolvedValue({
-      status: 200,
+    mockGetArtistList.mockResolvedValue({
       ok: true,
       data: [
-        {
-          id: 1,
-          artistName: "Radiohead",
-          foreignArtistId: "mbid-1",
-          monitored: true,
-          folder: "/music/Radiohead",
-        },
-        {
-          id: 2,
-          artistName: "Björk",
-          foreignArtistId: "mbid-2",
-          monitored: false,
-          folder: "/music/Bjork",
-        },
+        { id: 1, name: "Radiohead", foreignArtistId: "mbid-1" },
+        { id: 2, name: "Björk", foreignArtistId: "mbid-2" },
       ],
     });
 
@@ -48,11 +35,11 @@ describe("GET /artists", () => {
     ]);
   });
 
-  it("proxies error status from Lidarr", async () => {
-    mockLidarrGet.mockResolvedValue({
-      status: 503,
+  it("proxies error status from service", async () => {
+    mockGetArtistList.mockResolvedValue({
       ok: false,
-      data: { message: "Service unavailable" },
+      error: "Failed to fetch artists from Lidarr",
+      status: 503,
     });
 
     const res = await request(app).get("/artists");

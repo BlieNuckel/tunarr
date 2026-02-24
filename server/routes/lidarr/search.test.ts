@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const mockLidarrPost = vi.fn();
+const mockTriggerAlbumSearch = vi.fn();
 
-vi.mock("../../api/lidarr/post", () => ({
-  lidarrPost: (...args: unknown[]) => mockLidarrPost(...args),
+vi.mock("../../services/lidarr/search", () => ({
+  triggerAlbumSearch: (...args: unknown[]) => mockTriggerAlbumSearch(...args),
 }));
 
 import express from "express";
@@ -47,22 +47,19 @@ describe("POST /search", () => {
     expect(res.body.error).toBe("albumIds must be a non-empty array");
   });
 
-  it("calls lidarrPost with AlbumSearch command and returns success", async () => {
-    mockLidarrPost.mockResolvedValue({ ok: true });
+  it("calls triggerAlbumSearch and returns success", async () => {
+    mockTriggerAlbumSearch.mockResolvedValue({ ok: true });
 
     const res = await request(app)
       .post("/search")
       .send({ albumIds: [10, 20] });
     expect(res.status).toBe(200);
     expect(res.body.status).toBe("success");
-    expect(mockLidarrPost).toHaveBeenCalledWith("/command", {
-      name: "AlbumSearch",
-      albumIds: [10, 20],
-    });
+    expect(mockTriggerAlbumSearch).toHaveBeenCalledWith([10, 20]);
   });
 
-  it("returns 500 when lidarrPost throws", async () => {
-    mockLidarrPost.mockRejectedValue(new Error("Lidarr unavailable"));
+  it("returns 500 when triggerAlbumSearch throws", async () => {
+    mockTriggerAlbumSearch.mockRejectedValue(new Error("Lidarr unavailable"));
 
     const res = await request(app)
       .post("/search")
