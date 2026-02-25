@@ -16,13 +16,16 @@ export async function getPlexServers(
   token: string,
   clientId: string
 ): Promise<PlexServer[]> {
-  const res = await resilientFetch("https://plex.tv/api/v2/resources?includeHttps=1", {
-    headers: {
-      Accept: "application/json",
-      "X-Plex-Token": token,
-      "X-Plex-Client-Identifier": clientId,
-    },
-  });
+  const res = await resilientFetch(
+    "https://plex.tv/api/v2/resources?includeHttps=1",
+    {
+      headers: {
+        Accept: "application/json",
+        "X-Plex-Token": token,
+        "X-Plex-Client-Identifier": clientId,
+      },
+    }
+  );
 
   if (!res.ok) {
     throw new Error(`Plex returned ${res.status}`);

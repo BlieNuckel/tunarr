@@ -34,7 +34,9 @@ export async function searchArtistReleaseGroups(
   artistName: string
 ): Promise<ReleaseGroupSearchResult> {
   const artistUrl = `${MB_BASE}/artist/?query=${encodeURIComponent(artistName)}&limit=1&fmt=json`;
-  const artistResponse = await resilientFetch(artistUrl, { headers: MB_HEADERS });
+  const artistResponse = await resilientFetch(artistUrl, {
+    headers: MB_HEADERS,
+  });
 
   if (!artistResponse.ok) {
     throw new Error(`MusicBrainz returned ${artistResponse.status}`);

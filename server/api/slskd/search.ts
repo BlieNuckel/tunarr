@@ -44,9 +44,12 @@ export async function waitForSearch(searchId: string): Promise<WaitResult> {
   const deadline = Date.now() + MAX_POLL_DURATION_MS;
 
   while (Date.now() < deadline) {
-    const response = await resilientFetch(`${baseUrl}/api/v0/searches/${searchId}`, {
-      headers,
-    });
+    const response = await resilientFetch(
+      `${baseUrl}/api/v0/searches/${searchId}`,
+      {
+        headers,
+      }
+    );
 
     if (!response.ok) {
       const body = await response.text().catch(() => "");

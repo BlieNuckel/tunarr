@@ -27,9 +27,12 @@ export async function enqueueDownload(
 export async function getDownloadTransfers(): Promise<SlskdTransferGroup[]> {
   const { baseUrl, headers } = getSlskdConfig();
 
-  const response = await resilientFetch(`${baseUrl}/api/v0/transfers/downloads`, {
-    headers,
-  });
+  const response = await resilientFetch(
+    `${baseUrl}/api/v0/transfers/downloads`,
+    {
+      headers,
+    }
+  );
 
   if (!response.ok) {
     throw new Error(`slskd get transfers failed: ${response.status}`);

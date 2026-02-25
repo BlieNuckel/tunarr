@@ -81,9 +81,7 @@ describe("resilientFetch", () => {
   });
 
   it("skips retry when retry is false", async () => {
-    globalThis.fetch = vi
-      .fn()
-      .mockRejectedValue(new TypeError("fetch failed"));
+    globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
 
     await expect(
       resilientFetch("https://example.com", undefined, { retry: false })
