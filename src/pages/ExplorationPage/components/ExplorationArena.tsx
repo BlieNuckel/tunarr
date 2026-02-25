@@ -24,7 +24,7 @@ const FAN_CLASSES = [
   "flex justify-center items-end py-8",
   "[--fan-angle:8deg] sm:[--fan-angle:12deg]",
   "[--fan-pivot:120px] sm:[--fan-pivot:180px]",
-  "[--fan-overlap:-28px] sm:[--fan-overlap:-20px]",
+  "[--fan-overlap:-20px] sm:[--fan-overlap:-16px]",
 ].join(" ");
 
 function getFanStyle(
@@ -139,7 +139,7 @@ export default function ExplorationArena({
             return (
               <div
                 key={s.releaseGroup.id}
-                className={`w-24 sm:w-32 md:w-44 ${animClass}`}
+                className={`w-28 sm:w-32 md:w-44 ${animClass}`}
                 style={
                   {
                     ...getFanStyle(i, suggestions.length, dealt),
