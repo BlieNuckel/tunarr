@@ -115,7 +115,7 @@ describe("WantedList", () => {
     expect(screen.queryByTestId("purchase-modal")).not.toBeInTheDocument();
   });
 
-  it("shows 'No grab attempts' when lastEvent is null", () => {
+  it("shows 'Never grabbed — try manual searching' when lastEvent is null", () => {
     render(
       <WantedList
         items={[makeItem({ lastEvent: null })]}
@@ -124,7 +124,7 @@ describe("WantedList", () => {
       />
     );
 
-    expect(screen.getByText("No grab attempts")).toBeInTheDocument();
+    expect(screen.getByText("Never grabbed — try manual searching")).toBeInTheDocument();
   });
 
   it("shows 'Grabbed' with date for eventType 1", () => {

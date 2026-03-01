@@ -14,7 +14,7 @@ function formatEventLabel(lastEvent: WantedItemEvent | null): {
   colorClass: string;
 } {
   if (!lastEvent) {
-    return { text: "No grab attempts", colorClass: "text-gray-400" };
+    return { text: "Never grabbed — try manual searching", colorClass: "text-gray-400" };
   }
 
   const date = new Date(lastEvent.date).toLocaleDateString();
