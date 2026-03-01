@@ -34,7 +34,9 @@ export async function waitForArtistRefresh(): Promise<void> {
     }
 
     log.info(`Waiting for ${running.length} RefreshArtist command(s)...`);
-    await new Promise((resolve) => setTimeout(resolve, REFRESH_POLL_INTERVAL_MS));
+    await new Promise((resolve) =>
+      setTimeout(resolve, REFRESH_POLL_INTERVAL_MS)
+    );
   }
 
   log.warn(
