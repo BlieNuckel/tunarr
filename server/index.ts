@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { createLogger } from "./logger";
 import lastfmRoutes from "./routes/lastfm";
 import lidarrRoutes from "./routes/lidarr";
+import logsRoutes from "./routes/logs";
 import musicbrainzRoutes from "./routes/musicbrainz";
 import plexRoutes from "./routes/plex";
 import promotedAlbumRoutes from "./routes/promotedAlbum";
@@ -30,6 +31,7 @@ app.use("/api/plex", plexRoutes);
 app.use("/api/promoted-album", promotedAlbumRoutes);
 app.use("/api/torznab", torznabRoutes);
 app.use("/api/sabnzbd", sabnzbdRoutes);
+app.use("/api/logs", logsRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "..", "build")));
