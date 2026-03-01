@@ -30,7 +30,6 @@ export function withCache<TArgs extends unknown[], TReturn>(
     if (cached !== undefined) {
       if (options.label) {
         const log = createLogger(options.label);
-        log.info(`Cache hit for ${cacheKey}`);
       }
       return cached;
     }
