@@ -44,8 +44,7 @@ function SearchResultCard({
   onClick: () => void;
 }) {
   const [coverError, setCoverError] = useState(false);
-  const artistName =
-    rg["artist-credit"]?.[0]?.artist?.name || "Unknown Artist";
+  const artistName = rg["artist-credit"]?.[0]?.artist?.name || "Unknown Artist";
   const year = rg["first-release-date"]?.slice(0, 4) || "";
   const coverUrl = `https://coverartarchive.org/release-group/${rg.id}/front-500`;
 
@@ -169,7 +168,10 @@ export default function SourceSearch({ onSelect }: SourceSearchProps) {
       {error && <p className="text-rose-500 text-center mb-4">{error}</p>}
 
       {topResult && (
-        <div className="stagger-fade-in" style={{ "--stagger-index": 0 } as React.CSSProperties}>
+        <div
+          className="stagger-fade-in"
+          style={{ "--stagger-index": 0 } as React.CSSProperties}
+        >
           <TopResultCard rg={topResult} onClick={() => onSelect(topResult)} />
         </div>
       )}

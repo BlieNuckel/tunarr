@@ -68,7 +68,11 @@ export default function useExploration() {
   const [error, setError] = useState<string | null>(null);
 
   const loadSuggestions = useCallback(
-    async (source: ReleaseGroup, collected: CollectedAlbum[], tags: TagWeight[]) => {
+    async (
+      source: ReleaseGroup,
+      collected: CollectedAlbum[],
+      tags: TagWeight[]
+    ) => {
       setLoading(true);
       setError(null);
       setSuggestions([]);
@@ -85,7 +89,9 @@ export default function useExploration() {
         setSuggestions(result.suggestions);
         setAccumulatedTags(result.newTags);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load suggestions");
+        setError(
+          err instanceof Error ? err.message : "Failed to load suggestions"
+        );
       } finally {
         setLoading(false);
       }

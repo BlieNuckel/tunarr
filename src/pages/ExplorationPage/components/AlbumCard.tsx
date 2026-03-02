@@ -18,8 +18,7 @@ function pastelColorFromId(id: string): string {
 
 export default function AlbumCard({ releaseGroup, onClick }: AlbumCardProps) {
   const [coverError, setCoverError] = useState(false);
-  const artist =
-    releaseGroup["artist-credit"]?.[0]?.artist?.name ?? "Unknown";
+  const artist = releaseGroup["artist-credit"]?.[0]?.artist?.name ?? "Unknown";
   const coverUrl = `https://coverartarchive.org/release-group/${releaseGroup.id}/front-250`;
   const pastelBg = useMemo(
     () => pastelColorFromId(releaseGroup.id),

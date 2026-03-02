@@ -75,9 +75,7 @@ describe("getSuggestions", () => {
   });
 
   it("supplements with artist tags when album has fewer than 3 tags", async () => {
-    mockGetAlbumTopTags.mockResolvedValue([
-      { name: "rock", count: 50 },
-    ]);
+    mockGetAlbumTopTags.mockResolvedValue([{ name: "rock", count: 50 }]);
     mockGetArtistTopTags.mockResolvedValue([
       { name: "indie", count: 40 },
       { name: "alternative", count: 30 },
@@ -124,9 +122,7 @@ describe("getSuggestions", () => {
     const accumulated = [{ name: "rock", count: 100 }];
     const result = await getSuggestions("Artist", "Album", [], accumulated);
 
-    const rockTag = result.newTags.find(
-      (t) => t.name.toLowerCase() === "rock"
-    );
+    const rockTag = result.newTags.find((t) => t.name.toLowerCase() === "rock");
     expect(rockTag!.count).toBe(150);
   });
 
@@ -149,8 +145,8 @@ describe("getSuggestions", () => {
 
     await getSuggestions("Artist", "Album", [], []);
 
-    const tagCallArgs = mockGetTopAlbumsByTag.mock.calls.map(
-      (c: unknown[]) => (c[0] as string).toLowerCase()
+    const tagCallArgs = mockGetTopAlbumsByTag.mock.calls.map((c: unknown[]) =>
+      (c[0] as string).toLowerCase()
     );
     expect(tagCallArgs).not.toContain("seen live");
     expect(tagCallArgs).not.toContain("favorites");
@@ -239,8 +235,8 @@ describe("getSuggestions", () => {
 
     await getSuggestions("Artist", "Album", [], []);
 
-    const tagCallArgs = mockGetTopAlbumsByTag.mock.calls.map(
-      (c: unknown[]) => (c[0] as string).toLowerCase()
+    const tagCallArgs = mockGetTopAlbumsByTag.mock.calls.map((c: unknown[]) =>
+      (c[0] as string).toLowerCase()
     );
     expect(tagCallArgs).not.toContain("2022");
     expect(tagCallArgs).not.toContain("80s");
@@ -275,8 +271,8 @@ describe("getSuggestions", () => {
       []
     );
 
-    const mbids = result.suggestions.map((s) =>
-      s.releaseGroup["artist-credit"][0].artist.name
+    const mbids = result.suggestions.map(
+      (s) => s.releaseGroup["artist-credit"][0].artist.name
     );
     expect(mbids).not.toContain("Other");
   });

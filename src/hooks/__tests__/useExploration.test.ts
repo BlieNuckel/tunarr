@@ -47,7 +47,12 @@ describe("useExploration", () => {
     const source = makeReleaseGroup("src-1", "Source Album");
 
     mockSuggestionsResponse(
-      [{ releaseGroup: makeReleaseGroup("sug-1", "Suggestion"), tags: ["rock"] }],
+      [
+        {
+          releaseGroup: makeReleaseGroup("sug-1", "Suggestion"),
+          tags: ["rock"],
+        },
+      ],
       [{ name: "rock", count: 80 }]
     );
 
@@ -73,8 +78,16 @@ describe("useExploration", () => {
     await act(() => result.current.startExploration(source));
 
     mockSuggestionsResponse(
-      [{ releaseGroup: makeReleaseGroup("sug-2", "Suggestion 2"), tags: ["indie"] }],
-      [{ name: "rock", count: 80 }, { name: "indie", count: 60 }]
+      [
+        {
+          releaseGroup: makeReleaseGroup("sug-2", "Suggestion 2"),
+          tags: ["indie"],
+        },
+      ],
+      [
+        { name: "rock", count: 80 },
+        { name: "indie", count: 60 },
+      ]
     );
 
     await act(() => result.current.selectSuggestion(0));
@@ -98,7 +111,12 @@ describe("useExploration", () => {
 
     for (let i = 1; i < 5; i++) {
       mockSuggestionsResponse(
-        [{ releaseGroup: makeReleaseGroup(`s${i + 1}`, `S${i + 1}`), tags: ["rock"] }],
+        [
+          {
+            releaseGroup: makeReleaseGroup(`s${i + 1}`, `S${i + 1}`),
+            tags: ["rock"],
+          },
+        ],
         [{ name: "rock", count: 80 }]
       );
       await act(() => result.current.selectSuggestion(0));
@@ -112,7 +130,12 @@ describe("useExploration", () => {
   it("resets all state", async () => {
     const source = makeReleaseGroup("src-1", "Source");
     mockSuggestionsResponse(
-      [{ releaseGroup: makeReleaseGroup("sug-1", "Suggestion"), tags: ["rock"] }],
+      [
+        {
+          releaseGroup: makeReleaseGroup("sug-1", "Suggestion"),
+          tags: ["rock"],
+        },
+      ],
       [{ name: "rock", count: 80 }]
     );
 

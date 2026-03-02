@@ -17,7 +17,10 @@ describe("weightedRandomPick", () => {
   });
 
   it("returns all items when count >= length", () => {
-    const items = [{ name: "a", w: 1 }, { name: "b", w: 1 }];
+    const items = [
+      { name: "a", w: 1 },
+      { name: "b", w: 1 },
+    ];
     const result = weightedRandomPick(items, (i) => i.w, 5);
     expect(result).toHaveLength(2);
   });

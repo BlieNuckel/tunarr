@@ -39,10 +39,7 @@ describe("CardHand", () => {
   });
 
   it("shows numbered badges on cards", () => {
-    const albums = [
-      makeAlbum("1", "Album A"),
-      makeAlbum("2", "Album B"),
-    ];
+    const albums = [makeAlbum("1", "Album A"), makeAlbum("2", "Album B")];
     render(<CardHand albums={albums} />);
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();

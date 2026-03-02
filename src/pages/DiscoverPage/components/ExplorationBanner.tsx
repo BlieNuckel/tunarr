@@ -29,8 +29,8 @@ export default function ExplorationBanner() {
               Explore Albums
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Pick a starting album and discover new music through tags — collect
-              5 albums along the way
+              Pick a starting album and discover new music through tags —
+              collect 5 albums along the way
             </p>
           </div>
           <svg

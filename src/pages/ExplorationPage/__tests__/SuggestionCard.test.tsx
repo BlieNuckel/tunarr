@@ -19,25 +19,19 @@ const releaseGroup: ReleaseGroup = {
 
 describe("SuggestionCard", () => {
   it("renders title and artist", () => {
-    render(
-      <SuggestionCard releaseGroup={releaseGroup} onClick={vi.fn()} />
-    );
+    render(<SuggestionCard releaseGroup={releaseGroup} onClick={vi.fn()} />);
     expect(screen.getByText("Test Album")).toBeInTheDocument();
     expect(screen.getByText("Test Artist")).toBeInTheDocument();
   });
 
   it("renders cover image", () => {
-    render(
-      <SuggestionCard releaseGroup={releaseGroup} onClick={vi.fn()} />
-    );
+    render(<SuggestionCard releaseGroup={releaseGroup} onClick={vi.fn()} />);
     expect(screen.getByRole("img")).toHaveAttribute("alt", "Test Album cover");
   });
 
   it("calls onClick when clicked", () => {
     const onClick = vi.fn();
-    render(
-      <SuggestionCard releaseGroup={releaseGroup} onClick={onClick} />
-    );
+    render(<SuggestionCard releaseGroup={releaseGroup} onClick={onClick} />);
     fireEvent.click(screen.getByText("Test Album"));
     expect(onClick).toHaveBeenCalledOnce();
   });

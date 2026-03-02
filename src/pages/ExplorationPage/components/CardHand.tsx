@@ -15,13 +15,7 @@ function pastelColorFromId(id: string): string {
   return `hsl(${hue}, 70%, 85%)`;
 }
 
-function MiniCard({
-  album,
-  index,
-}: {
-  album: CollectedAlbum;
-  index: number;
-}) {
+function MiniCard({ album, index }: { album: CollectedAlbum; index: number }) {
   const [coverError, setCoverError] = useState(false);
   const rg = album.releaseGroup;
   const coverUrl = `https://coverartarchive.org/release-group/${rg.id}/front-500`;
@@ -44,10 +38,7 @@ function MiniCard({
       }}
       title={`${rg.title} - ${rg["artist-credit"]?.[0]?.artist?.name || "Unknown"}`}
     >
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: pastelBg }}
-      />
+      <div className="absolute inset-0" style={{ backgroundColor: pastelBg }} />
       {!coverError && (
         <ImageWithShimmer
           src={coverUrl}
@@ -67,11 +58,7 @@ export default function CardHand({ albums }: CardHandProps) {
   if (albums.length === 0) return null;
 
   const cards = albums.map((album, i) => (
-    <MiniCard
-      key={album.releaseGroup.id}
-      album={album}
-      index={i}
-    />
+    <MiniCard key={album.releaseGroup.id} album={album} index={i} />
   ));
 
   return (

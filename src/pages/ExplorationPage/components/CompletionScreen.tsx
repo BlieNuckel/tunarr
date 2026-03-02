@@ -56,7 +56,7 @@ export default function CompletionScreen({
             style={
               {
                 "--deal-index": i,
-                "--deal-rotate": `${(i % 3 - 1) * 2}deg`,
+                "--deal-rotate": `${((i % 3) - 1) * 2}deg`,
               } as React.CSSProperties
             }
           >

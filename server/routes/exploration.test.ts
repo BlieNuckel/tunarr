@@ -36,15 +36,13 @@ describe("POST /suggestions", () => {
     };
     mockGetSuggestions.mockResolvedValue(mockResult);
 
-    const res = await request(app)
-      .post("/suggestions")
-      .send({
-        artistName: "Radiohead",
-        albumName: "OK Computer",
-        albumMbid: "alb-1",
-        excludeMbids: [],
-        accumulatedTags: [],
-      });
+    const res = await request(app).post("/suggestions").send({
+      artistName: "Radiohead",
+      albumName: "OK Computer",
+      albumMbid: "alb-1",
+      excludeMbids: [],
+      accumulatedTags: [],
+    });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual(mockResult);
@@ -86,20 +84,13 @@ describe("POST /suggestions", () => {
   it("defaults excludeMbids and accumulatedTags to empty arrays", async () => {
     mockGetSuggestions.mockResolvedValue({ suggestions: [], newTags: [] });
 
-    await request(app)
-      .post("/suggestions")
-      .send({
-        artistName: "Artist",
-        albumName: "Album",
-        albumMbid: "mbid",
-      });
+    await request(app).post("/suggestions").send({
+      artistName: "Artist",
+      albumName: "Album",
+      albumMbid: "mbid",
+    });
 
-    expect(mockGetSuggestions).toHaveBeenCalledWith(
-      "Artist",
-      "Album",
-      [],
-      []
-    );
+    expect(mockGetSuggestions).toHaveBeenCalledWith("Artist", "Album", [], []);
   });
 });
 
@@ -111,12 +102,16 @@ describe("GET /album-tags", () => {
     ];
     mockGetAlbumTopTags.mockResolvedValue(tags);
 
-    const res = await request(app)
-      .get("/album-tags?artist=Radiohead&album=OK+Computer");
+    const res = await request(app).get(
+      "/album-tags?artist=Radiohead&album=OK+Computer"
+    );
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ tags });
-    expect(mockGetAlbumTopTags).toHaveBeenCalledWith("Radiohead", "OK Computer");
+    expect(mockGetAlbumTopTags).toHaveBeenCalledWith(
+      "Radiohead",
+      "OK Computer"
+    );
   });
 
   it("returns 400 when artist param is missing", async () => {
