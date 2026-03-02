@@ -13,6 +13,7 @@ import promotedAlbumRoutes from "./routes/promotedAlbum";
 import sabnzbdRoutes from "./routes/sabnzbd";
 import settingsRoutes from "./routes/settings";
 import torznabRoutes from "./routes/torznab";
+import explorationRoutes from "./routes/exploration";
 import { errorHandler } from "./middleware/errorHandler";
 import { requireAuth } from "./middleware/requireAuth";
 
@@ -31,6 +32,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/torznab", torznabRoutes);
 app.use("/api/sabnzbd", sabnzbdRoutes);
 app.use("/api/logs", logsRoutes);
+app.use("/api/exploration", explorationRoutes);
 
 app.use("/api/settings", settingsRoutes);
 app.use("/api/musicbrainz", requireAuth, musicbrainzRoutes);
