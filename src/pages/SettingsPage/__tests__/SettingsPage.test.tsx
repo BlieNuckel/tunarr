@@ -12,6 +12,12 @@ const mockUsePlexLogin = vi.fn();
 vi.mock("@/hooks/usePlexLogin", () => ({
   default: (opts: unknown) => mockUsePlexLogin(opts),
   fetchAccount: (...args: unknown[]) => mockFetchAccount(...args),
+  pickBestServer: (servers: { local: boolean }[]) =>
+    servers.find((s) => !s.local) ?? servers[0],
+}));
+
+vi.mock("@/utils/plexOAuth", () => ({
+  getClientId: () => "test-client-id",
 }));
 
 import SettingsPage from "../SettingsPage";
@@ -68,10 +74,14 @@ function renderSettingsPage(overrides: Partial<LidarrContextValue> = {}) {
   );
 }
 
+const mockFetch = vi.fn();
+vi.stubGlobal("fetch", mockFetch);
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockLoadOptions.mockResolvedValue(undefined);
   mockFetchAccount.mockResolvedValue(null);
+  mockFetch.mockResolvedValue({ ok: false });
   mockUsePlexLogin.mockReturnValue({ loading: false, login: mockLogin });
   mockSavePartialSettings.mockResolvedValue(undefined);
 });

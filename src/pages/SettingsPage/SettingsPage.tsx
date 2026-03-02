@@ -242,6 +242,7 @@ export default function SettingsPage() {
           <div>
             {isSearching && <SectionBadge section="plex" />}
             <PlexSection
+              url={fields.plexUrl}
               token={fields.plexToken}
               onUrlChange={(v) => updateField("plexUrl", v)}
               onTokenChange={(v) => updateField("plexToken", v)}

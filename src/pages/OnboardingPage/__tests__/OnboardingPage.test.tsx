@@ -10,6 +10,12 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 vi.mock("@/hooks/usePlexLogin", () => ({
   default: () => ({ loading: false, login: vi.fn() }),
   fetchAccount: () => Promise.resolve(null),
+  pickBestServer: (servers: { local: boolean }[]) =>
+    servers.find((s) => !s.local) ?? servers[0],
+}));
+
+vi.mock("@/utils/plexOAuth", () => ({
+  getClientId: () => "test-client-id",
 }));
 
 import OnboardingPage from "../OnboardingPage";
