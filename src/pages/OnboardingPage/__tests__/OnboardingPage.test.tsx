@@ -44,7 +44,7 @@ function renderOnboarding(
       slskdUrl: "",
       slskdApiKey: "",
       slskdDownloadPath: "",
-      theme: "system",
+
     },
     isConnected: false,
     isLoading: false,
@@ -106,7 +106,7 @@ describe("OnboardingPage", () => {
         slskdUrl: "",
         slskdApiKey: "",
         slskdDownloadPath: "",
-        theme: "system",
+  
       },
     });
     expect(screen.getByText("Home Page")).toBeInTheDocument();

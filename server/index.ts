@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { initializeDatabase } from "./db/index";
 import { createLogger } from "./logger";
+import authRoutes from "./routes/auth";
 import lastfmRoutes from "./routes/lastfm";
 import lidarrRoutes from "./routes/lidarr";
 import musicbrainzRoutes from "./routes/musicbrainz";
@@ -12,6 +13,7 @@ import sabnzbdRoutes from "./routes/sabnzbd";
 import settingsRoutes from "./routes/settings";
 import torznabRoutes from "./routes/torznab";
 import { errorHandler } from "./middleware/errorHandler";
+import { requireAuth } from "./middleware/requireAuth";
 
 const log = createLogger("Server");
 
@@ -23,14 +25,17 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 
-app.use("/api/settings", settingsRoutes);
-app.use("/api/musicbrainz", musicbrainzRoutes);
-app.use("/api/lidarr", lidarrRoutes);
-app.use("/api/lastfm", lastfmRoutes);
-app.use("/api/plex", plexRoutes);
-app.use("/api/promoted-album", promotedAlbumRoutes);
+app.use("/api/auth", authRoutes);
+
 app.use("/api/torznab", torznabRoutes);
 app.use("/api/sabnzbd", sabnzbdRoutes);
+
+app.use("/api/settings", settingsRoutes);
+app.use("/api/musicbrainz", requireAuth, musicbrainzRoutes);
+app.use("/api/lidarr", requireAuth, lidarrRoutes);
+app.use("/api/lastfm", requireAuth, lastfmRoutes);
+app.use("/api/plex", requireAuth, plexRoutes);
+app.use("/api/promoted-album", requireAuth, promotedAlbumRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "..", "build")));

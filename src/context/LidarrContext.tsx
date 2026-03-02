@@ -33,7 +33,6 @@ async function loadSettings(
         slskdUrl: data.slskdUrl || "",
         slskdApiKey: data.slskdApiKey || "",
         slskdDownloadPath: data.slskdDownloadPath || "",
-        theme: data.theme || "system",
         promotedAlbum: {
           ...DEFAULT_PROMOTED_ALBUM,
           ...(data.promotedAlbum ?? {}),
@@ -107,7 +106,6 @@ export const LidarrContextProvider = ({
     slskdUrl: "",
     slskdApiKey: "",
     slskdDownloadPath: "",
-    theme: "system",
     promotedAlbum: DEFAULT_PROMOTED_ALBUM,
   });
   const [options, setOptions] = useState<LidarrOptions>({

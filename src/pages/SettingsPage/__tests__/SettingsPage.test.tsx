@@ -42,7 +42,6 @@ function renderSettingsPage(overrides: Partial<LidarrContextValue> = {}) {
       slskdUrl: "",
       slskdApiKey: "",
       slskdDownloadPath: "",
-      theme: "system",
     },
     isConnected: true,
     isLoading: false,

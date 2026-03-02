@@ -49,9 +49,11 @@ describe("runMigrations", () => {
     const migrations = db
       .prepare("SELECT * FROM _migrations")
       .all() as { version: number; name: string }[];
-    expect(migrations).toHaveLength(1);
+    expect(migrations).toHaveLength(2);
     expect(migrations[0].version).toBe(1);
     expect(migrations[0].name).toBe("initial");
+    expect(migrations[1].version).toBe(2);
+    expect(migrations[1].name).toBe("user_preferences");
   });
 
   it("tracks migration versions correctly", async () => {
@@ -64,7 +66,10 @@ describe("runMigrations", () => {
       .prepare("SELECT version, name FROM _migrations ORDER BY version")
       .all() as { version: number; name: string }[];
 
-    expect(migrations).toEqual([{ version: 1, name: "initial" }]);
+    expect(migrations).toEqual([
+      { version: 1, name: "initial" },
+      { version: 2, name: "user_preferences" },
+    ]);
   });
 });
 
@@ -92,6 +97,7 @@ describe("schema validation", () => {
       "enabled",
       "created_at",
       "updated_at",
+      "theme",
     ]);
   });
 
