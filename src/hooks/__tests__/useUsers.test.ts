@@ -10,8 +10,22 @@ afterEach(() => {
 });
 
 const mockUsers = [
-  { id: 1, username: "admin", role: "admin", enabled: true, theme: "system", thumb: null },
-  { id: 2, username: "user1", role: "user", enabled: true, theme: "dark", thumb: "https://thumb.jpg" },
+  {
+    id: 1,
+    username: "admin",
+    role: "admin",
+    enabled: true,
+    theme: "system",
+    thumb: null,
+  },
+  {
+    id: 2,
+    username: "user1",
+    role: "user",
+    enabled: true,
+    theme: "dark",
+    thumb: "https://thumb.jpg",
+  },
 ];
 
 describe("useUsers", () => {
@@ -46,9 +60,15 @@ describe("useUsers", () => {
 
   it("updateRole calls API and refetches", async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify(mockUsers), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(mockUsers), { status: 200 }));
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockUsers), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockUsers), { status: 200 })
+      );
 
     const { result } = renderHook(() => useUsers());
 
@@ -65,9 +85,15 @@ describe("useUsers", () => {
 
   it("toggleEnabled calls API and refetches", async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify(mockUsers), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(mockUsers), { status: 200 }));
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockUsers), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockUsers), { status: 200 })
+      );
 
     const { result } = renderHook(() => useUsers());
 
@@ -84,9 +110,15 @@ describe("useUsers", () => {
 
   it("removeUser calls API and refetches", async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify(mockUsers), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify([mockUsers[0]]), { status: 200 }));
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(mockUsers), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([mockUsers[0]]), { status: 200 })
+      );
 
     const { result } = renderHook(() => useUsers());
 
@@ -101,17 +133,22 @@ describe("useUsers", () => {
 
   it("updateRole throws on API error", async () => {
     vi.mocked(fetch)
-      .mockResolvedValueOnce(new Response(JSON.stringify(mockUsers), { status: 200 }))
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ error: "Cannot demote the last admin" }), { status: 400 })
+        new Response(JSON.stringify(mockUsers), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ error: "Cannot demote the last admin" }),
+          { status: 400 }
+        )
       );
 
     const { result } = renderHook(() => useUsers());
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    await expect(act(() => result.current.updateRole(1, "user"))).rejects.toThrow(
-      "Cannot demote the last admin"
-    );
+    await expect(
+      act(() => result.current.updateRole(1, "user"))
+    ).rejects.toThrow("Cannot demote the last admin");
   });
 });

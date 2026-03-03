@@ -118,9 +118,7 @@ describe("SetupPage", () => {
     const mockPlexSetup = vi.fn().mockResolvedValue(undefined);
     renderWithAuth({ plexSetup: mockPlexSetup });
 
-    await user.click(
-      screen.getByRole("button", { name: "Set up with Plex" })
-    );
+    await user.click(screen.getByRole("button", { name: "Set up with Plex" }));
 
     await waitFor(() => {
       expect(mockPlexSetup).toHaveBeenCalled();
@@ -129,18 +127,12 @@ describe("SetupPage", () => {
 
   it("shows Plex loading state", async () => {
     const user = userEvent.setup();
-    const mockPlexSetup = vi
-      .fn()
-      .mockReturnValue(new Promise<void>(() => {}));
+    const mockPlexSetup = vi.fn().mockReturnValue(new Promise<void>(() => {}));
     renderWithAuth({ plexSetup: mockPlexSetup });
 
-    await user.click(
-      screen.getByRole("button", { name: "Set up with Plex" })
-    );
+    await user.click(screen.getByRole("button", { name: "Set up with Plex" }));
 
-    expect(
-      screen.getByText("Setting up with Plex...")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Setting up with Plex...")).toBeInTheDocument();
   });
 
   it("shows error from Plex setup failure", async () => {
@@ -150,9 +142,7 @@ describe("SetupPage", () => {
       .mockRejectedValue(new Error("Plex sign-in was cancelled"));
     renderWithAuth({ plexSetup: mockPlexSetup });
 
-    await user.click(
-      screen.getByRole("button", { name: "Set up with Plex" })
-    );
+    await user.click(screen.getByRole("button", { name: "Set up with Plex" }));
 
     await waitFor(() => {
       expect(
@@ -163,14 +153,10 @@ describe("SetupPage", () => {
 
   it("disables both buttons while Plex setup is in progress", async () => {
     const user = userEvent.setup();
-    const mockPlexSetup = vi
-      .fn()
-      .mockReturnValue(new Promise<void>(() => {}));
+    const mockPlexSetup = vi.fn().mockReturnValue(new Promise<void>(() => {}));
     renderWithAuth({ plexSetup: mockPlexSetup });
 
-    await user.click(
-      screen.getByRole("button", { name: "Set up with Plex" })
-    );
+    await user.click(screen.getByRole("button", { name: "Set up with Plex" }));
 
     expect(
       screen.getByRole("button", { name: "Create Account" })

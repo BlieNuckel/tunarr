@@ -28,7 +28,6 @@ export default function RequireOnboarding() {
   }
 
   if (appStatus === null) return null;
-  if (!appStatus.lidarrConfigured)
-    return <Navigate to="/onboarding" replace />;
+  if (!appStatus.lidarrConfigured) return <Navigate to="/onboarding" replace />;
   return <Outlet />;
 }

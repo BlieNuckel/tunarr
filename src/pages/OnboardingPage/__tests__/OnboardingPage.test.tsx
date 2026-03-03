@@ -9,7 +9,13 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 
 vi.mock("@/context/useAuth", () => ({
   useAuth: () => ({
-    user: { id: 1, username: "admin", role: "admin", theme: "system", thumb: null },
+    user: {
+      id: 1,
+      username: "admin",
+      role: "admin",
+      theme: "system",
+      thumb: null,
+    },
   }),
 }));
 

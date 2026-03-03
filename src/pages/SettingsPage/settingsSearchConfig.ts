@@ -86,7 +86,15 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   users: {
     label: "Users",
     tab: "users",
-    keywords: ["user", "admin", "role", "enable", "disable", "manage", "delete"],
+    keywords: [
+      "user",
+      "admin",
+      "role",
+      "enable",
+      "disable",
+      "manage",
+      "delete",
+    ],
   },
 };
 

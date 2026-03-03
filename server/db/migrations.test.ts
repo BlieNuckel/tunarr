@@ -46,9 +46,10 @@ describe("runMigrations", () => {
     runMigrations(db);
     runMigrations(db);
 
-    const migrations = db
-      .prepare("SELECT * FROM _migrations")
-      .all() as { version: number; name: string }[];
+    const migrations = db.prepare("SELECT * FROM _migrations").all() as {
+      version: number;
+      name: string;
+    }[];
     expect(migrations).toHaveLength(3);
     expect(migrations[0].version).toBe(1);
     expect(migrations[0].name).toBe("initial");

@@ -4,7 +4,13 @@ import { useAuth } from "@/context/useAuth";
 import Skeleton from "@/components/Skeleton";
 
 type UserCardProps = {
-  user: { id: number; username: string; role: "admin" | "user"; enabled: boolean; thumb: string | null };
+  user: {
+    id: number;
+    username: string;
+    role: "admin" | "user";
+    enabled: boolean;
+    thumb: string | null;
+  };
   isSelf: boolean;
   onRoleChange: (id: number, role: "admin" | "user") => Promise<void>;
   onToggleEnabled: (id: number, enabled: boolean) => Promise<void>;
@@ -20,7 +26,13 @@ function UserInitials({ username }: { username: string }) {
   );
 }
 
-function UserAvatar({ thumb, username }: { thumb: string | null; username: string }) {
+function UserAvatar({
+  thumb,
+  username,
+}: {
+  thumb: string | null;
+  username: string;
+}) {
   const [imgError, setImgError] = useState(false);
 
   if (!thumb || imgError) return <UserInitials username={username} />;
@@ -60,7 +72,13 @@ function RoleBadge({
   );
 }
 
-function UserCard({ user, isSelf, onRoleChange, onToggleEnabled, onDelete }: UserCardProps) {
+function UserCard({
+  user,
+  isSelf,
+  onRoleChange,
+  onToggleEnabled,
+  onDelete,
+}: UserCardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -101,7 +119,9 @@ function UserCard({ user, isSelf, onRoleChange, onToggleEnabled, onDelete }: Use
             {user.username}
           </span>
           {isSelf && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">(you)</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              (you)
+            </span>
           )}
         </div>
         {actionError && (
@@ -162,13 +182,23 @@ function UserCard({ user, isSelf, onRoleChange, onToggleEnabled, onDelete }: Use
 }
 
 export default function UsersSection() {
-  const { users, loading, error, updateRole, toggleEnabled, removeUser, refetch } = useUsers();
+  const {
+    users,
+    loading,
+    error,
+    updateRole,
+    toggleEnabled,
+    removeUser,
+    refetch,
+  } = useUsers();
   const { user: currentUser } = useAuth();
 
   if (loading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Users</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          Users
+        </h2>
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-16 w-full rounded-lg" />
@@ -181,9 +211,13 @@ export default function UsersSection() {
   if (error) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Users</h2>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          Users
+        </h2>
         <div className="p-4 bg-rose-100 dark:bg-rose-900/30 border-2 border-black rounded-lg shadow-cartoon-sm">
-          <p className="text-rose-600 dark:text-rose-400 font-medium">{error}</p>
+          <p className="text-rose-600 dark:text-rose-400 font-medium">
+            {error}
+          </p>
           <button
             onClick={refetch}
             className="mt-2 text-sm font-bold text-rose-700 dark:text-rose-300 underline"
@@ -197,7 +231,9 @@ export default function UsersSection() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Users</h2>
+      <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+        Users
+      </h2>
       <div className="space-y-3">
         {users.map((u) => (
           <UserCard
@@ -210,7 +246,9 @@ export default function UsersSection() {
           />
         ))}
         {users.length === 0 && (
-          <p className="text-gray-500 dark:text-gray-400 text-sm">No users found.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            No users found.
+          </p>
         )}
       </div>
     </div>

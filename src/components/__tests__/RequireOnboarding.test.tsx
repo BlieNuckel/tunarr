@@ -75,7 +75,13 @@ describe("RequireOnboarding", () => {
   describe("admin user", () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
-        user: { id: 1, username: "admin", role: "admin", theme: "system", thumb: null } as AuthUser,
+        user: {
+          id: 1,
+          username: "admin",
+          role: "admin",
+          theme: "system",
+          thumb: null,
+        } as AuthUser,
       });
     });
 
@@ -114,7 +120,13 @@ describe("RequireOnboarding", () => {
   describe("non-admin user", () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
-        user: { id: 2, username: "user", role: "user", theme: "system", thumb: null } as AuthUser,
+        user: {
+          id: 2,
+          username: "user",
+          role: "user",
+          theme: "system",
+          thumb: null,
+        } as AuthUser,
       });
     });
 
@@ -127,7 +139,9 @@ describe("RequireOnboarding", () => {
 
     it("renders outlet when lidarr is configured", async () => {
       vi.mocked(fetch).mockResolvedValueOnce(
-        new Response(JSON.stringify({ lidarrConfigured: true }), { status: 200 })
+        new Response(JSON.stringify({ lidarrConfigured: true }), {
+          status: 200,
+        })
       );
 
       renderWithContext({ isLoading: false });
@@ -137,7 +151,9 @@ describe("RequireOnboarding", () => {
 
     it("redirects to /onboarding when lidarr is not configured", async () => {
       vi.mocked(fetch).mockResolvedValueOnce(
-        new Response(JSON.stringify({ lidarrConfigured: false }), { status: 200 })
+        new Response(JSON.stringify({ lidarrConfigured: false }), {
+          status: 200,
+        })
       );
 
       renderWithContext({ isLoading: false });

@@ -2,8 +2,22 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import UsersSection from "../UsersSection";
 
 const mockUsers = [
-  { id: 1, username: "admin", role: "admin" as const, enabled: true, theme: "system", thumb: null },
-  { id: 2, username: "plexuser", role: "user" as const, enabled: true, theme: "dark", thumb: "https://thumb.jpg" },
+  {
+    id: 1,
+    username: "admin",
+    role: "admin" as const,
+    enabled: true,
+    theme: "system",
+    thumb: null,
+  },
+  {
+    id: 2,
+    username: "plexuser",
+    role: "user" as const,
+    enabled: true,
+    theme: "dark",
+    thumb: "https://thumb.jpg",
+  },
 ];
 
 const mockUpdateRole = vi.fn();
@@ -25,7 +39,13 @@ vi.mock("@/hooks/useUsers", () => ({
 
 vi.mock("@/context/useAuth", () => ({
   useAuth: () => ({
-    user: { id: 1, username: "admin", role: "admin", theme: "system", thumb: null },
+    user: {
+      id: 1,
+      username: "admin",
+      role: "admin",
+      theme: "system",
+      thumb: null,
+    },
   }),
 }));
 

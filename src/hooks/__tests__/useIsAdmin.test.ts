@@ -10,7 +10,13 @@ vi.mock("@/context/useAuth", () => ({
 describe("useIsAdmin", () => {
   it("returns true when user is admin", () => {
     mockUseAuth.mockReturnValue({
-      user: { id: 1, username: "admin", role: "admin", theme: "system", thumb: null },
+      user: {
+        id: 1,
+        username: "admin",
+        role: "admin",
+        theme: "system",
+        thumb: null,
+      },
     });
 
     const { result } = renderHook(() => useIsAdmin());
@@ -19,7 +25,13 @@ describe("useIsAdmin", () => {
 
   it("returns false when user is regular user", () => {
     mockUseAuth.mockReturnValue({
-      user: { id: 2, username: "user", role: "user", theme: "system", thumb: null },
+      user: {
+        id: 2,
+        username: "user",
+        role: "user",
+        theme: "system",
+        thumb: null,
+      },
     });
 
     const { result } = renderHook(() => useIsAdmin());

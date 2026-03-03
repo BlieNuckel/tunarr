@@ -208,7 +208,9 @@ export function updateUserRole(userId: number, role: UserRole): void {
   }
 
   getDb()
-    .prepare("UPDATE users SET role = ?, updated_at = datetime('now') WHERE id = ?")
+    .prepare(
+      "UPDATE users SET role = ?, updated_at = datetime('now') WHERE id = ?"
+    )
     .run(role, userId);
 
   if (role === "user" && user.role === "admin") {
@@ -233,7 +235,9 @@ export function updateUserEnabled(userId: number, enabled: boolean): void {
   }
 
   getDb()
-    .prepare("UPDATE users SET enabled = ?, updated_at = datetime('now') WHERE id = ?")
+    .prepare(
+      "UPDATE users SET enabled = ?, updated_at = datetime('now') WHERE id = ?"
+    )
     .run(enabled ? 1 : 0, userId);
 
   if (!enabled) {

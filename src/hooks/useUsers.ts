@@ -76,5 +76,13 @@ export function useUsers() {
     [fetchUsers]
   );
 
-  return { users, loading, error, updateRole, toggleEnabled, removeUser, refetch: fetchUsers };
+  return {
+    users,
+    loading,
+    error,
+    updateRole,
+    toggleEnabled,
+    removeUser,
+    refetch: fetchUsers,
+  };
 }

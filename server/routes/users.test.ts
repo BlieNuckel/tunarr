@@ -33,7 +33,14 @@ function createPlexUser(role = "user", enabled = 1): number {
       `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, role, enabled)
        VALUES (?, ?, ?, ?, ?, ?)`
     )
-    .run("plex-123", "plexuser", "plex@test.com", "https://thumb.jpg", role, enabled);
+    .run(
+      "plex-123",
+      "plexuser",
+      "plex@test.com",
+      "https://thumb.jpg",
+      role,
+      enabled
+    );
   return result.lastInsertRowid as number;
 }
 
@@ -198,9 +205,7 @@ describe("DELETE /users/:id", () => {
   it("returns 404 for non-existent user", async () => {
     const { cookie } = await setupAdmin(app);
 
-    const res = await request(app)
-      .delete("/users/999")
-      .set("Cookie", cookie);
+    const res = await request(app).delete("/users/999").set("Cookie", cookie);
 
     expect(res.status).toBe(404);
   });

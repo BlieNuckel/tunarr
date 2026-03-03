@@ -19,28 +19,25 @@ router.get("/", (_req: Request, res: Response) => {
   res.json(listAllUsers());
 });
 
-router.patch(
-  "/:id/role",
-  (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = Number(req.params.id);
-      const { role } = req.body;
+router.patch("/:id/role", (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = Number(req.params.id);
+    const { role } = req.body;
 
-      if (!role || !VALID_ROLES.includes(role)) {
-        const err = new Error("Role must be 'admin' or 'user'") as Error & {
-          status: number;
-        };
-        err.status = 400;
-        throw err;
-      }
-
-      updateUserRole(userId, role);
-      res.json({ success: true });
-    } catch (err) {
-      next(err);
+    if (!role || !VALID_ROLES.includes(role)) {
+      const err = new Error("Role must be 'admin' or 'user'") as Error & {
+        status: number;
+      };
+      err.status = 400;
+      throw err;
     }
+
+    updateUserRole(userId, role);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 router.patch(
   "/:id/enabled",

@@ -81,7 +81,12 @@ describe("createPlexAdminUser", () => {
   });
 
   it("completes setup (needsSetup returns false)", () => {
-    createPlexAdminUser("plex-123", "plexadmin", "admin@plex.tv", "https://thumb.jpg");
+    createPlexAdminUser(
+      "plex-123",
+      "plexadmin",
+      "admin@plex.tv",
+      "https://thumb.jpg"
+    );
     expect(needsSetup()).toBe(false);
   });
 });
@@ -209,9 +214,7 @@ describe("findOrCreatePlexUser", () => {
       "plex@test.com",
       "https://thumb.jpg"
     );
-    getDb()
-      .prepare("UPDATE users SET enabled = 0 WHERE id = ?")
-      .run(user.id);
+    getDb().prepare("UPDATE users SET enabled = 0 WHERE id = ?").run(user.id);
 
     const updated = findOrCreatePlexUser(
       "plex-123",
@@ -359,9 +362,7 @@ describe("deleteUser", () => {
   it("prevents deleting the last admin", async () => {
     const admin = await createAdminUser("admin", "password123");
 
-    expect(() => deleteUser(admin.id)).toThrow(
-      "Cannot delete the last admin"
-    );
+    expect(() => deleteUser(admin.id)).toThrow("Cannot delete the last admin");
   });
 
   it("throws 404 for non-existent user", () => {
