@@ -89,7 +89,9 @@ export function updateUserPreferences(
 ): void {
   if (prefs.theme) {
     getDb()
-      .prepare("UPDATE users SET theme = ?, updated_at = datetime('now') WHERE id = ?")
+      .prepare(
+        "UPDATE users SET theme = ?, updated_at = datetime('now') WHERE id = ?"
+      )
       .run(prefs.theme, userId);
   }
 }
