@@ -107,11 +107,9 @@ export const LidarrContextProvider = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (status !== "authenticated" || user?.role !== "admin") {
-      setIsLoading(false);
-      return;
+    if (status === "authenticated" && user?.role === "admin") {
+      loadSettings(setSettings, setIsLoading);
     }
-    loadSettings(setSettings, setIsLoading);
   }, [status, user?.role]);
 
   const savePartialSettings = async (partial: Partial<LidarrSettings>) => {
@@ -171,7 +169,7 @@ export const LidarrContextProvider = ({
     options,
     settings,
     isConnected,
-    isLoading: status === "authenticated" && isLoading,
+    isLoading: status === "authenticated" && user?.role === "admin" && isLoading,
     saveSettings,
     savePartialSettings,
     testConnection,
