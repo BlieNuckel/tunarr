@@ -13,7 +13,7 @@
     "better-sqlite3": "^12.6.2",
     "concurrently": "^9.2.1",
     "express": "^5.2.1",
-    "multer": "^2.0.2",
+    "multer": "^2.1.0",
     "node-cache": "^5.1.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -49,7 +49,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/supertest": "^6.0.3",
     "@vitejs/plugin-react": "^5.1.4",
-    "eslint": "^9.39.2",
+    "eslint": "^9.39.3",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.0",
     "globals": "^17.3.0",
@@ -60,7 +60,7 @@
     "tailwindcss": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0",
+    "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"
   },
@@ -71,6 +71,11 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "better-sqlite3"
-    ]
+    ],
+    "overrides": {
+      "rollup@>=4.0.0 <4.59.0": "4.59.0",
+      "minimatch@<3.1.4": "3.1.4",
+      "ajv@<6.14.0": "6.14.0"
+    }
   }
 }
