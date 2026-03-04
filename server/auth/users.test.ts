@@ -137,7 +137,9 @@ describe("findUserById", () => {
        VALUES ('plex-1', 'plexuser', 'plex@test.com', 'https://thumb.jpg', 'user', 1)`
     );
 
-    const users = await getDataSource().query("SELECT id FROM users WHERE plex_id = 'plex-1'");
+    const users = await getDataSource().query(
+      "SELECT id FROM users WHERE plex_id = 'plex-1'"
+    );
     const found = await findUserById(users[0].id);
     expect(found).not.toBeNull();
     expect(found!.username).toBe("plexuser");
@@ -212,10 +214,9 @@ describe("findOrCreatePlexUser", () => {
       "plex@test.com",
       "https://thumb.jpg"
     );
-    await getDataSource().query(
-      "UPDATE users SET enabled = 0 WHERE id = ?",
-      [user.id]
-    );
+    await getDataSource().query("UPDATE users SET enabled = 0 WHERE id = ?", [
+      user.id,
+    ]);
 
     const updated = await findOrCreatePlexUser(
       "plex-123",

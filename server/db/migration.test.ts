@@ -22,9 +22,9 @@ describe("InitialSchema migration", () => {
   it("creates users table with correct columns", async () => {
     const db = await initTestDb();
 
-    const columns = (await db.query(
-      "PRAGMA table_info(users)"
-    )) as { name: string }[];
+    const columns = (await db.query("PRAGMA table_info(users)")) as {
+      name: string;
+    }[];
     const columnNames = columns.map((c) => c.name);
 
     expect(columnNames).toEqual([
@@ -47,9 +47,9 @@ describe("InitialSchema migration", () => {
   it("creates sessions table with correct columns", async () => {
     const db = await initTestDb();
 
-    const columns = (await db.query(
-      "PRAGMA table_info(sessions)"
-    )) as { name: string }[];
+    const columns = (await db.query("PRAGMA table_info(sessions)")) as {
+      name: string;
+    }[];
     const columnNames = columns.map((c) => c.name);
 
     expect(columnNames).toEqual([
@@ -81,10 +81,10 @@ describe("constraint enforcement", () => {
     const db = await initTestDb();
 
     await expect(
-      db.query(
-        "INSERT INTO users (username, role) VALUES (?, ?)",
-        ["test", "superadmin"]
-      )
+      db.query("INSERT INTO users (username, role) VALUES (?, ?)", [
+        "test",
+        "superadmin",
+      ])
     ).rejects.toThrow();
   });
 
@@ -92,10 +92,10 @@ describe("constraint enforcement", () => {
     const db = await initTestDb();
 
     await expect(
-      db.query(
-        "INSERT INTO users (username, enabled) VALUES (?, ?)",
-        ["test", 2]
-      )
+      db.query("INSERT INTO users (username, enabled) VALUES (?, ?)", [
+        "test",
+        2,
+      ])
     ).rejects.toThrow();
   });
 
@@ -124,10 +124,9 @@ describe("constraint enforcement", () => {
     const db = await initTestDb();
 
     await db.query("INSERT INTO users (username) VALUES (?)", ["alice"]);
-    const users = await db.query(
-      "SELECT id FROM users WHERE username = ?",
-      ["alice"]
-    );
+    const users = await db.query("SELECT id FROM users WHERE username = ?", [
+      "alice",
+    ]);
     const userId = users[0].id;
 
     await db.query(
@@ -148,10 +147,9 @@ describe("constraint enforcement", () => {
     const db = await initTestDb();
 
     await db.query("INSERT INTO users (username) VALUES (?)", ["bob"]);
-    const users = await db.query(
-      "SELECT * FROM users WHERE username = ?",
-      ["bob"]
-    );
+    const users = await db.query("SELECT * FROM users WHERE username = ?", [
+      "bob",
+    ]);
     const user = users[0];
 
     expect(user.role).toBe("user");

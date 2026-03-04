@@ -156,9 +156,7 @@ router.post(
       const { username, password } = req.body;
 
       if (!username || !password) {
-        const err = new Error(
-          "Username and password are required"
-        ) as Error & {
+        const err = new Error("Username and password are required") as Error & {
           status: number;
         };
         err.status = 400;
@@ -279,27 +277,24 @@ router.post(
   }
 );
 
-router.get(
-  "/me",
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const token = parseCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
-      if (!token) {
-        return res.json({ user: null });
-      }
-
-      const user = await validateSession(token);
-      if (!user) {
-        clearSessionCookie(res);
-        return res.json({ user: null });
-      }
-
-      res.json({ user: userResponse(user) });
-    } catch (err) {
-      next(err);
+router.get("/me", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = parseCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
+    if (!token) {
+      return res.json({ user: null });
     }
+
+    const user = await validateSession(token);
+    if (!user) {
+      clearSessionCookie(res);
+      return res.json({ user: null });
+    }
+
+    res.json({ user: userResponse(user) });
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 router.patch(
   "/preferences",

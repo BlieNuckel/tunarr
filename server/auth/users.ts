@@ -64,9 +64,7 @@ export async function authenticateUser(
   return toAuthUser(row);
 }
 
-export async function findUserById(
-  id: number
-): Promise<AuthUser | null> {
+export async function findUserById(id: number): Promise<AuthUser | null> {
   const repo = getDataSource().getRepository(User);
   const row = await repo.findOneBy({ id });
   if (!row) return null;

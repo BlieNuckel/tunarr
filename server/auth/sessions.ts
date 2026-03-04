@@ -22,9 +22,7 @@ export async function createSession(userId: number): Promise<string> {
   return token;
 }
 
-export async function validateSession(
-  token: string
-): Promise<AuthUser | null> {
+export async function validateSession(token: string): Promise<AuthUser | null> {
   const ds = getDataSource();
   const row = await ds
     .getRepository(Session)

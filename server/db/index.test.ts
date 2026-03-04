@@ -10,8 +10,7 @@ async function loadDb() {
 
 describe("initializeDatabase", () => {
   it("initializes database and makes getDataSource work", async () => {
-    const { initializeDatabase, getDataSource, closeDatabase } =
-      await loadDb();
+    const { initializeDatabase, getDataSource, closeDatabase } = await loadDb();
 
     try {
       await initializeDatabase(":memory:");
@@ -38,8 +37,7 @@ describe("initializeDatabase", () => {
   });
 
   it("closeDatabase makes getDataSource throw again", async () => {
-    const { initializeDatabase, getDataSource, closeDatabase } =
-      await loadDb();
+    const { initializeDatabase, getDataSource, closeDatabase } = await loadDb();
 
     await initializeDatabase(":memory:");
     expect(() => getDataSource()).not.toThrow();
@@ -49,22 +47,20 @@ describe("initializeDatabase", () => {
   });
 
   it("database is fully functional after initialization", async () => {
-    const { initializeDatabase, getDataSource, closeDatabase } =
-      await loadDb();
+    const { initializeDatabase, getDataSource, closeDatabase } = await loadDb();
 
     try {
       await initializeDatabase(":memory:");
       const ds = getDataSource();
 
-      await ds.query(
-        "INSERT INTO users (username, role) VALUES (?, ?)",
-        ["testuser", "admin"]
-      );
+      await ds.query("INSERT INTO users (username, role) VALUES (?, ?)", [
+        "testuser",
+        "admin",
+      ]);
 
-      const users = await ds.query(
-        "SELECT * FROM users WHERE username = ?",
-        ["testuser"]
-      );
+      const users = await ds.query("SELECT * FROM users WHERE username = ?", [
+        "testuser",
+      ]);
 
       expect(users[0].username).toBe("testuser");
       expect(users[0].role).toBe("admin");

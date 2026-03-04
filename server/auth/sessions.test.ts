@@ -72,17 +72,13 @@ describe("validateSession", () => {
   });
 
   it("returns null for a disabled user", async () => {
-    await getDataSource().query(
-      "UPDATE users SET enabled = 0 WHERE id = 1"
-    );
+    await getDataSource().query("UPDATE users SET enabled = 0 WHERE id = 1");
     const token = await createSession(1);
     expect(await validateSession(token)).toBeNull();
   });
 
   it("includes user theme in the result", async () => {
-    await getDataSource().query(
-      "UPDATE users SET theme = 'dark' WHERE id = 1"
-    );
+    await getDataSource().query("UPDATE users SET theme = 'dark' WHERE id = 1");
     const token = await createSession(1);
     const user = await validateSession(token);
     expect(user!.theme).toBe("dark");
