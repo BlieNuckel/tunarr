@@ -39,9 +39,11 @@ describe("requireAdmin middleware", () => {
     const app = buildApp({
       id: 2,
       username: "user",
+      userType: "local",
       role: "user",
       enabled: true,
       theme: "system",
+      thumb: null,
     });
     const res = await request(app).get("/test");
     expect(res.status).toBe(403);
@@ -52,9 +54,11 @@ describe("requireAdmin middleware", () => {
     const app = buildApp({
       id: 1,
       username: "admin",
+      userType: "local",
       role: "admin",
       enabled: true,
       theme: "system",
+      thumb: null,
     });
     const res = await request(app).get("/test");
     expect(res.status).toBe(200);

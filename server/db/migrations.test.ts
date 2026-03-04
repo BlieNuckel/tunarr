@@ -50,11 +50,15 @@ describe("runMigrations", () => {
       version: number;
       name: string;
     }[];
-    expect(migrations).toHaveLength(2);
+    expect(migrations).toHaveLength(4);
     expect(migrations[0].version).toBe(1);
     expect(migrations[0].name).toBe("initial");
     expect(migrations[1].version).toBe(2);
     expect(migrations[1].name).toBe("user_preferences");
+    expect(migrations[2].version).toBe(3);
+    expect(migrations[2].name).toBe("plex_username");
+    expect(migrations[3].version).toBe(4);
+    expect(migrations[3].name).toBe("user_type");
   });
 
   it("tracks migration versions correctly", async () => {
@@ -70,6 +74,8 @@ describe("runMigrations", () => {
     expect(migrations).toEqual([
       { version: 1, name: "initial" },
       { version: 2, name: "user_preferences" },
+      { version: 3, name: "plex_username" },
+      { version: 4, name: "user_type" },
     ]);
   });
 });
@@ -99,6 +105,8 @@ describe("schema validation", () => {
       "created_at",
       "updated_at",
       "theme",
+      "plex_username",
+      "user_type",
     ]);
   });
 

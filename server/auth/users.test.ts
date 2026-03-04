@@ -3,8 +3,11 @@ import { initializeDatabase, getDb, closeDatabase } from "../db";
 import {
   needsSetup,
   createAdminUser,
+  createPlexAdminUser,
   authenticateUser,
   findUserById,
+  findOrCreatePlexUser,
+  linkPlexAccount,
   updateUserPreferences,
 } from "./users";
 
@@ -40,9 +43,11 @@ describe("createAdminUser", () => {
   it("creates an admin user and returns the AuthUser", async () => {
     const user = await createAdminUser("myadmin", "password123");
     expect(user.username).toBe("myadmin");
+    expect(user.userType).toBe("local");
     expect(user.role).toBe("admin");
     expect(user.enabled).toBe(true);
     expect(user.theme).toBe("system");
+    expect(user.thumb).toBeNull();
     expect(user.id).toBeGreaterThan(0);
   });
 
@@ -56,12 +61,42 @@ describe("createAdminUser", () => {
   });
 });
 
+describe("createPlexAdminUser", () => {
+  it("creates an admin user with Plex identity", () => {
+    const user = createPlexAdminUser(
+      "plex-123",
+      "plexadmin",
+      "admin@plex.tv",
+      "https://thumb.jpg"
+    );
+    expect(user.username).toBe("plexadmin");
+    expect(user.userType).toBe("plex");
+    expect(user.role).toBe("admin");
+    expect(user.enabled).toBe(true);
+    expect(user.theme).toBe("system");
+    expect(user.thumb).toBe("https://thumb.jpg");
+    expect(user.id).toBeGreaterThan(0);
+  });
+
+  it("completes setup (needsSetup returns false)", () => {
+    createPlexAdminUser(
+      "plex-123",
+      "plexadmin",
+      "admin@plex.tv",
+      "https://thumb.jpg"
+    );
+    expect(needsSetup()).toBe(false);
+  });
+});
+
 describe("authenticateUser", () => {
   it("returns the user on correct credentials", async () => {
     await createAdminUser("admin", "password123");
     const user = await authenticateUser("admin", "password123");
     expect(user).not.toBeNull();
     expect(user!.username).toBe("admin");
+    expect(user!.userType).toBe("local");
+    expect(user!.thumb).toBeNull();
   });
 
   it("returns null on wrong password", async () => {
@@ -91,10 +126,179 @@ describe("findUserById", () => {
     const found = findUserById(created.id);
     expect(found).not.toBeNull();
     expect(found!.username).toBe("admin");
+    expect(found!.thumb).toBeNull();
   });
 
   it("returns null for non-existent id", () => {
     expect(findUserById(999)).toBeNull();
+  });
+
+  it("returns plex_username when username is null", () => {
+    getDb()
+      .prepare(
+        `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, role, enabled)
+         VALUES ('plex-1', 'plexuser', 'plex@test.com', 'https://thumb.jpg', 'user', 1)`
+      )
+      .run();
+
+    const found = findUserById(1);
+    expect(found).not.toBeNull();
+    expect(found!.username).toBe("plexuser");
+    expect(found!.thumb).toBe("https://thumb.jpg");
+  });
+});
+
+describe("findOrCreatePlexUser", () => {
+  it("creates a new user when plex_id does not exist", () => {
+    const user = findOrCreatePlexUser(
+      "plex-123",
+      "plexuser",
+      "plex@test.com",
+      "https://thumb.jpg"
+    );
+
+    expect(user.id).toBeGreaterThan(0);
+    expect(user.username).toBe("plexuser");
+    expect(user.userType).toBe("plex");
+    expect(user.role).toBe("user");
+    expect(user.enabled).toBe(true);
+    expect(user.theme).toBe("system");
+    expect(user.thumb).toBe("https://thumb.jpg");
+
+    const row = getDb()
+      .prepare("SELECT plex_id, plex_email FROM users WHERE id = ?")
+      .get(user.id) as { plex_id: string; plex_email: string };
+    expect(row.plex_id).toBe("plex-123");
+    expect(row.plex_email).toBe("plex@test.com");
+  });
+
+  it("returns existing user when plex_id already exists", () => {
+    const first = findOrCreatePlexUser(
+      "plex-123",
+      "plexuser",
+      "plex@test.com",
+      "https://thumb.jpg"
+    );
+    const second = findOrCreatePlexUser(
+      "plex-123",
+      "plexuser",
+      "plex@test.com",
+      "https://thumb.jpg"
+    );
+
+    expect(second.id).toBe(first.id);
+  });
+
+  it("updates plex fields on re-login", () => {
+    findOrCreatePlexUser(
+      "plex-123",
+      "oldname",
+      "old@test.com",
+      "https://old-thumb.jpg"
+    );
+    const updated = findOrCreatePlexUser(
+      "plex-123",
+      "newname",
+      "new@test.com",
+      "https://new-thumb.jpg"
+    );
+
+    expect(updated.username).toBe("newname");
+    expect(updated.thumb).toBe("https://new-thumb.jpg");
+  });
+
+  it("preserves role and enabled status on re-login", () => {
+    const user = findOrCreatePlexUser(
+      "plex-123",
+      "plexuser",
+      "plex@test.com",
+      "https://thumb.jpg"
+    );
+    getDb().prepare("UPDATE users SET enabled = 0 WHERE id = ?").run(user.id);
+
+    const updated = findOrCreatePlexUser(
+      "plex-123",
+      "plexuser",
+      "plex@test.com",
+      "https://thumb.jpg"
+    );
+    expect(updated.enabled).toBe(false);
+  });
+});
+
+describe("linkPlexAccount", () => {
+  it("links a Plex account to a local user", async () => {
+    const localUser = await createAdminUser("admin", "password123");
+
+    const linked = linkPlexAccount(
+      localUser.id,
+      "plex-456",
+      "plexname",
+      "plex@test.com",
+      "https://thumb.jpg"
+    );
+
+    expect(linked.id).toBe(localUser.id);
+    expect(linked.userType).toBe("plex");
+    expect(linked.username).toBe("admin");
+    expect(linked.thumb).toBe("https://thumb.jpg");
+
+    const row = getDb()
+      .prepare(
+        "SELECT plex_id, plex_username, plex_email, user_type, password_hash FROM users WHERE id = ?"
+      )
+      .get(localUser.id) as {
+      plex_id: string;
+      plex_username: string;
+      plex_email: string;
+      user_type: string;
+      password_hash: string;
+    };
+    expect(row.plex_id).toBe("plex-456");
+    expect(row.plex_username).toBe("plexname");
+    expect(row.plex_email).toBe("plex@test.com");
+    expect(row.user_type).toBe("plex");
+    expect(row.password_hash).toBeTruthy();
+  });
+
+  it("throws when user is already a plex user", () => {
+    const plexUser = createPlexAdminUser(
+      "plex-123",
+      "plexadmin",
+      "admin@plex.tv",
+      "https://thumb.jpg"
+    );
+
+    expect(() =>
+      linkPlexAccount(
+        plexUser.id,
+        "plex-789",
+        "other",
+        "o@t.com",
+        "https://t.jpg"
+      )
+    ).toThrow("Only local users can link a Plex account");
+  });
+
+  it("throws when plex_id is already linked to another user", async () => {
+    const localUser = await createAdminUser("admin", "password123");
+    findOrCreatePlexUser("plex-456", "existing", "e@t.com", "https://t.jpg");
+
+    expect(() =>
+      linkPlexAccount(
+        localUser.id,
+        "plex-456",
+        "plexname",
+        "p@t.com",
+        "https://t.jpg"
+      )
+    ).toThrow("This Plex account is already linked to another user");
+  });
+
+  it("throws when user does not exist", () => {
+    expect(() =>
+      linkPlexAccount(999, "plex-456", "plexname", "p@t.com", "https://t.jpg")
+    ).toThrow("User not found");
   });
 });
 

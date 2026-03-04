@@ -6,10 +6,27 @@ type UserRow = {
   id: number;
   username: string;
   password_hash: string;
+  plex_id: string | null;
+  plex_username: string | null;
+  plex_email: string | null;
+  plex_thumb: string | null;
+  user_type: string;
   role: string;
   enabled: number;
   theme: string;
 };
+
+function toAuthUser(row: UserRow): AuthUser {
+  return {
+    id: row.id,
+    username: row.username ?? row.plex_username ?? row.plex_email ?? "unknown",
+    userType: row.user_type as AuthUser["userType"],
+    role: row.role as AuthUser["role"],
+    enabled: !!row.enabled,
+    theme: row.theme as AuthUser["theme"],
+    thumb: row.plex_thumb ?? null,
+  };
+}
 
 export function needsSetup(): boolean {
   const row = getDb()
@@ -26,17 +43,19 @@ export async function createAdminUser(
 
   const result = getDb()
     .prepare(
-      `INSERT INTO users (username, password_hash, role, enabled)
-       VALUES (?, ?, 'admin', 1)`
+      `INSERT INTO users (username, password_hash, user_type, role, enabled)
+       VALUES (?, ?, 'local', 'admin', 1)`
     )
     .run(username, passwordHash);
 
   return {
     id: result.lastInsertRowid as number,
     username,
+    userType: "local",
     role: "admin",
     enabled: true,
     theme: "system",
+    thumb: null,
   };
 }
 
@@ -46,7 +65,8 @@ export async function authenticateUser(
 ): Promise<AuthUser | null> {
   const row = getDb()
     .prepare(
-      "SELECT id, username, password_hash, role, enabled, theme FROM users WHERE username = ?"
+      `SELECT id, username, password_hash, plex_username, plex_email, plex_thumb, user_type, role, enabled, theme
+       FROM users WHERE username = ?`
     )
     .get(username) as UserRow | undefined;
 
@@ -56,31 +76,141 @@ export async function authenticateUser(
   const valid = await verifyPassword(password, row.password_hash);
   if (!valid) return null;
 
-  return {
-    id: row.id,
-    username: row.username,
-    role: row.role as AuthUser["role"],
-    enabled: true,
-    theme: row.theme as AuthUser["theme"],
-  };
+  return toAuthUser(row);
 }
 
 export function findUserById(id: number): AuthUser | null {
   const row = getDb()
     .prepare(
-      "SELECT id, username, role, enabled, theme FROM users WHERE id = ?"
+      `SELECT id, username, plex_username, plex_email, plex_thumb, user_type, role, enabled, theme
+       FROM users WHERE id = ?`
     )
     .get(id) as UserRow | undefined;
 
   if (!row) return null;
 
+  return toAuthUser(row);
+}
+
+export function createPlexAdminUser(
+  plexId: string,
+  plexUsername: string,
+  plexEmail: string,
+  plexThumb: string
+): AuthUser {
+  const result = getDb()
+    .prepare(
+      `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, user_type, role, enabled)
+       VALUES (?, ?, ?, ?, 'plex', 'admin', 1)`
+    )
+    .run(String(plexId), plexUsername, plexEmail, plexThumb);
+
   return {
-    id: row.id,
-    username: row.username,
-    role: row.role as AuthUser["role"],
-    enabled: !!row.enabled,
-    theme: row.theme as AuthUser["theme"],
+    id: result.lastInsertRowid as number,
+    username: plexUsername,
+    userType: "plex",
+    role: "admin",
+    enabled: true,
+    theme: "system",
+    thumb: plexThumb,
   };
+}
+
+export function findOrCreatePlexUser(
+  plexId: string,
+  plexUsername: string,
+  plexEmail: string,
+  plexThumb: string
+): AuthUser {
+  const existing = getDb()
+    .prepare(
+      `SELECT id, username, plex_username, plex_email, plex_thumb, user_type, role, enabled, theme
+       FROM users WHERE plex_id = ?`
+    )
+    .get(String(plexId)) as UserRow | undefined;
+
+  if (existing) {
+    getDb()
+      .prepare(
+        `UPDATE users SET plex_username = ?, plex_email = ?, plex_thumb = ?, updated_at = datetime('now')
+         WHERE plex_id = ?`
+      )
+      .run(plexUsername, plexEmail, plexThumb, String(plexId));
+
+    return toAuthUser({
+      ...existing,
+      plex_username: plexUsername,
+      plex_email: plexEmail,
+      plex_thumb: plexThumb,
+    });
+  }
+
+  const result = getDb()
+    .prepare(
+      `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, user_type, role, enabled)
+       VALUES (?, ?, ?, ?, 'plex', 'user', 1)`
+    )
+    .run(String(plexId), plexUsername, plexEmail, plexThumb);
+
+  return {
+    id: result.lastInsertRowid as number,
+    username: plexUsername,
+    userType: "plex",
+    role: "user",
+    enabled: true,
+    theme: "system",
+    thumb: plexThumb,
+  };
+}
+
+export function linkPlexAccount(
+  userId: number,
+  plexId: string,
+  plexUsername: string,
+  plexEmail: string,
+  plexThumb: string
+): AuthUser {
+  const db = getDb();
+
+  const row = db
+    .prepare(
+      `SELECT id, username, password_hash, plex_id, plex_username, plex_email, plex_thumb, user_type, role, enabled, theme
+       FROM users WHERE id = ?`
+    )
+    .get(userId) as UserRow | undefined;
+
+  if (!row) throw Object.assign(new Error("User not found"), { status: 404 });
+
+  if (row.user_type !== "local") {
+    throw Object.assign(new Error("Only local users can link a Plex account"), {
+      status: 400,
+    });
+  }
+
+  const existing = db
+    .prepare("SELECT id FROM users WHERE plex_id = ?")
+    .get(String(plexId)) as { id: number } | undefined;
+
+  if (existing) {
+    throw Object.assign(
+      new Error("This Plex account is already linked to another user"),
+      { status: 409 }
+    );
+  }
+
+  db.prepare(
+    `UPDATE users SET plex_id = ?, plex_username = ?, plex_email = ?, plex_thumb = ?, user_type = 'plex', updated_at = datetime('now')
+     WHERE id = ?`
+  ).run(String(plexId), plexUsername, plexEmail, plexThumb, userId);
+
+  return toAuthUser({
+    ...row,
+    plex_id: String(plexId),
+    plex_username: plexUsername,
+    plex_email: plexEmail,
+    plex_thumb: plexThumb,
+    user_type: "plex",
+  });
 }
 
 export function updateUserPreferences(
