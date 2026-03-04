@@ -76,6 +76,17 @@ async function postSetup(
   return data.user;
 }
 
+async function postLinkPlex(authToken: string): Promise<AuthUser> {
+  const res = await fetch("/api/auth/link-plex", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ authToken }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to link Plex account");
+  return data.user;
+}
+
 async function postLogout(): Promise<void> {
   await fetch("/api/auth/logout", { method: "POST" });
 }
@@ -132,6 +143,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setStatus("authenticated");
   }, []);
 
+  const linkPlex = useCallback(async () => {
+    const authToken = await plexOAuthLogin();
+    if (!authToken) throw new Error("Plex sign-in was cancelled");
+    const updatedUser = await postLinkPlex(authToken);
+    setUser(updatedUser);
+  }, []);
+
   const logout = useCallback(async () => {
     await postLogout();
     setUser(null);
@@ -165,6 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     login,
     plexLogin,
+    linkPlex,
     logout,
     setup,
     plexSetup,

@@ -7,6 +7,7 @@ import {
   authenticateUser,
   findUserById,
   findOrCreatePlexUser,
+  linkPlexAccount,
   updateUserPreferences,
 } from "./users";
 
@@ -219,6 +220,62 @@ describe("findOrCreatePlexUser", () => {
       "https://thumb.jpg"
     );
     expect(updated.enabled).toBe(false);
+  });
+});
+
+describe("linkPlexAccount", () => {
+  it("links a Plex account to a local user", async () => {
+    const localUser = await createAdminUser("admin", "password123");
+
+    const linked = linkPlexAccount(
+      localUser.id,
+      "plex-456",
+      "plexname",
+      "plex@test.com",
+      "https://thumb.jpg"
+    );
+
+    expect(linked.id).toBe(localUser.id);
+    expect(linked.userType).toBe("plex");
+    expect(linked.username).toBe("admin");
+    expect(linked.thumb).toBe("https://thumb.jpg");
+
+    const row = getDb()
+      .prepare("SELECT plex_id, plex_username, plex_email, user_type, password_hash FROM users WHERE id = ?")
+      .get(localUser.id) as { plex_id: string; plex_username: string; plex_email: string; user_type: string; password_hash: string };
+    expect(row.plex_id).toBe("plex-456");
+    expect(row.plex_username).toBe("plexname");
+    expect(row.plex_email).toBe("plex@test.com");
+    expect(row.user_type).toBe("plex");
+    expect(row.password_hash).toBeTruthy();
+  });
+
+  it("throws when user is already a plex user", () => {
+    const plexUser = createPlexAdminUser(
+      "plex-123",
+      "plexadmin",
+      "admin@plex.tv",
+      "https://thumb.jpg"
+    );
+
+    expect(() =>
+      linkPlexAccount(plexUser.id, "plex-789", "other", "o@t.com", "https://t.jpg")
+    ).toThrow("Only local users can link a Plex account");
+  });
+
+  it("throws when plex_id is already linked to another user", async () => {
+    const localUser = await createAdminUser("admin", "password123");
+    findOrCreatePlexUser("plex-456", "existing", "e@t.com", "https://t.jpg");
+
+    expect(() =>
+      linkPlexAccount(localUser.id, "plex-456", "plexname", "p@t.com", "https://t.jpg")
+    ).toThrow("This Plex account is already linked to another user");
+  });
+
+  it("throws when user does not exist", () => {
+    expect(() =>
+      linkPlexAccount(999, "plex-456", "plexname", "p@t.com", "https://t.jpg")
+    ).toThrow("User not found");
   });
 });
 

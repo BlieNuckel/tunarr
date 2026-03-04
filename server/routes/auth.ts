@@ -6,6 +6,7 @@ import {
   createPlexAdminUser,
   authenticateUser,
   findOrCreatePlexUser,
+  linkPlexAccount,
   updateUserPreferences,
 } from "../auth/users";
 import { createSession, deleteSession } from "../auth/sessions";
@@ -210,6 +211,41 @@ router.post(
 
       const token = createSession(user.id);
       setSessionCookie(res, token);
+
+      res.json({ user: userResponse(user) });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  "/link-plex",
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { authToken } = req.body;
+
+      if (!authToken || typeof authToken !== "string") {
+        const err = new Error("authToken is required") as Error & {
+          status: number;
+        };
+        err.status = 400;
+        throw err;
+      }
+
+      const plexAccount = await getPlexAccountFull(
+        authToken,
+        TUNEARR_SERVER_CLIENT_ID
+      );
+
+      const user = linkPlexAccount(
+        req.user!.id,
+        String(plexAccount.id),
+        plexAccount.username,
+        plexAccount.email,
+        plexAccount.thumb
+      );
 
       res.json({ user: userResponse(user) });
     } catch (err) {

@@ -351,6 +351,93 @@ describe("GET /auth/me", () => {
   });
 });
 
+describe("POST /auth/link-plex", () => {
+  let cookie: string;
+
+  beforeEach(async () => {
+    const setupRes = await request(app)
+      .post("/auth/setup")
+      .send({ username: "admin", password: "password123" });
+    cookie = setupRes.headers["set-cookie"][0];
+  });
+
+  it("links Plex account to local user", async () => {
+    vi.mocked(getPlexAccountFull).mockResolvedValue({
+      id: 12345,
+      username: "plexuser",
+      email: "plex@test.com",
+      thumb: "https://plex.tv/thumb.jpg",
+    });
+
+    const res = await request(app)
+      .post("/auth/link-plex")
+      .set("Cookie", cookie)
+      .send({ authToken: "valid-plex-token" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.username).toBe("admin");
+    expect(res.body.user.userType).toBe("plex");
+    expect(res.body.user.thumb).toBe("https://plex.tv/thumb.jpg");
+  });
+
+  it("returns 401 without authentication", async () => {
+    const res = await request(app)
+      .post("/auth/link-plex")
+      .send({ authToken: "valid-plex-token" });
+
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 400 when authToken is missing", async () => {
+    const res = await request(app)
+      .post("/auth/link-plex")
+      .set("Cookie", cookie)
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe("authToken is required");
+  });
+
+  it("returns error when Plex token is invalid", async () => {
+    vi.mocked(getPlexAccountFull).mockRejectedValue(
+      new Error("Plex returned 401")
+    );
+
+    const res = await request(app)
+      .post("/auth/link-plex")
+      .set("Cookie", cookie)
+      .send({ authToken: "bad-token" });
+
+    expect(res.status).toBe(500);
+  });
+
+  it("returns 409 when Plex account is already linked", async () => {
+    vi.mocked(getPlexAccountFull).mockResolvedValue({
+      id: 12345,
+      username: "plexuser",
+      email: "plex@test.com",
+      thumb: "https://plex.tv/thumb.jpg",
+    });
+
+    getDb()
+      .prepare(
+        `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, user_type, role, enabled)
+         VALUES ('12345', 'existing', 'e@test.com', 'https://t.jpg', 'plex', 'user', 1)`
+      )
+      .run();
+
+    const res = await request(app)
+      .post("/auth/link-plex")
+      .set("Cookie", cookie)
+      .send({ authToken: "valid-plex-token" });
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe(
+      "This Plex account is already linked to another user"
+    );
+  });
+});
+
 describe("PATCH /auth/preferences", () => {
   it("returns 401 without authentication", async () => {
     const res = await request(app)

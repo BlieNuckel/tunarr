@@ -163,6 +163,56 @@ export function findOrCreatePlexUser(
   };
 }
 
+export function linkPlexAccount(
+  userId: number,
+  plexId: string,
+  plexUsername: string,
+  plexEmail: string,
+  plexThumb: string
+): AuthUser {
+  const db = getDb();
+
+  const row = db
+    .prepare(
+      `SELECT id, username, password_hash, plex_id, plex_username, plex_email, plex_thumb, user_type, role, enabled, theme
+       FROM users WHERE id = ?`
+    )
+    .get(userId) as UserRow | undefined;
+
+  if (!row) throw Object.assign(new Error("User not found"), { status: 404 });
+
+  if (row.user_type !== "local") {
+    throw Object.assign(new Error("Only local users can link a Plex account"), {
+      status: 400,
+    });
+  }
+
+  const existing = db
+    .prepare("SELECT id FROM users WHERE plex_id = ?")
+    .get(String(plexId)) as { id: number } | undefined;
+
+  if (existing) {
+    throw Object.assign(
+      new Error("This Plex account is already linked to another user"),
+      { status: 409 }
+    );
+  }
+
+  db.prepare(
+    `UPDATE users SET plex_id = ?, plex_username = ?, plex_email = ?, plex_thumb = ?, user_type = 'plex', updated_at = datetime('now')
+     WHERE id = ?`
+  ).run(String(plexId), plexUsername, plexEmail, plexThumb, userId);
+
+  return toAuthUser({
+    ...row,
+    plex_id: String(plexId),
+    plex_username: plexUsername,
+    plex_email: plexEmail,
+    plex_thumb: plexThumb,
+    user_type: "plex",
+  });
+}
+
 export function updateUserPreferences(
   userId: number,
   prefs: { theme?: AuthUser["theme"] }

@@ -23,6 +23,7 @@ export interface AuthContextValue {
   logout: () => Promise<void>;
   setup: (username: string, password: string) => Promise<void>;
   plexSetup: () => Promise<void>;
+  linkPlex: () => Promise<void>;
   updatePreferences: (prefs: { theme?: AuthUser["theme"] }) => Promise<void>;
 }
 

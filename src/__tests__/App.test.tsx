@@ -57,6 +57,7 @@ const authenticatedAuth: AuthContextValue = {
   login: vi.fn(),
   plexLogin: vi.fn(),
   plexSetup: vi.fn(),
+  linkPlex: vi.fn(),
   logout: vi.fn(),
   setup: vi.fn(),
   updatePreferences: vi.fn(),

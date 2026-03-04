@@ -40,6 +40,7 @@ const mockAuthValue: AuthContextValue = {
   login: vi.fn(),
   plexLogin: vi.fn(),
   plexSetup: vi.fn(),
+  linkPlex: vi.fn(),
   logout: mockLogout,
   setup: vi.fn(),
   updatePreferences: vi.fn(),
