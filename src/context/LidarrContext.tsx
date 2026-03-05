@@ -7,6 +7,7 @@ import {
 } from "./lidarrContextDef";
 import { DEFAULT_PROMOTED_ALBUM } from "./promotedAlbumDefaults";
 import { useAuth } from "./useAuth";
+import { hasPermission, Permission } from "@shared/permissions";
 
 interface LidarrContextProviderProps {
   children: ReactNode;
@@ -106,11 +107,16 @@ export const LidarrContextProvider = ({
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const isAdmin =
+    status === "authenticated" &&
+    user != null &&
+    hasPermission(user.permissions, Permission.ADMIN);
+
   useEffect(() => {
-    if (status === "authenticated" && user?.role === "admin") {
+    if (isAdmin) {
       loadSettings(setSettings, setIsLoading);
     }
-  }, [status, user?.role]);
+  }, [isAdmin]);
 
   const savePartialSettings = async (partial: Partial<LidarrSettings>) => {
     const res = await fetch("/api/settings", {
@@ -169,8 +175,7 @@ export const LidarrContextProvider = ({
     options,
     settings,
     isConnected,
-    isLoading:
-      status === "authenticated" && user?.role === "admin" && isLoading,
+    isLoading: isAdmin && isLoading,
     saveSettings,
     savePartialSettings,
     testConnection,

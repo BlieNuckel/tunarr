@@ -32,7 +32,7 @@ vi.mock("../middleware/requireAuth", () => ({
       user: {
         id: number;
         username: string;
-        role: string;
+        permissions: number;
         enabled: boolean;
         theme: string;
       };
@@ -43,7 +43,7 @@ vi.mock("../middleware/requireAuth", () => ({
     req.user = {
       id: 1,
       username: "admin",
-      role: "admin",
+      permissions: 1,
       enabled: true,
       theme: "system",
     };
@@ -51,8 +51,8 @@ vi.mock("../middleware/requireAuth", () => ({
   },
 }));
 
-vi.mock("../middleware/requireAdmin", () => ({
-  requireAdmin: (_req: unknown, _res: unknown, next: () => void) => {
+vi.mock("../middleware/requirePermission", () => ({
+  requirePermission: () => (_req: unknown, _res: unknown, next: () => void) => {
     next();
   },
 }));

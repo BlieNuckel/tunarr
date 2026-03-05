@@ -2,13 +2,14 @@ import { getDataSource } from "../db";
 import { User } from "../db/entity/User";
 import type { AuthUser } from "./types";
 import { hashPassword, verifyPassword } from "./password";
+import { Permission } from "../../shared/permissions";
 
 function toAuthUser(row: User): AuthUser {
   return {
     id: row.id,
     username: row.username ?? row.plex_username ?? row.plex_email ?? "unknown",
     userType: row.user_type,
-    role: row.role,
+    permissions: row.permissions,
     enabled: !!row.enabled,
     theme: row.theme,
     thumb: row.plex_thumb ?? null,
@@ -16,9 +17,11 @@ function toAuthUser(row: User): AuthUser {
 }
 
 export async function needsSetup(): Promise<boolean> {
-  const repo = getDataSource().getRepository(User);
-  const count = await repo.countBy({ role: "admin" });
-  return count === 0;
+  const rows = await getDataSource().query(
+    `SELECT COUNT(*) as count FROM users WHERE (permissions & ?) != 0`,
+    [Permission.ADMIN]
+  );
+  return rows[0].count === 0;
 }
 
 export async function createAdminUser(
@@ -32,7 +35,7 @@ export async function createAdminUser(
     username,
     password_hash: passwordHash,
     user_type: "local",
-    role: "admin",
+    permissions: Permission.ADMIN,
     enabled: 1,
   });
   const saved = await repo.save(user);
@@ -41,7 +44,7 @@ export async function createAdminUser(
     id: saved.id,
     username,
     userType: "local",
-    role: "admin",
+    permissions: Permission.ADMIN,
     enabled: true,
     theme: "system",
     thumb: null,
@@ -85,7 +88,7 @@ export async function createPlexAdminUser(
     plex_email: plexEmail,
     plex_thumb: plexThumb,
     user_type: "plex",
-    role: "admin",
+    permissions: Permission.ADMIN,
     enabled: 1,
   });
   const saved = await repo.save(user);
@@ -94,7 +97,7 @@ export async function createPlexAdminUser(
     id: saved.id,
     username: plexUsername,
     userType: "plex",
-    role: "admin",
+    permissions: Permission.ADMIN,
     enabled: true,
     theme: "system",
     thumb: plexThumb,
@@ -137,7 +140,7 @@ export async function findOrCreatePlexUser(
     plex_email: plexEmail,
     plex_thumb: plexThumb,
     user_type: "plex",
-    role: "user",
+    permissions: Permission.REQUEST,
     enabled: 1,
   });
   const saved = await repo.save(user);
@@ -146,7 +149,7 @@ export async function findOrCreatePlexUser(
     id: saved.id,
     username: plexUsername,
     userType: "plex",
-    role: "user",
+    permissions: Permission.REQUEST,
     enabled: true,
     theme: "system",
     thumb: plexThumb,

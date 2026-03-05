@@ -25,9 +25,9 @@
   },
   "scripts": {
     "dev": "concurrently \"vite\" \"tsx --tsconfig server/tsconfig.json server/index.ts\"",
-    "start": "concurrently \"vite\" \"tsx server/index.ts\"",
+    "start": "concurrently \"vite\" \"tsx --tsconfig server/tsconfig.json server/index.ts\"",
     "start:client": "vite",
-    "start:server": "tsx server/index.ts",
+    "start:server": "tsx --tsconfig server/tsconfig.json server/index.ts",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && pnpm run typecheck:server",

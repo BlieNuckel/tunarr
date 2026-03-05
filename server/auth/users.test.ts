@@ -31,7 +31,7 @@ describe("needsSetup", () => {
 
   it("returns true when only regular users exist", async () => {
     await getDataSource().query(
-      "INSERT INTO users (username, password_hash, role, enabled) VALUES ('user', 'hash', 'user', 1)"
+      "INSERT INTO users (username, password_hash, permissions, enabled) VALUES ('user', 'hash', 8, 1)"
     );
     expect(await needsSetup()).toBe(true);
   });
@@ -42,7 +42,7 @@ describe("createAdminUser", () => {
     const user = await createAdminUser("myadmin", "password123");
     expect(user.username).toBe("myadmin");
     expect(user.userType).toBe("local");
-    expect(user.role).toBe("admin");
+    expect(user.permissions).toBe(1);
     expect(user.enabled).toBe(true);
     expect(user.theme).toBe("system");
     expect(user.thumb).toBeNull();
@@ -69,7 +69,7 @@ describe("createPlexAdminUser", () => {
     );
     expect(user.username).toBe("plexadmin");
     expect(user.userType).toBe("plex");
-    expect(user.role).toBe("admin");
+    expect(user.permissions).toBe(1);
     expect(user.enabled).toBe(true);
     expect(user.theme).toBe("system");
     expect(user.thumb).toBe("https://thumb.jpg");
@@ -133,8 +133,8 @@ describe("findUserById", () => {
 
   it("returns plex_username when username is null", async () => {
     await getDataSource().query(
-      `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, role, enabled)
-       VALUES ('plex-1', 'plexuser', 'plex@test.com', 'https://thumb.jpg', 'user', 1)`
+      `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, permissions, enabled)
+       VALUES ('plex-1', 'plexuser', 'plex@test.com', 'https://thumb.jpg', 8, 1)`
     );
 
     const users = await getDataSource().query(
@@ -159,7 +159,7 @@ describe("findOrCreatePlexUser", () => {
     expect(user.id).toBeGreaterThan(0);
     expect(user.username).toBe("plexuser");
     expect(user.userType).toBe("plex");
-    expect(user.role).toBe("user");
+    expect(user.permissions).toBe(8);
     expect(user.enabled).toBe(true);
     expect(user.theme).toBe("system");
     expect(user.thumb).toBe("https://thumb.jpg");
@@ -207,7 +207,7 @@ describe("findOrCreatePlexUser", () => {
     expect(updated.thumb).toBe("https://new-thumb.jpg");
   });
 
-  it("preserves role and enabled status on re-login", async () => {
+  it("preserves permissions and enabled status on re-login", async () => {
     const user = await findOrCreatePlexUser(
       "plex-123",
       "plexuser",

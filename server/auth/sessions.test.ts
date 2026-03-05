@@ -11,8 +11,8 @@ import {
 beforeEach(async () => {
   await initializeDatabase(":memory:");
   await getDataSource().query(
-    `INSERT INTO users (username, password_hash, role, enabled)
-     VALUES ('admin', 'hash', 'admin', 1)`
+    `INSERT INTO users (username, password_hash, permissions, enabled)
+     VALUES ('admin', 'hash', 1, 1)`
   );
 });
 
@@ -45,7 +45,7 @@ describe("validateSession", () => {
     expect(user!.id).toBe(1);
     expect(user!.username).toBe("admin");
     expect(user!.userType).toBe("local");
-    expect(user!.role).toBe("admin");
+    expect(user!.permissions).toBe(1);
     expect(user!.enabled).toBe(true);
     expect(user!.theme).toBe("system");
     expect(user!.thumb).toBeNull();
@@ -86,8 +86,8 @@ describe("validateSession", () => {
 
   it("returns plex_username when username is null", async () => {
     await getDataSource().query(
-      `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, user_type, role, enabled)
-       VALUES ('plex-1', 'plexuser', 'plex@test.com', 'https://thumb.jpg', 'plex', 'user', 1)`
+      `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, user_type, permissions, enabled)
+       VALUES ('plex-1', 'plexuser', 'plex@test.com', 'https://thumb.jpg', 'plex', 8, 1)`
     );
 
     const users = await getDataSource().query(

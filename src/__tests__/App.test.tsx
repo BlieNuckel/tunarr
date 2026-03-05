@@ -57,7 +57,7 @@ const authenticatedAuth: AuthContextValue = {
     id: 1,
     username: "admin",
     userType: "local",
-    role: "admin",
+    permissions: 2,
     theme: "system",
     thumb: null,
   },

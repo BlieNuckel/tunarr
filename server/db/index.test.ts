@@ -53,17 +53,17 @@ describe("initializeDatabase", () => {
       await initializeDatabase(":memory:");
       const ds = getDataSource();
 
-      await ds.query("INSERT INTO users (username, role) VALUES (?, ?)", [
-        "testuser",
-        "admin",
-      ]);
+      await ds.query(
+        "INSERT INTO users (username, permissions) VALUES (?, ?)",
+        ["testuser", 1]
+      );
 
       const users = await ds.query("SELECT * FROM users WHERE username = ?", [
         "testuser",
       ]);
 
       expect(users[0].username).toBe("testuser");
-      expect(users[0].role).toBe("admin");
+      expect(users[0].permissions).toBe(1);
     } finally {
       await closeDatabase();
     }
