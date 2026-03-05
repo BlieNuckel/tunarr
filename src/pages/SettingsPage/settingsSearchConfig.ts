@@ -1,6 +1,10 @@
 import { hasPermission, Permission } from "@shared/permissions";
 
-export type SettingsTab = "general" | "integrations" | "recommendations" | "admin";
+export type SettingsTab =
+  | "general"
+  | "integrations"
+  | "recommendations"
+  | "admin";
 
 export const TAB_LABELS: Record<SettingsTab, string> = {
   general: "General",

@@ -170,7 +170,9 @@ describe("UsersSection", () => {
   it("displays permission badges on user cards", () => {
     setupMocks();
     render(<UsersSection />);
-    const adminLabels = screen.getAllByText(PERMISSION_LABELS[Permission.ADMIN]);
+    const adminLabels = screen.getAllByText(
+      PERMISSION_LABELS[Permission.ADMIN]
+    );
     expect(adminLabels.length).toBeGreaterThanOrEqual(1);
     const requestLabels = screen.getAllByText(
       PERMISSION_LABELS[Permission.REQUEST]

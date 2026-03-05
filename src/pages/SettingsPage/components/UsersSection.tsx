@@ -2,10 +2,7 @@ import { useState } from "react";
 import { useUsers } from "@/hooks/useUsers";
 import type { ManagedUser } from "@/hooks/useUsers";
 import { useAuth } from "@/context/useAuth";
-import {
-  Permission,
-  PERMISSION_LABELS,
-} from "@shared/permissions";
+import { Permission, PERMISSION_LABELS } from "@shared/permissions";
 import { UserCircleIcon, PlusIcon, CheckIcon } from "@/components/icons";
 import Skeleton from "@/components/Skeleton";
 
@@ -314,10 +311,7 @@ function UserCard({
   return (
     <div className="flex items-center justify-between gap-3 p-4 bg-white dark:bg-gray-800 border-2 border-black rounded-lg shadow-cartoon-sm">
       <div className="flex items-center gap-3 min-w-0">
-        <UserAvatar
-          thumb={managedUser.thumb}
-          username={managedUser.username}
-        />
+        <UserAvatar thumb={managedUser.thumb} username={managedUser.username} />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-base font-bold text-gray-900 dark:text-gray-100 truncate">
@@ -333,8 +327,7 @@ function UserCard({
           <div className="flex items-center gap-1.5 flex-wrap mt-1">
             {ASSIGNABLE_PERMISSIONS.map((perm) => {
               const isActive = (managedUser.permissions & perm) !== 0;
-              const canToggle =
-                !isSelf || perm !== Permission.ADMIN;
+              const canToggle = !isSelf || perm !== Permission.ADMIN;
               return (
                 <PermissionBadge
                   key={perm}
@@ -385,10 +378,7 @@ export default function UsersSection() {
   ) => {
     const target = users.find((u) => u.id === userId);
     if (!target) return;
-    const newPermissions = togglePermissionBit(
-      target.permissions,
-      permission
-    );
+    const newPermissions = togglePermissionBit(target.permissions, permission);
     try {
       await updatePermissions(userId, newPermissions);
     } catch {

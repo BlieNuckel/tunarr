@@ -271,9 +271,7 @@ export async function updateUserPermissions(
   return toAuthUser({ ...row, permissions });
 }
 
-export async function toggleUserEnabled(
-  userId: number
-): Promise<AuthUser> {
+export async function toggleUserEnabled(userId: number): Promise<AuthUser> {
   const repo = getDataSource().getRepository(User);
   const row = await repo.findOneBy({ id: userId });
   if (!row) throw Object.assign(new Error("User not found"), { status: 404 });

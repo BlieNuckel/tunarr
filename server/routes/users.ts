@@ -25,13 +25,19 @@ router.post("/", async (req: Request, res: Response) => {
   const { username, password, permissions } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ error: "Username and password are required" });
+    return res
+      .status(400)
+      .json({ error: "Username and password are required" });
   }
   if (typeof username !== "string" || username.trim().length < 1) {
-    return res.status(400).json({ error: "Username must be a non-empty string" });
+    return res
+      .status(400)
+      .json({ error: "Username must be a non-empty string" });
   }
   if (typeof password !== "string" || password.length < 6) {
-    return res.status(400).json({ error: "Password must be at least 6 characters" });
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 6 characters" });
   }
 
   const user = await createLocalUser(
