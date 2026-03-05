@@ -34,9 +34,11 @@ export default function AccountSection() {
             </p>
             <div className="flex items-center gap-2 flex-wrap">
               {user &&
-                getActivePermissions(user.permissions).map(({ permission, label }) => (
-                  <PermissionBadge key={permission} label={label} />
-                ))}
+                getActivePermissions(user.permissions).map(
+                  ({ permission, label }) => (
+                    <PermissionBadge key={permission} label={label} />
+                  )
+                )}
               {user?.userType === "plex" && <PlexBadge />}
             </div>
           </div>

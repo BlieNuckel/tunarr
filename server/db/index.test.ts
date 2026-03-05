@@ -53,10 +53,10 @@ describe("initializeDatabase", () => {
       await initializeDatabase(":memory:");
       const ds = getDataSource();
 
-      await ds.query("INSERT INTO users (username, permissions) VALUES (?, ?)", [
-        "testuser",
-        2,
-      ]);
+      await ds.query(
+        "INSERT INTO users (username, permissions) VALUES (?, ?)",
+        ["testuser", 2]
+      );
 
       const users = await ds.query("SELECT * FROM users WHERE username = ?", [
         "testuser",

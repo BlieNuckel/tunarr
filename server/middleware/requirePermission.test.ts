@@ -5,7 +5,10 @@ import type { AuthUser } from "../auth/types";
 import { Permission } from "../auth/permissions";
 import { requirePermission } from "./requirePermission";
 
-function buildApp(user?: AuthUser, required: Permission | Permission[] = Permission.ADMIN) {
+function buildApp(
+  user?: AuthUser,
+  required: Permission | Permission[] = Permission.ADMIN
+) {
   const app = express();
   app.use((req, _res, next) => {
     req.user = user;
@@ -83,13 +86,19 @@ describe("requirePermission middleware", () => {
   });
 
   it("supports array of permissions with default or mode", async () => {
-    const app = buildApp(regularUser, [Permission.REQUEST, Permission.MANAGE_USERS]);
+    const app = buildApp(regularUser, [
+      Permission.REQUEST,
+      Permission.MANAGE_USERS,
+    ]);
     const res = await request(app).get("/test");
     expect(res.status).toBe(200);
   });
 
   it("returns 403 when user has none of the required permissions", async () => {
-    const app = buildApp(regularUser, [Permission.MANAGE_USERS, Permission.MANAGE_REQUESTS]);
+    const app = buildApp(regularUser, [
+      Permission.MANAGE_USERS,
+      Permission.MANAGE_REQUESTS,
+    ]);
     const res = await request(app).get("/test");
     expect(res.status).toBe(403);
   });

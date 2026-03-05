@@ -53,8 +53,10 @@ const DISPLAYABLE_PERMISSIONS = [
   Permission.REQUEST_VIEW,
 ] as const;
 
-export function getActivePermissions(userPermissions: number): ActivePermission[] {
-  return DISPLAYABLE_PERMISSIONS.filter(
-    (p) => (userPermissions & p) !== 0
-  ).map((p) => ({ permission: p, label: PERMISSION_LABELS[p] }));
+export function getActivePermissions(
+  userPermissions: number
+): ActivePermission[] {
+  return DISPLAYABLE_PERMISSIONS.filter((p) => (userPermissions & p) !== 0).map(
+    (p) => ({ permission: p, label: PERMISSION_LABELS[p] })
+  );
 }
