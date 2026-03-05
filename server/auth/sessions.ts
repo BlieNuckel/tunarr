@@ -46,7 +46,7 @@ export async function validateSession(token: string): Promise<AuthUser | null> {
     username:
       user.username ?? user.plex_username ?? user.plex_email ?? "unknown",
     userType: user.user_type,
-    role: user.role,
+    permissions: user.permissions,
     enabled: true,
     theme: user.theme,
     thumb: user.plex_thumb ?? null,

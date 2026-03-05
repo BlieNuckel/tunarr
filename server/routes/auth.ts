@@ -47,7 +47,7 @@ function userResponse(user: AuthUser) {
     id: user.id,
     username: user.username,
     userType: user.userType,
-    role: user.role,
+    permissions: user.permissions,
     theme: user.theme,
     thumb: user.thumb,
   };

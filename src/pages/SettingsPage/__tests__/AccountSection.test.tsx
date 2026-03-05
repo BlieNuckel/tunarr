@@ -11,7 +11,7 @@ const mockAuthValue: AuthContextValue = {
     id: 1,
     username: "testadmin",
     userType: "local",
-    role: "admin",
+    permissions: 2,
     theme: "system",
     thumb: null,
   },
@@ -37,25 +37,25 @@ beforeEach(() => {
 });
 
 describe("AccountSection", () => {
-  it("renders username and role", () => {
+  it("renders username and permission badges", () => {
     renderAccountSection();
     expect(screen.getByText("testadmin")).toBeInTheDocument();
-    expect(screen.getByText("admin")).toBeInTheDocument();
+    expect(screen.getByText("Admin")).toBeInTheDocument();
   });
 
-  it("renders user role for non-admin users", () => {
+  it("renders permission badges for non-admin users", () => {
     renderAccountSection({
       user: {
         id: 2,
         username: "regularuser",
         userType: "local",
-        role: "user",
+        permissions: 32,
         theme: "system",
         thumb: null,
       },
     });
     expect(screen.getByText("regularuser")).toBeInTheDocument();
-    expect(screen.getByText("user")).toBeInTheDocument();
+    expect(screen.getByText("Request")).toBeInTheDocument();
   });
 
   it("calls logout on Sign Out click", () => {
@@ -75,7 +75,7 @@ describe("AccountSection", () => {
         id: 3,
         username: "plexuser",
         userType: "plex",
-        role: "user",
+        permissions: 32,
         theme: "system",
         thumb: "https://plex.tv/avatar.jpg",
       },
@@ -89,7 +89,7 @@ describe("AccountSection", () => {
         id: 3,
         username: "plexuser",
         userType: "plex",
-        role: "user",
+        permissions: 32,
         theme: "system",
         thumb: "https://plex.tv/avatar.jpg",
       },
@@ -115,7 +115,7 @@ describe("AccountSection", () => {
         id: 3,
         username: "plexuser",
         userType: "plex",
-        role: "user",
+        permissions: 32,
         theme: "system",
         thumb: "https://plex.tv/avatar.jpg",
       },

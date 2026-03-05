@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   Index,
 } from "typeorm";
+import { Permission } from "../../auth/permissions";
 
-export type UserRole = "admin" | "user";
 export type UserType = "local" | "plex";
 
 @Entity("users")
@@ -31,8 +31,8 @@ export class User {
   @Column({ type: "text", nullable: true })
   plex_thumb!: string | null;
 
-  @Column({ type: "text", default: "user" })
-  role!: UserRole;
+  @Column({ type: "integer", default: Permission.REQUEST })
+  permissions!: number;
 
   @Column({ type: "integer", default: 1 })
   enabled!: number;

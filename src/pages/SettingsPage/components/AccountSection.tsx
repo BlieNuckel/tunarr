@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/useAuth";
 import { LogoutIcon, UserCircleIcon } from "@/components/icons";
+import { getActivePermissions } from "@/utils/permissions";
 
 export default function AccountSection() {
   const { user, logout, linkPlex } = useAuth();
@@ -31,10 +32,11 @@ export default function AccountSection() {
             <p className="text-base font-bold text-gray-900 dark:text-gray-100">
               {user?.username}
             </p>
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                {user?.role}
-              </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {user &&
+                getActivePermissions(user.permissions).map(({ permission, label }) => (
+                  <PermissionBadge key={permission} label={label} />
+                ))}
               {user?.userType === "plex" && <PlexBadge />}
             </div>
           </div>
@@ -84,6 +86,14 @@ function UserAvatar({
 
   return (
     <UserCircleIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+  );
+}
+
+function PermissionBadge({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-black/20 dark:border-white/20">
+      {label}
+    </span>
   );
 }
 

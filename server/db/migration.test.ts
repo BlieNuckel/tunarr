@@ -34,7 +34,7 @@ describe("InitialSchema migration", () => {
       "plex_id",
       "plex_email",
       "plex_thumb",
-      "role",
+      "permissions",
       "enabled",
       "created_at",
       "updated_at",
@@ -77,17 +77,6 @@ describe("InitialSchema migration", () => {
 });
 
 describe("constraint enforcement", () => {
-  it("enforces role CHECK constraint", async () => {
-    const db = await initTestDb();
-
-    await expect(
-      db.query("INSERT INTO users (username, role) VALUES (?, ?)", [
-        "test",
-        "superadmin",
-      ])
-    ).rejects.toThrow();
-  });
-
   it("enforces enabled CHECK constraint", async () => {
     const db = await initTestDb();
 
@@ -143,7 +132,7 @@ describe("constraint enforcement", () => {
     expect(sessions).toHaveLength(0);
   });
 
-  it("applies default values for role, enabled, and timestamps", async () => {
+  it("applies default values for permissions, enabled, and timestamps", async () => {
     const db = await initTestDb();
 
     await db.query("INSERT INTO users (username) VALUES (?)", ["bob"]);
@@ -152,7 +141,7 @@ describe("constraint enforcement", () => {
     ]);
     const user = users[0];
 
-    expect(user.role).toBe("user");
+    expect(user.permissions).toBe(32);
     expect(user.enabled).toBe(1);
     expect(user.created_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
     expect(user.updated_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);

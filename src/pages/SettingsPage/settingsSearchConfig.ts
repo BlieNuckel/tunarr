@@ -21,7 +21,7 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
   account: {
     label: "Account",
     tab: "general",
-    keywords: ["account", "user", "logout", "sign out", "username", "role"],
+    keywords: ["account", "user", "logout", "sign out", "username", "permissions"],
   },
   theme: {
     label: "Theme",

@@ -4,7 +4,7 @@ export type AuthUser = {
   id: number;
   username: string;
   userType: "local" | "plex";
-  role: "admin" | "user";
+  permissions: number;
   theme: "light" | "dark" | "system";
   thumb: string | null;
 };

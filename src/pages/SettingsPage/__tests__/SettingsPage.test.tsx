@@ -40,7 +40,7 @@ const mockAuthValue: AuthContextValue = {
     id: 1,
     username: "testadmin",
     userType: "local",
-    role: "admin",
+    permissions: 2,
     theme: "system",
     thumb: null,
   },
@@ -133,7 +133,7 @@ describe("SettingsPage", () => {
   it("shows Account section with username and Sign Out button", () => {
     renderSettingsPage();
     expect(screen.getByText("testadmin")).toBeInTheDocument();
-    expect(screen.getByText("admin")).toBeInTheDocument();
+    expect(screen.getByText("Admin")).toBeInTheDocument();
     expect(screen.getByText("Sign Out")).toBeInTheDocument();
   });
 
