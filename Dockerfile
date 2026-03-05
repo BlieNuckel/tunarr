@@ -1,5 +1,6 @@
-FROM node:22-alpine AS build
+FROM node:22.22.0-alpine3.23 AS build
 
+RUN apk upgrade --no-cache
 RUN apk add --no-cache build-base python3
 RUN corepack enable pnpm
 
@@ -10,13 +11,16 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
-FROM node:22-alpine
+FROM node:22.22.0-alpine3.23
+
+RUN apk upgrade --no-cache
 
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
 COPY --from=build /app/node_modules ./node_modules
 COPY server/ ./server/
+COPY shared/ ./shared/
 COPY --from=build /app/build ./build/
 
 ENV APP_CONFIG_DIR=/config
