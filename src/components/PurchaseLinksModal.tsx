@@ -120,7 +120,7 @@ export default function PurchaseLinksModal({
                 onClick={handleAddToLibrary}
                 className="w-full bg-pink-400 hover:bg-pink-300 text-black font-bold py-3 px-4 rounded-xl border-2 border-black shadow-cartoon-md hover:translate-y-[-2px] hover:shadow-cartoon-lg active:translate-y-[1px] active:shadow-cartoon-pressed transition-all"
               >
-                Add to Library
+                Request Album
               </button>
               <button
                 onClick={handleClose}

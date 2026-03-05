@@ -2,12 +2,13 @@ import { useState, useCallback } from "react";
 
 type LidarrState =
   | "idle"
-  | "adding"
+  | "requesting"
   | "removing"
   | "artist_not_in_library"
   | "album_not_in_library"
   | "already_unmonitored"
   | "success"
+  | "pending"
   | "already_monitored"
   | "error";
 
@@ -15,13 +16,13 @@ export default function useLidarr() {
   const [state, setState] = useState<LidarrState>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const addToLidarr = useCallback(
+  const requestAlbum = useCallback(
     async ({ albumMbid }: { albumMbid: string }) => {
-      setState("adding");
+      setState("requesting");
       setErrorMsg(null);
 
       try {
-        const res = await fetch("/api/lidarr/add", {
+        const res = await fetch("/api/requests", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ albumMbid }),
@@ -35,16 +36,20 @@ export default function useLidarr() {
           throw new Error(`Server error (${res.status})`);
         }
 
-        if (!res.ok) throw new Error(data.error || "Failed to add album");
+        if (!res.ok) throw new Error(data.error || "Failed to request album");
 
         if (data.status === "already_monitored") {
           setState("already_monitored");
+        } else if (data.status === "pending" || data.status === "duplicate_pending") {
+          setState("pending");
         } else {
           setState("success");
         }
       } catch (err) {
         setState("error");
-        setErrorMsg(err instanceof Error ? err.message : "Failed to add album");
+        setErrorMsg(
+          err instanceof Error ? err.message : "Failed to request album"
+        );
       }
     },
     []
@@ -99,5 +104,5 @@ export default function useLidarr() {
     setErrorMsg(null);
   }, []);
 
-  return { state, errorMsg, addToLidarr, removeFromLidarr, reset };
+  return { state, errorMsg, requestAlbum, removeFromLidarr, reset };
 }

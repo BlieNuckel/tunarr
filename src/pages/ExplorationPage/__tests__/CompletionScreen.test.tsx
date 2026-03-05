@@ -78,29 +78,33 @@ describe("CompletionScreen", () => {
     expect(onReset).toHaveBeenCalledOnce();
   });
 
-  it("Add All button makes fetch calls for each album", async () => {
+  it("Request All button makes fetch calls for each album", async () => {
     vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify({ status: "ok" }), { status: 200 })
+      new Response(JSON.stringify({ status: "approved" }), { status: 200 })
     );
 
     renderCompletion();
-    fireEvent.click(screen.getByText("Add All to Library"));
+    fireEvent.click(screen.getByText("Request All"));
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledTimes(3);
     });
+
+    expect(fetch).toHaveBeenCalledWith("/api/requests", expect.objectContaining({
+      method: "POST",
+    }));
   });
 
-  it("shows Added! after successful add all", async () => {
+  it("shows Requested! after successful request all", async () => {
     vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify({ status: "ok" }), { status: 200 })
+      new Response(JSON.stringify({ status: "approved" }), { status: 200 })
     );
 
     renderCompletion();
-    fireEvent.click(screen.getByText("Add All to Library"));
+    fireEvent.click(screen.getByText("Request All"));
 
     await waitFor(() => {
-      expect(screen.getByText("Added!")).toBeInTheDocument();
+      expect(screen.getByText("Requested!")).toBeInTheDocument();
     });
   });
 

@@ -10,6 +10,11 @@ import { Permission } from "../../shared/permissions";
 
 const router = express.Router();
 
+router.get("/status", requireAuth, (_req: Request, res: Response) => {
+  const config = getConfig();
+  res.json({ configured: Boolean(config.lidarrUrl && config.lidarrApiKey) });
+});
+
 router.use(requireAuth, requirePermission(Permission.ADMIN));
 
 router.get("/", (_req: Request, res: Response) => {

@@ -1,16 +1,16 @@
 const states = {
   idle: {
-    label: "Add to Lidarr",
+    label: "Request",
     className:
       "bg-amber-300 hover:bg-amber-200 text-black dark:text-black border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all",
   },
   adding: {
-    label: "Adding...",
+    label: "Requesting...",
     className:
       "bg-amber-200 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 border-2 border-black shadow-cartoon-sm cursor-wait",
   },
   success: {
-    label: "Added",
+    label: "Requested",
     className:
       "bg-emerald-400 text-black dark:text-black border-2 border-black shadow-cartoon-sm cursor-default",
   },

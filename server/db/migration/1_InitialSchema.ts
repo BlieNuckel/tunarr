@@ -44,9 +44,35 @@ export class InitialSchema1709000000000 implements MigrationInterface {
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS "idx_users_plex_id" ON "users"("plex_id")`
     );
+
+    await queryRunner.query(`
+      CREATE TABLE IF NOT EXISTS "requests" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "user_id" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
+        "album_mbid" TEXT NOT NULL,
+        "artist_name" TEXT NOT NULL,
+        "album_title" TEXT NOT NULL,
+        "status" TEXT NOT NULL DEFAULT 'pending' CHECK ("status" IN ('pending', 'approved', 'declined')),
+        "approved_by" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,
+        "approved_at" TEXT,
+        "created_at" TEXT NOT NULL DEFAULT (datetime('now')),
+        "updated_at" TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_requests_user_id" ON "requests"("user_id")`
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_requests_album_mbid" ON "requests"("album_mbid")`
+    );
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "idx_requests_status" ON "requests"("status")`
+    );
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP TABLE IF EXISTS "requests"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "sessions"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "users"`);
   }

@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import PromotedAlbum from "../PromotedAlbum";
 import type { PromotedAlbumData } from "@/hooks/usePromotedAlbum";
 
-const mockAddToLidarr = vi.fn();
+const mockRequestAlbum = vi.fn();
 const mockReset = vi.fn();
 const mockFetchTracks = vi.fn();
 const mockResetTracks = vi.fn();
@@ -16,7 +16,7 @@ vi.mock("@/hooks/useLidarr", () => ({
   default: () => ({
     state: mockLidarrState,
     errorMsg: mockLidarrError,
-    addToLidarr: mockAddToLidarr,
+    requestAlbum: mockRequestAlbum,
     reset: mockReset,
   }),
 }));
@@ -53,7 +53,7 @@ vi.mock("@/components/PurchaseLinksModal", () => ({
       <div data-testid="purchase-modal">
         <button onClick={onClose}>Close</button>
         {onAddToLibrary && (
-          <button onClick={onAddToLibrary}>Add to Library</button>
+          <button onClick={onAddToLibrary}>Request Album</button>
         )}
       </div>
     ) : null,
@@ -62,7 +62,7 @@ vi.mock("@/components/PurchaseLinksModal", () => ({
 vi.mock("@/components/MonitorButton", () => ({
   default: ({ state, onClick }: { state: string; onClick: () => void }) => (
     <button data-testid="monitor-button" data-state={state} onClick={onClick}>
-      {state === "already_monitored" ? "Already Monitored" : "Add to Lidarr"}
+      {state === "already_monitored" ? "Already Monitored" : "Request"}
     </button>
   ),
 }));
@@ -248,13 +248,13 @@ describe("PromotedAlbum", () => {
     expect(screen.getByTestId("purchase-modal")).toBeInTheDocument();
   });
 
-  it("calls addToLidarr via modal", () => {
+  it("calls requestAlbum via modal add button", () => {
     renderWithRouter(
       <PromotedAlbum data={albumData} loading={false} onRefresh={mockRefresh} />
     );
     fireEvent.click(screen.getByTestId("monitor-button"));
-    fireEvent.click(screen.getByText("Add to Library"));
-    expect(mockAddToLidarr).toHaveBeenCalledWith({ albumMbid: "alb-1" });
+    fireEvent.click(screen.getByText("Request Album"));
+    expect(mockRequestAlbum).toHaveBeenCalledWith({ albumMbid: "alb-1" });
   });
 
   it("shows already_monitored state when inLibrary", () => {

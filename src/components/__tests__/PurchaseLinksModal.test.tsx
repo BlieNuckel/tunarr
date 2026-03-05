@@ -128,19 +128,19 @@ describe("PurchaseLinksModal", () => {
     expect(reset).toHaveBeenCalled();
   });
 
-  it("shows Add to Library button when onAddToLibrary provided", () => {
+  it("shows Request Album button when onAddToLibrary provided", () => {
     render(<PurchaseLinksModal {...defaultProps} onAddToLibrary={vi.fn()} />);
-    expect(screen.getByText("Add to Library")).toBeInTheDocument();
+    expect(screen.getByText("Request Album")).toBeInTheDocument();
     expect(screen.getByText("Cancel")).toBeInTheDocument();
   });
 
   it("shows Close button when no onAddToLibrary", () => {
     render(<PurchaseLinksModal {...defaultProps} />);
     expect(screen.getByText("Close")).toBeInTheDocument();
-    expect(screen.queryByText("Add to Library")).not.toBeInTheDocument();
+    expect(screen.queryByText("Request Album")).not.toBeInTheDocument();
   });
 
-  it("calls onAddToLibrary and onClose when Add to Library clicked", () => {
+  it("calls onAddToLibrary and onClose when Request Album clicked", () => {
     const onAddToLibrary = vi.fn();
     const onClose = vi.fn();
     render(
@@ -151,7 +151,7 @@ describe("PurchaseLinksModal", () => {
       />
     );
 
-    fireEvent.click(screen.getByText("Add to Library"));
+    fireEvent.click(screen.getByText("Request Album"));
     expect(onAddToLibrary).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
   });

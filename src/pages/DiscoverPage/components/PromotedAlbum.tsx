@@ -47,7 +47,7 @@ export default function PromotedAlbum({
   const [expandHeight, setExpandHeight] = useState(0);
   const expandContentRef = useRef<HTMLDivElement>(null);
 
-  const { state, errorMsg, addToLidarr, reset: resetLidarr } = useLidarr();
+  const { state, errorMsg, requestAlbum, reset: resetLidarr } = useLidarr();
   const {
     media,
     loading: tracksLoading,
@@ -74,13 +74,16 @@ export default function PromotedAlbum({
 
   const effectiveState: MonitorState = inLibrary
     ? "already_monitored"
-    : state === "idle" ||
-        state === "adding" ||
-        state === "success" ||
-        state === "already_monitored" ||
-        state === "error"
-      ? state
-      : "idle";
+    : state === "requesting"
+      ? "adding"
+      : state === "pending"
+        ? "success"
+        : state === "idle" ||
+            state === "success" ||
+            state === "already_monitored" ||
+            state === "error"
+          ? state
+          : "idle";
 
   const handleMonitorClick = () => {
     if (effectiveState === "idle" || effectiveState === "error") {
@@ -90,7 +93,7 @@ export default function PromotedAlbum({
 
   const handleAddToLibrary = () => {
     if (!album) return;
-    addToLidarr({ albumMbid: album.mbid });
+    requestAlbum({ albumMbid: album.mbid });
   };
 
   const handleRefresh = () => {
