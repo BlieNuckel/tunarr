@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import express from "express";
 import request from "supertest";
 import type { AuthUser } from "../auth/types";
-import { Permission } from "../auth/permissions";
+import { Permission } from "../../shared/permissions";
 import { requirePermission } from "./requirePermission";
 
 function buildApp(

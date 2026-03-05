@@ -15,8 +15,8 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "rootDir": "."
+    "rootDir": ".."
   },
-  "include": ["./**/*.ts"],
+  "include": ["./**/*.ts", "../shared/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

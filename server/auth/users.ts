@@ -2,7 +2,7 @@ import { getDataSource } from "../db";
 import { User } from "../db/entity/User";
 import type { AuthUser } from "./types";
 import { hashPassword, verifyPassword } from "./password";
-import { Permission } from "./permissions";
+import { Permission } from "../../shared/permissions";
 
 function toAuthUser(row: User): AuthUser {
   return {

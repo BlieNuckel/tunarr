@@ -6,7 +6,7 @@ import { clearPromotedAlbumCache } from "../promotedAlbum/getPromotedAlbum";
 import { testLidarrConnection } from "../services/settings";
 import { requireAuth } from "../middleware/requireAuth";
 import { requirePermission } from "../middleware/requirePermission";
-import { Permission } from "../auth/permissions";
+import { Permission } from "../../shared/permissions";
 
 const router = express.Router();
 

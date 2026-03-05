@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/useAuth";
 import { LogoutIcon, UserCircleIcon } from "@/components/icons";
-import { getActivePermissions } from "@/utils/permissions";
+import { getActivePermissions } from "@shared/permissions";
 
 export default function AccountSection() {
   const { user, logout, linkPlex } = useAuth();

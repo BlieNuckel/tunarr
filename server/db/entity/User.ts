@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   Index,
 } from "typeorm";
-import { Permission } from "../../auth/permissions";
+import { Permission } from "../../../shared/permissions";
 
 export type UserType = "local" | "plex";
 

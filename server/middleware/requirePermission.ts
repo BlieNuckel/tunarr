@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { type Permission, hasPermission } from "../auth/permissions";
+import { type Permission, hasPermission } from "../../shared/permissions";
 
 type RequirePermissionOptions = {
   mode?: "and" | "or";

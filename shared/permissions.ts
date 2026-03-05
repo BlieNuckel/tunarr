@@ -29,6 +29,9 @@ export function hasPermission(
   return (userPermissions & required) !== 0;
 }
 
+export const ADMIN_PERMISSIONS = Permission.ADMIN;
+export const DEFAULT_USER_PERMISSIONS = Permission.REQUEST;
+
 export const PERMISSION_LABELS: Record<Permission, string> = {
   [Permission.NONE]: "None",
   [Permission.ADMIN]: "Admin",

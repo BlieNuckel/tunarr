@@ -7,7 +7,7 @@ import {
 } from "./lidarrContextDef";
 import { DEFAULT_PROMOTED_ALBUM } from "./promotedAlbumDefaults";
 import { useAuth } from "./useAuth";
-import { hasPermission, Permission } from "@/utils/permissions";
+import { hasPermission, Permission } from "@shared/permissions";
 
 interface LidarrContextProviderProps {
   children: ReactNode;
