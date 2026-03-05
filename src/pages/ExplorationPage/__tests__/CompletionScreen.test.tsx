@@ -90,9 +90,12 @@ describe("CompletionScreen", () => {
       expect(fetch).toHaveBeenCalledTimes(3);
     });
 
-    expect(fetch).toHaveBeenCalledWith("/api/requests", expect.objectContaining({
-      method: "POST",
-    }));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/requests",
+      expect.objectContaining({
+        method: "POST",
+      })
+    );
   });
 
   it("shows Requested! after successful request all", async () => {

@@ -1,8 +1,5 @@
 import express, { Request, Response } from "express";
-import {
-  getAlbumByMbid,
-  removeAlbum,
-} from "../../services/lidarr/helpers";
+import { getAlbumByMbid, removeAlbum } from "../../services/lidarr/helpers";
 import { fulfillRequest } from "../../services/requests/fulfillRequest";
 
 const router = express.Router();
@@ -14,7 +11,10 @@ router.post("/add", async (req: Request, res: Response) => {
   }
 
   const result = await fulfillRequest(albumMbid);
-  res.json({ status: result.status === "already_monitored" ? "already_monitored" : "success" });
+  res.json({
+    status:
+      result.status === "already_monitored" ? "already_monitored" : "success",
+  });
 });
 
 router.post("/remove", async (req: Request, res: Response) => {

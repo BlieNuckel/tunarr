@@ -101,7 +101,12 @@ describe("GET /", () => {
         created_at: "2024-01-01",
         updated_at: "2024-01-01",
         approved_at: null,
-        user: { id: 1, username: "testuser", plex_username: null, plex_thumb: null },
+        user: {
+          id: 1,
+          username: "testuser",
+          plex_username: null,
+          plex_thumb: null,
+        },
       },
     ]);
 

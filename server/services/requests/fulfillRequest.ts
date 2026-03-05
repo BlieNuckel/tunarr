@@ -11,7 +11,9 @@ type FulfillResult =
   | { status: "success"; artistName: string; albumTitle: string }
   | { status: "already_monitored"; artistName: string; albumTitle: string };
 
-export async function fulfillRequest(albumMbid: string): Promise<FulfillResult> {
+export async function fulfillRequest(
+  albumMbid: string
+): Promise<FulfillResult> {
   const lookupAlbum = await getAlbumByMbid(albumMbid);
   const artistMbid = lookupAlbum.artist?.foreignArtistId;
 

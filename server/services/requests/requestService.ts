@@ -24,7 +24,10 @@ type DeclineRequestResult =
 const log = createLogger("requests");
 
 function shouldAutoApprove(userPermissions: number): boolean {
-  return hasPermission(userPermissions, [Permission.ADMIN, Permission.AUTO_APPROVE]);
+  return hasPermission(userPermissions, [
+    Permission.ADMIN,
+    Permission.AUTO_APPROVE,
+  ]);
 }
 
 function getRequestRepo() {
@@ -158,7 +161,10 @@ export async function declineRequest(
   return { status: "declined" };
 }
 
-export async function getRequests(filters?: { status?: string; userId?: number }) {
+export async function getRequests(filters?: {
+  status?: string;
+  userId?: number;
+}) {
   const repo = getRequestRepo();
 
   const where: Record<string, unknown> = {};

@@ -40,7 +40,10 @@ export default function useLidarr() {
 
         if (data.status === "already_monitored") {
           setState("already_monitored");
-        } else if (data.status === "pending" || data.status === "duplicate_pending") {
+        } else if (
+          data.status === "pending" ||
+          data.status === "duplicate_pending"
+        ) {
           setState("pending");
         } else {
           setState("success");

@@ -94,9 +94,7 @@ describe("RequireOnboarding", () => {
   it("shows awaiting setup page for non-admin when lidarrUrl is empty", () => {
     renderWithContext({ isLoading: false }, Permission.REQUEST);
     expect(screen.getByText("Not Yet Configured")).toBeInTheDocument();
-    expect(
-      screen.getByText(/contact your administrator/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/contact your administrator/)).toBeInTheDocument();
   });
 
   it("renders outlet when lidarrUrl is configured", () => {
