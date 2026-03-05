@@ -40,7 +40,7 @@ const mockAuthValue: AuthContextValue = {
     id: 1,
     username: "testadmin",
     userType: "local",
-    permissions: 2,
+    permissions: 1,
     theme: "system",
     thumb: null,
   },
