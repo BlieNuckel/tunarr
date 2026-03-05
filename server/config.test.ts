@@ -126,6 +126,56 @@ describe("getConfigValue", () => {
   });
 });
 
+describe("initializeConfig", () => {
+  it("creates config directory and default config file", async () => {
+    const { initializeConfig } = await loadConfig();
+
+    expect(fs.existsSync(tmpDir)).toBe(true);
+    expect(fs.existsSync(path.join(tmpDir, "config.json"))).toBe(false);
+
+    initializeConfig();
+
+    expect(fs.existsSync(path.join(tmpDir, "config.json"))).toBe(true);
+
+    const content = JSON.parse(
+      fs.readFileSync(path.join(tmpDir, "config.json"), "utf-8")
+    );
+    expect(content.lidarrUrl).toBe("");
+    expect(content.lidarrApiKey).toBe("");
+    expect(content.promotedAlbum).toBeDefined();
+  });
+
+  it("does not overwrite existing config file", async () => {
+    const existing = { lidarrUrl: "http://existing:8686", lidarrApiKey: "abc" };
+    fs.writeFileSync(
+      path.join(tmpDir, "config.json"),
+      JSON.stringify(existing)
+    );
+
+    const { initializeConfig } = await loadConfig();
+    initializeConfig();
+
+    const content = JSON.parse(
+      fs.readFileSync(path.join(tmpDir, "config.json"), "utf-8")
+    );
+    expect(content.lidarrUrl).toBe("http://existing:8686");
+    expect(content.lidarrApiKey).toBe("abc");
+  });
+
+  it("creates nested config directory if it does not exist", async () => {
+    const nestedDir = path.join(tmpDir, "nested", "config");
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+
+    process.env.APP_CONFIG_DIR = nestedDir;
+
+    const { initializeConfig } = await loadConfig();
+    initializeConfig();
+
+    expect(fs.existsSync(nestedDir)).toBe(true);
+    expect(fs.existsSync(path.join(nestedDir, "config.json"))).toBe(true);
+  });
+});
+
 describe("promotedAlbum config", () => {
   it("returns full defaults when no promotedAlbum in saved config", async () => {
     fs.writeFileSync(

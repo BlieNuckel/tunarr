@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import { initializeConfig } from "./config";
 import { initializeDatabase } from "./db/index";
 import { createLogger } from "./logger";
 import authRoutes from "./routes/auth";
@@ -50,6 +51,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(errorHandler);
 
+initializeConfig();
 await initializeDatabase();
 
 app.listen(PORT, () => {
