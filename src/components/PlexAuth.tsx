@@ -26,7 +26,7 @@ function SignedInCard({
   onSignOut: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-lg shadow-cartoon-md">
+    <div className="w-xs flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-lg shadow-cartoon-md">
       <img
         src={account.thumb}
         alt={account.username}
@@ -229,7 +229,7 @@ export default function PlexAuth({
       type="button"
       onClick={login}
       disabled={loading}
-      className="w-full px-4 py-2.5 bg-[#e5a00d] hover:bg-[#cc8f0c] disabled:opacity-60 text-black font-bold rounded-lg border-2 border-black shadow-cartoon-md transition-colors flex items-center justify-center gap-2"
+      className="w-auto px-4 py-2.5 bg-amber-300 hover:bg-amber-200 disabled:opacity-60 text-black font-bold rounded-lg border-2 border-black shadow-cartoon-md transition-colors flex items-center justify-center gap-2"
     >
       {loading ? (
         <>

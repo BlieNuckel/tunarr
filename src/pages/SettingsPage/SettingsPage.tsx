@@ -10,6 +10,7 @@ import SlskdSection from "./components/SlskdSection";
 import AutoSetupModal from "./components/AutoSetupModal";
 import ImportSection from "./components/ImportSection";
 import RecommendationsSection from "./components/RecommendationsSection";
+import LogsSection from "./components/LogsSection";
 import { DEFAULT_PROMOTED_ALBUM } from "@/context/promotedAlbumDefaults";
 import AccountSection from "./components/AccountSection";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -34,6 +35,7 @@ const TAB_LABELS: Record<SettingsTab, string> = {
   general: "General",
   integrations: "Integrations",
   recommendations: "Recommendations",
+  logs: "Logs",
 };
 
 function SectionBadge({ section }: { section: SettingsSection }) {
@@ -134,7 +136,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-lg space-y-6">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-32" />
         {[...Array(3)].map((_, i) => (
           <div key={i} className="space-y-4">
@@ -157,7 +159,7 @@ export default function SettingsPage() {
     isSectionVisible(section, activeTab, searchQuery, matchingSections);
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Settings
@@ -287,6 +289,13 @@ export default function SettingsPage() {
                 updateField("promotedAlbum", updated)
               }
             />
+          </div>
+        )}
+
+        {visible("logs") && (
+          <div>
+            {isSearching && <SectionBadge section="logs" />}
+            <LogsSection />
           </div>
         )}
       </div>
