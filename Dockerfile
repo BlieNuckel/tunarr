@@ -1,5 +1,6 @@
-FROM node:22-alpine AS build
+FROM node:22.22.0-alpine3.23 AS build
 
+RUN apk upgrade --no-cache
 RUN apk add --no-cache build-base python3
 RUN corepack enable pnpm
 
@@ -10,7 +11,9 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
-FROM node:22-alpine
+FROM node:22.22.0-alpine3.23
+
+RUN apk upgrade --no-cache
 
 WORKDIR /app
 
