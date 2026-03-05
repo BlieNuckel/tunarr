@@ -141,7 +141,7 @@ describe("constraint enforcement", () => {
     ]);
     const user = users[0];
 
-    expect(user.permissions).toBe(32);
+    expect(user.permissions).toBe(8);
     expect(user.enabled).toBe(1);
     expect(user.created_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
     expect(user.updated_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);

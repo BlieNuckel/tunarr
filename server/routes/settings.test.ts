@@ -43,7 +43,7 @@ vi.mock("../middleware/requireAuth", () => ({
     req.user = {
       id: 1,
       username: "admin",
-      permissions: 2,
+      permissions: 1,
       enabled: true,
       theme: "system",
     };

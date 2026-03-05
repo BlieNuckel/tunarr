@@ -1,11 +1,11 @@
 export enum Permission {
   NONE = 0,
-  ADMIN = 2,
-  MANAGE_USERS = 8,
-  MANAGE_REQUESTS = 16,
-  REQUEST = 32,
-  AUTO_APPROVE = 128,
-  REQUEST_VIEW = 16384,
+  ADMIN = 1,
+  MANAGE_USERS = 2,
+  MANAGE_REQUESTS = 4,
+  REQUEST = 8,
+  AUTO_APPROVE = 16,
+  REQUEST_VIEW = 32,
 }
 
 type HasPermissionOptions = {

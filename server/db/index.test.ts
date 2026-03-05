@@ -55,7 +55,7 @@ describe("initializeDatabase", () => {
 
       await ds.query(
         "INSERT INTO users (username, permissions) VALUES (?, ?)",
-        ["testuser", 2]
+        ["testuser", 1]
       );
 
       const users = await ds.query("SELECT * FROM users WHERE username = ?", [
@@ -63,7 +63,7 @@ describe("initializeDatabase", () => {
       ]);
 
       expect(users[0].username).toBe("testuser");
-      expect(users[0].permissions).toBe(2);
+      expect(users[0].permissions).toBe(1);
     } finally {
       await closeDatabase();
     }

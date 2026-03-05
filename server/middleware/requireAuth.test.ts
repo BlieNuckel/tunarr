@@ -77,7 +77,7 @@ describe("requireAuth middleware", () => {
       id: 1,
       username: "admin",
       userType: "local",
-      permissions: 2,
+      permissions: 1,
       enabled: true,
       theme: "system",
       thumb: null,

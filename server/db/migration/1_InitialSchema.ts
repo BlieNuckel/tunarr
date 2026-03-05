@@ -12,7 +12,7 @@ export class InitialSchema1709000000000 implements MigrationInterface {
         "plex_id" TEXT UNIQUE,
         "plex_email" TEXT,
         "plex_thumb" TEXT,
-        "permissions" INTEGER NOT NULL DEFAULT 32,
+        "permissions" INTEGER NOT NULL DEFAULT 8,
         "enabled" INTEGER NOT NULL DEFAULT 1 CHECK ("enabled" IN (0, 1)),
         "created_at" TEXT NOT NULL DEFAULT (datetime('now')),
         "updated_at" TEXT NOT NULL DEFAULT (datetime('now')),

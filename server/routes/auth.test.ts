@@ -52,7 +52,7 @@ describe("POST /auth/setup", () => {
     expect(res.status).toBe(201);
     expect(res.body.user.username).toBe("admin");
     expect(res.body.user.userType).toBe("local");
-    expect(res.body.user.permissions).toBe(2);
+    expect(res.body.user.permissions).toBe(1);
     expect(res.body.user.theme).toBe("system");
     expect(res.body.user.thumb).toBeNull();
     expect(res.headers["set-cookie"]).toBeDefined();
@@ -105,7 +105,7 @@ describe("POST /auth/plex-setup", () => {
     expect(res.status).toBe(201);
     expect(res.body.user.username).toBe("plexadmin");
     expect(res.body.user.userType).toBe("plex");
-    expect(res.body.user.permissions).toBe(2);
+    expect(res.body.user.permissions).toBe(1);
     expect(res.body.user.thumb).toBe("https://plex.tv/thumb.jpg");
     expect(res.headers["set-cookie"]).toBeDefined();
     expect(res.headers["set-cookie"][0]).toContain("tunearr_session=");
@@ -220,7 +220,7 @@ describe("POST /auth/plex-login", () => {
     expect(res.status).toBe(200);
     expect(res.body.user.username).toBe("plexuser");
     expect(res.body.user.userType).toBe("plex");
-    expect(res.body.user.permissions).toBe(32);
+    expect(res.body.user.permissions).toBe(8);
     expect(res.body.user.thumb).toBe("https://plex.tv/thumb.jpg");
     expect(res.headers["set-cookie"]).toBeDefined();
     expect(res.headers["set-cookie"][0]).toContain("tunearr_session=");
@@ -421,7 +421,7 @@ describe("POST /auth/link-plex", () => {
 
     await getDataSource().query(
       `INSERT INTO users (plex_id, plex_username, plex_email, plex_thumb, user_type, permissions, enabled)
-       VALUES ('12345', 'existing', 'e@test.com', 'https://t.jpg', 'plex', 32, 1)`
+       VALUES ('12345', 'existing', 'e@test.com', 'https://t.jpg', 'plex', 8, 1)`
     );
 
     const res = await request(app)
