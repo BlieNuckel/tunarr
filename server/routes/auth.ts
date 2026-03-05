@@ -3,7 +3,10 @@ import express from "express";
 import {
   needsSetup,
   createAdminUser,
+  createPlexAdminUser,
   authenticateUser,
+  findOrCreatePlexUser,
+  linkPlexAccount,
   updateUserPreferences,
 } from "../auth/users";
 import { createSession, deleteSession } from "../auth/sessions";
@@ -14,6 +17,9 @@ import {
   parseCookieValue,
 } from "../middleware/requireAuth";
 import { validateSession } from "../auth/sessions";
+import { getPlexAccountFull } from "../api/plex/account";
+
+const TUNEARR_SERVER_CLIENT_ID = "tunearr-server";
 
 const router = express.Router();
 
@@ -40,20 +46,29 @@ function userResponse(user: AuthUser) {
   return {
     id: user.id,
     username: user.username,
-    role: user.role,
+    userType: user.userType,
+    permissions: user.permissions,
     theme: user.theme,
+    thumb: user.thumb,
   };
 }
 
-router.get("/setup-status", (_req: Request, res: Response) => {
-  res.json({ needsSetup: needsSetup() });
-});
+router.get(
+  "/setup-status",
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.json({ needsSetup: await needsSetup() });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 router.post(
   "/setup",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (!needsSetup()) {
+      if (!(await needsSetup())) {
         const err = new Error("Setup already completed") as Error & {
           status: number;
         };
@@ -80,7 +95,51 @@ router.post(
       }
 
       const user = await createAdminUser(username, password);
-      const token = createSession(user.id);
+      const token = await createSession(user.id);
+      setSessionCookie(res, token);
+
+      res.status(201).json({ user: userResponse(user) });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  "/plex-setup",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!(await needsSetup())) {
+        const err = new Error("Setup already completed") as Error & {
+          status: number;
+        };
+        err.status = 400;
+        throw err;
+      }
+
+      const { authToken } = req.body;
+
+      if (!authToken || typeof authToken !== "string") {
+        const err = new Error("authToken is required") as Error & {
+          status: number;
+        };
+        err.status = 400;
+        throw err;
+      }
+
+      const plexAccount = await getPlexAccountFull(
+        authToken,
+        TUNEARR_SERVER_CLIENT_ID
+      );
+
+      const user = await createPlexAdminUser(
+        String(plexAccount.id),
+        plexAccount.username,
+        plexAccount.email,
+        plexAccount.thumb
+      );
+
+      const token = await createSession(user.id);
       setSessionCookie(res, token);
 
       res.status(201).json({ user: userResponse(user) });
@@ -113,7 +172,7 @@ router.post(
         throw err;
       }
 
-      const token = createSession(user.id);
+      const token = await createSession(user.id);
       setSessionCookie(res, token);
 
       res.json({ user: userResponse(user) });
@@ -123,34 +182,124 @@ router.post(
   }
 );
 
-router.post("/logout", (req: Request, res: Response) => {
-  const token = parseCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
-  if (token) {
-    deleteSession(token);
-  }
-  clearSessionCookie(res);
-  res.json({ success: true });
-});
+router.post(
+  "/plex-login",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { authToken } = req.body;
 
-router.get("/me", (req: Request, res: Response) => {
-  const token = parseCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
-  if (!token) {
-    return res.json({ user: null });
-  }
+      if (!authToken || typeof authToken !== "string") {
+        const err = new Error("authToken is required") as Error & {
+          status: number;
+        };
+        err.status = 400;
+        throw err;
+      }
 
-  const user = validateSession(token);
-  if (!user) {
-    clearSessionCookie(res);
-    return res.json({ user: null });
-  }
+      const plexAccount = await getPlexAccountFull(
+        authToken,
+        TUNEARR_SERVER_CLIENT_ID
+      );
 
-  res.json({ user: userResponse(user) });
+      const user = await findOrCreatePlexUser(
+        String(plexAccount.id),
+        plexAccount.username,
+        plexAccount.email,
+        plexAccount.thumb
+      );
+
+      if (!user.enabled) {
+        const err = new Error("Account is disabled") as Error & {
+          status: number;
+        };
+        err.status = 403;
+        throw err;
+      }
+
+      const token = await createSession(user.id);
+      setSessionCookie(res, token);
+
+      res.json({ user: userResponse(user) });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  "/link-plex",
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { authToken } = req.body;
+
+      if (!authToken || typeof authToken !== "string") {
+        const err = new Error("authToken is required") as Error & {
+          status: number;
+        };
+        err.status = 400;
+        throw err;
+      }
+
+      const plexAccount = await getPlexAccountFull(
+        authToken,
+        TUNEARR_SERVER_CLIENT_ID
+      );
+
+      const user = await linkPlexAccount(
+        req.user!.id,
+        String(plexAccount.id),
+        plexAccount.username,
+        plexAccount.email,
+        plexAccount.thumb
+      );
+
+      res.json({ user: userResponse(user) });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  "/logout",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token = parseCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
+      if (token) {
+        await deleteSession(token);
+      }
+      clearSessionCookie(res);
+      res.json({ success: true });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get("/me", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = parseCookieValue(req.headers.cookie, SESSION_COOKIE_NAME);
+    if (!token) {
+      return res.json({ user: null });
+    }
+
+    const user = await validateSession(token);
+    if (!user) {
+      clearSessionCookie(res);
+      return res.json({ user: null });
+    }
+
+    res.json({ user: userResponse(user) });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.patch(
   "/preferences",
   requireAuth,
-  (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { theme } = req.body;
 
@@ -164,7 +313,7 @@ router.patch(
         }
       }
 
-      updateUserPreferences(req.user!.id, { theme });
+      await updateUserPreferences(req.user!.id, { theme });
 
       res.json({ success: true });
     } catch (err) {

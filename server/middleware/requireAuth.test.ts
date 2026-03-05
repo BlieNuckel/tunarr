@@ -76,9 +76,11 @@ describe("requireAuth middleware", () => {
     const mockUser: AuthUser = {
       id: 1,
       username: "admin",
-      role: "admin",
+      userType: "local",
+      permissions: 1,
       enabled: true,
       theme: "system",
+      thumb: null,
     };
     mockValidateSession.mockReturnValue(mockUser);
 

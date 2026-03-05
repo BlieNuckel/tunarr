@@ -41,8 +41,18 @@ const mockLogout = vi.fn();
 
 const mockAuthValue: AuthContextValue = {
   status: "authenticated",
-  user: { id: 1, username: "testadmin", role: "admin", theme: "system" },
+  user: {
+    id: 1,
+    username: "testadmin",
+    userType: "local",
+    permissions: 1,
+    theme: "system",
+    thumb: null,
+  },
   login: vi.fn(),
+  plexLogin: vi.fn(),
+  plexSetup: vi.fn(),
+  linkPlex: vi.fn(),
   logout: mockLogout,
   setup: vi.fn(),
   updatePreferences: vi.fn(),
@@ -134,7 +144,7 @@ describe("SettingsPage", () => {
   it("shows Account section with username and Sign Out button", () => {
     renderSettingsPage();
     expect(screen.getByText("testadmin")).toBeInTheDocument();
-    expect(screen.getByText("admin")).toBeInTheDocument();
+    expect(screen.getByText("Admin")).toBeInTheDocument();
     expect(screen.getByText("Sign Out")).toBeInTheDocument();
   });
 

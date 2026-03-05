@@ -50,7 +50,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(errorHandler);
 
-initializeDatabase();
+await initializeDatabase();
 
 app.listen(PORT, () => {
   log.info(`Listening on port ${PORT}`);

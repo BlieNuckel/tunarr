@@ -28,4 +28,4 @@ RUN mkdir -p /config && chown node:node /config && chown -R node:node /app
 EXPOSE 3001
 USER node
 
-CMD ["node_modules/.bin/tsx", "server/index.ts"]
+CMD ["node_modules/.bin/tsx", "--tsconfig", "server/tsconfig.json", "server/index.ts"]

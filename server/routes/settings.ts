@@ -5,11 +5,12 @@ import { getConfig, setConfig } from "../config";
 import { clearPromotedAlbumCache } from "../promotedAlbum/getPromotedAlbum";
 import { testLidarrConnection } from "../services/settings";
 import { requireAuth } from "../middleware/requireAuth";
-import { requireAdmin } from "../middleware/requireAdmin";
+import { requirePermission } from "../middleware/requirePermission";
+import { Permission } from "../../shared/permissions";
 
 const router = express.Router();
 
-router.use(requireAuth, requireAdmin);
+router.use(requireAuth, requirePermission(Permission.ADMIN));
 
 router.get("/", (_req: Request, res: Response) => {
   const fullConfig = getConfig();

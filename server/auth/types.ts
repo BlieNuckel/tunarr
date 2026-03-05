@@ -1,9 +1,11 @@
-import type { UserRole } from "../db/types";
+import type { UserType } from "../db/entity/User";
 
 export type AuthUser = {
   id: number;
   username: string;
-  role: UserRole;
+  userType: UserType;
+  permissions: number;
   enabled: boolean;
   theme: "light" | "dark" | "system";
+  thumb: string | null;
 };

@@ -13,21 +13,23 @@
     "better-sqlite3": "^12.6.2",
     "concurrently": "^9.2.1",
     "express": "^5.2.1",
-    "multer": "^2.0.2",
+    "multer": "^2.1.0",
     "node-cache": "^5.1.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.28",
     "undici": "^7.22.0",
     "web-vitals": "^5.1.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
   "scripts": {
-    "dev": "concurrently \"vite\" \"tsx server/index.ts\"",
-    "start": "concurrently \"vite\" \"tsx server/index.ts\"",
+    "dev": "concurrently \"vite\" \"tsx --tsconfig server/tsconfig.json server/index.ts\"",
+    "start": "concurrently \"vite\" \"tsx --tsconfig server/tsconfig.json server/index.ts\"",
     "start:client": "vite",
-    "start:server": "tsx server/index.ts",
+    "start:server": "tsx --tsconfig server/tsconfig.json server/index.ts",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit && pnpm run typecheck:server",
@@ -37,7 +39,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run --config vitest.config.ts",
-    "test:server": "vitest run --config server/vitest.config.ts"
+    "test:server": "vitest run --config server/vitest.config.ts",
+    "typeorm": "tsx node_modules/typeorm/cli.js",
+    "migration:generate": "pnpm typeorm migration:generate -d server/db/dataSource.ts",
+    "migration:run": "pnpm typeorm migration:run -d server/db/dataSource.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -51,7 +56,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/supertest": "^6.0.3",
     "@vitejs/plugin-react": "^5.1.4",
-    "eslint": "^9.39.2",
+    "eslint": "^9.39.3",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.0",
     "globals": "^17.3.0",
@@ -62,7 +67,7 @@
     "tailwindcss": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.0",
+    "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"
   },
@@ -73,6 +78,13 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "better-sqlite3"
-    ]
+    ],
+    "overrides": {
+      "rollup@>=4.0.0 <4.59.0": "4.59.0",
+      "minimatch@<3.1.4": "3.1.4",
+      "ajv@<6.14.0": "6.14.0",
+      "minimatch@>=9.0.0 <9.0.6": ">=9.0.6",
+      "minimatch@>=9.0.0 <9.0.7": ">=9.0.7"
+    }
   }
 }
