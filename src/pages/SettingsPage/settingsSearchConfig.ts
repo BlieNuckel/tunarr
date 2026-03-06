@@ -4,13 +4,15 @@ export type SettingsTab =
   | "general"
   | "integrations"
   | "recommendations"
-  | "admin";
+  | "admin"
+  | "logs";
 
 export const TAB_LABELS: Record<SettingsTab, string> = {
   general: "General",
   integrations: "Integrations",
   recommendations: "Recommendations",
   admin: "Users",
+  logs: "Logs",
 };
 
 export type SettingsSection =
@@ -23,7 +25,8 @@ export type SettingsSection =
   | "plex"
   | "slskd"
   | "recommendations"
-  | "users";
+  | "users"
+  | "logs";
 
 type SectionMeta = {
   label: string;
@@ -125,6 +128,11 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
       "role",
     ],
     permission: Permission.MANAGE_USERS,
+  },
+  logs: {
+    label: "Logs",
+    tab: "logs",
+    keywords: ["logs", "log", "debug", "error", "history", "system"],
   },
 };
 

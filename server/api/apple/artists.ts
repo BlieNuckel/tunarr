@@ -44,11 +44,9 @@ const fetchArtistArtwork = async (artistName: string): Promise<string> => {
         "100x100",
         "600x600"
       );
-      log.info(`Found artwork for ${artistName}`);
       return artworkUrl;
     }
 
-    log.info(`No artwork found for ${artistName}`);
     return "";
   } catch (error) {
     log.error(`Error fetching artwork for ${artistName}`, error);
@@ -88,11 +86,9 @@ const fetchAlbumArtwork = async (
         "100x100",
         "600x600"
       );
-      log.info(`Found album artwork for ${albumName}`);
       return artworkUrl;
     }
 
-    log.info(`No album artwork found for ${albumName}`);
     return "";
   } catch (error) {
     log.error(`Error fetching album artwork for ${albumName}`, error);

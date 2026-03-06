@@ -1,11 +1,13 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import { initializeConfig } from "./config";
 import { initializeDatabase } from "./db/index";
 import { createLogger } from "./logger";
 import authRoutes from "./routes/auth";
 import lastfmRoutes from "./routes/lastfm";
 import lidarrRoutes from "./routes/lidarr";
+import logsRoutes from "./routes/logs";
 import musicbrainzRoutes from "./routes/musicbrainz";
 import plexRoutes from "./routes/plex";
 import promotedAlbumRoutes from "./routes/promotedAlbum";
@@ -31,6 +33,7 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/torznab", torznabRoutes);
 app.use("/api/sabnzbd", sabnzbdRoutes);
+app.use("/api/logs", logsRoutes);
 app.use("/api/exploration", explorationRoutes);
 
 app.use("/api/settings", settingsRoutes);
@@ -50,6 +53,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(errorHandler);
 
+initializeConfig();
 await initializeDatabase();
 
 app.listen(PORT, () => {

@@ -210,3 +210,15 @@ export const setConfig = (newConfig: Partial<IConfigInput>) => {
 export const getConfigValue = <K extends keyof IConfig>(key: K): IConfig[K] => {
   return getConfig()[key];
 };
+
+export const initializeConfig = () => {
+  if (!fs.existsSync(CONFIG_DIR)) {
+    log.info(`Config directory missing, creating it in ${CONFIG_DIR}`);
+    fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  }
+
+  if (!fs.existsSync(CONFIG_PATH)) {
+    log.info(`Config file missing, creating default config at ${CONFIG_PATH}`);
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(DEFAULT_CONFIG, null, 2));
+  }
+};

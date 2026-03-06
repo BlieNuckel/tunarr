@@ -54,7 +54,7 @@ function NumberField({
         min={min}
         max={max}
         step={step}
-        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:border-amber-400 shadow-cartoon-md text-[16px]"
+        className="w-sm px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 focus:outline-none focus:border-amber-400 shadow-cartoon-md text-[16px]"
       />
       {description && (
         <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">

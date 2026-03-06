@@ -13,6 +13,7 @@ import AutoSetupModal from "./components/AutoSetupModal";
 import ImportSection from "./components/ImportSection";
 import RecommendationsSection from "./components/RecommendationsSection";
 import UsersSection from "./components/UsersSection";
+import LogsSection from "./components/LogsSection";
 import { DEFAULT_PROMOTED_ALBUM } from "@/context/promotedAlbumDefaults";
 import AccountSection from "./components/AccountSection";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -147,7 +148,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-lg space-y-6">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-32" />
         {[...Array(3)].map((_, i) => (
           <div key={i} className="space-y-4">
@@ -179,7 +180,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Settings
@@ -316,33 +317,43 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {visible("users") && (
+        {
+          visible("users") && (
+            <div>
+              {isSearching && <SectionBadge section="users" />}
+              <UsersSection />
+            </div>
+          )
+        }
+
+        {visible("logs") && (
           <div>
-            {isSearching && <SectionBadge section="users" />}
-            <UsersSection />
+            {isSearching && <SectionBadge section="logs" />}
+            <LogsSection />
           </div>
         )}
       </div>
 
-      {testResult && (
-        <div
-          className={`mt-4 p-3 rounded-xl text-sm font-medium border-2 border-black shadow-cartoon-sm animate-slide-up ${
-            testResult.success
+      {
+        testResult && (
+          <div
+            className={`mt-4 p-3 rounded-xl text-sm font-medium border-2 border-black shadow-cartoon-sm animate-slide-up ${testResult.success
               ? "bg-emerald-400 text-black"
               : "bg-rose-400 text-white"
-          }`}
-        >
-          {testResult.success
-            ? `Connected! Lidarr v${testResult.version}`
-            : `Connection failed: ${testResult.error}`}
-        </div>
-      )}
+              }`}
+          >
+            {testResult.success
+              ? `Connected! Lidarr v${testResult.version}`
+              : `Connection failed: ${testResult.error}`}
+          </div>
+        )
+      }
 
       <AutoSetupModal
         isOpen={autoSetupModalOpen}
         onClose={() => setAutoSetupModalOpen(false)}
         onSuccess={handleAutoSetupSuccess}
       />
-    </div>
+    </div >
   );
 }
