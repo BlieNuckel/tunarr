@@ -317,14 +317,12 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {
-          visible("users") && (
-            <div>
-              {isSearching && <SectionBadge section="users" />}
-              <UsersSection />
-            </div>
-          )
-        }
+        {visible("users") && (
+          <div>
+            {isSearching && <SectionBadge section="users" />}
+            <UsersSection />
+          </div>
+        )}
 
         {visible("logs") && (
           <div>
@@ -334,26 +332,25 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {
-        testResult && (
-          <div
-            className={`mt-4 p-3 rounded-xl text-sm font-medium border-2 border-black shadow-cartoon-sm animate-slide-up ${testResult.success
+      {testResult && (
+        <div
+          className={`mt-4 p-3 rounded-xl text-sm font-medium border-2 border-black shadow-cartoon-sm animate-slide-up ${
+            testResult.success
               ? "bg-emerald-400 text-black"
               : "bg-rose-400 text-white"
-              }`}
-          >
-            {testResult.success
-              ? `Connected! Lidarr v${testResult.version}`
-              : `Connection failed: ${testResult.error}`}
-          </div>
-        )
-      }
+          }`}
+        >
+          {testResult.success
+            ? `Connected! Lidarr v${testResult.version}`
+            : `Connection failed: ${testResult.error}`}
+        </div>
+      )}
 
       <AutoSetupModal
         isOpen={autoSetupModalOpen}
         onClose={() => setAutoSetupModalOpen(false)}
         onSuccess={handleAutoSetupSuccess}
       />
-    </div >
+    </div>
   );
 }
