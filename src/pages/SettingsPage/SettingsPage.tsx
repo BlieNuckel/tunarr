@@ -3,7 +3,7 @@ import { useLidarrContext } from "@/context/useLidarrContext";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import useAutoSetupStatus from "@/hooks/useAutoSetupStatus";
 import { useAuth } from "@/context/useAuth";
-import { hasPermission, Permission } from "@shared/permissions";
+import { hasPermission } from "@shared/permissions";
 import LidarrConnectionSection from "./components/LidarrConnectionSection";
 import LidarrOptionsSection from "./components/LidarrOptionsSection";
 import LastfmSection from "./components/LastfmSection";
@@ -13,6 +13,7 @@ import AutoSetupModal from "./components/AutoSetupModal";
 import ImportSection from "./components/ImportSection";
 import RecommendationsSection from "./components/RecommendationsSection";
 import UsersSection from "./components/UsersSection";
+import LogsSection from "./components/LogsSection";
 import { DEFAULT_PROMOTED_ALBUM } from "@/context/promotedAlbumDefaults";
 import AccountSection from "./components/AccountSection";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -22,6 +23,7 @@ import SettingsSearch from "./components/SettingsSearch";
 import SaveStatusIndicator from "./components/SaveStatusIndicator";
 import {
   filterSections,
+  getVisibleTabs,
   SECTION_META,
   TAB_LABELS,
   type SettingsSection,
@@ -81,16 +83,7 @@ export default function SettingsPage() {
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [autoSetupModalOpen, setAutoSetupModalOpen] = useState(false);
 
-  const visibleTabs = useMemo(() => {
-    const tabs: SettingsTab[] = ["general"];
-    if (user && hasPermission(user.permissions, Permission.ADMIN)) {
-      tabs.push("integrations", "recommendations");
-    }
-    if (user && hasPermission(user.permissions, Permission.MANAGE_USERS)) {
-      tabs.push("admin");
-    }
-    return tabs;
-  }, [user]);
+  const visibleTabs = useMemo(() => getVisibleTabs(user?.permissions), [user]);
 
   const handleAutoSetupSuccess = useCallback(() => {
     refetchAutoSetup();
@@ -147,7 +140,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-lg space-y-6">
+      <div className="space-y-6">
         <Skeleton className="h-8 w-32" />
         {[...Array(3)].map((_, i) => (
           <div key={i} className="space-y-4">
@@ -179,7 +172,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Settings
@@ -320,6 +313,13 @@ export default function SettingsPage() {
           <div>
             {isSearching && <SectionBadge section="users" />}
             <UsersSection />
+          </div>
+        )}
+
+        {visible("logs") && (
+          <div>
+            {isSearching && <SectionBadge section="logs" />}
+            <LogsSection />
           </div>
         )}
       </div>

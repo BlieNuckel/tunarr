@@ -60,7 +60,7 @@ export default function SlskdSection({
           value={url}
           onChange={(e) => onUrlChange(e.target.value)}
           placeholder="http://slskd:5030"
-          className="w-full px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-200 dark:placeholder-gray-600 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
+          className="w-sm px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-200 dark:placeholder-gray-600 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
         />
       </div>
       <div>
@@ -72,7 +72,7 @@ export default function SlskdSection({
           value={apiKey}
           onChange={(e) => onApiKeyChange(e.target.value)}
           placeholder="Enter slskd API key"
-          className="w-full px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-200 dark:placeholder-gray-600 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
+          className="w-sm px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-200 dark:placeholder-gray-600 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
         />
       </div>
       <div>
@@ -84,7 +84,7 @@ export default function SlskdSection({
           value={downloadPath}
           onChange={(e) => onDownloadPathChange(e.target.value)}
           placeholder="/downloads/slskd/complete"
-          className="w-full px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-200 dark:placeholder-gray-600 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
+          className="w-sm px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-200 dark:placeholder-gray-600 focus:outline-none focus:border-amber-400 shadow-cartoon-md"
         />
         <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
           Path where Lidarr can access slskd&apos;s completed downloads (shared
@@ -107,7 +107,7 @@ function AutoSetupButton({
     return (
       <button
         disabled
-        className="w-full px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold rounded-lg border-2 border-black shadow-cartoon-sm cursor-default"
+        className="w-sm px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold rounded-lg border-2 border-black shadow-cartoon-sm cursor-default"
       >
         ✓ Added to Lidarr
       </button>
@@ -118,7 +118,7 @@ function AutoSetupButton({
     <button
       onClick={onClick}
       disabled={state === "disabled" || state === "loading"}
-      className="w-full px-4 py-2 bg-amber-400 text-black font-bold rounded-lg border-2 border-black shadow-cartoon-sm hover:bg-amber-300 active:translate-y-0.5 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      className="w-xxs px-4 py-2 bg-amber-300 hover:bg-amber-200 text-black font-bold rounded-lg border-2 border-black shadow-cartoon-sm active:translate-y-0.5 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
     >
       {state === "loading" ? "Checking…" : "Set Up in Lidarr"}
     </button>
