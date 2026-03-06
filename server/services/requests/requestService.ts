@@ -27,6 +27,7 @@ function shouldAutoApprove(userPermissions: number): boolean {
   return hasPermission(userPermissions, [
     Permission.ADMIN,
     Permission.AUTO_APPROVE,
+    Permission.MANAGE_REQUESTS,
   ]);
 }
 

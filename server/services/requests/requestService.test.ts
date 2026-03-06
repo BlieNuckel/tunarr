@@ -121,6 +121,31 @@ describe("createRequest", () => {
     expect(result).toEqual({ status: "approved", requestId: 10 });
   });
 
+  it("auto-approves for users with MANAGE_REQUESTS permission", async () => {
+    mockFindOne.mockResolvedValue(null);
+    const savedRequest = {
+      id: 10,
+      user_id: 1,
+      album_mbid: "mbid-1",
+      status: "pending",
+    };
+    mockCreate.mockReturnValue(savedRequest);
+    mockSave.mockResolvedValue(savedRequest);
+    mockFulfillRequest.mockResolvedValue({
+      status: "success",
+      artistName: "Test Artist",
+      albumTitle: "Test Album",
+    });
+
+    const result = await createRequest(
+      1,
+      Permission.REQUEST | Permission.MANAGE_REQUESTS,
+      "mbid-1"
+    );
+    expect(result).toEqual({ status: "approved", requestId: 10 });
+    expect(mockFulfillRequest).toHaveBeenCalledWith("mbid-1");
+  });
+
   it("returns already_monitored when auto-approve finds existing album", async () => {
     mockFindOne.mockResolvedValue(null);
     const savedRequest = {
