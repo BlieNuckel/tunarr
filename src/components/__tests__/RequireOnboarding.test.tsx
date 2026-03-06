@@ -5,27 +5,56 @@ import {
   LidarrContext,
   type LidarrContextValue,
 } from "@/context/lidarrContextDef";
+import {
+  AuthContext,
+  type AuthContextValue,
+  type AuthStatus,
+} from "@/context/authContextDef";
+import { Permission } from "@shared/permissions";
+
+function makeAuthValue(permissions: number): AuthContextValue {
+  return {
+    status: "authenticated" as AuthStatus,
+    user: {
+      id: 1,
+      username: "testuser",
+      userType: "local",
+      permissions,
+      theme: "system",
+      thumb: null,
+    },
+    login: vi.fn(),
+    plexLogin: vi.fn(),
+    plexSetup: vi.fn(),
+    linkPlex: vi.fn(),
+    logout: vi.fn(),
+    setup: vi.fn(),
+    updatePreferences: vi.fn(),
+  };
+}
+
+const emptySettings = {
+  lidarrUrl: "",
+  lidarrApiKey: "",
+  lidarrQualityProfileId: 1,
+  lidarrRootFolderPath: "",
+  lidarrMetadataProfileId: 1,
+  lastfmApiKey: "",
+  plexUrl: "",
+  plexToken: "",
+  importPath: "",
+  slskdUrl: "",
+  slskdApiKey: "",
+  slskdDownloadPath: "",
+};
 
 function renderWithContext(
   contextValue: Partial<LidarrContextValue>,
-  initialPath = "/"
+  permissions = Permission.ADMIN
 ) {
   const defaultValue: LidarrContextValue = {
     options: { qualityProfiles: [], metadataProfiles: [], rootFolderPaths: [] },
-    settings: {
-      lidarrUrl: "",
-      lidarrApiKey: "",
-      lidarrQualityProfileId: 1,
-      lidarrRootFolderPath: "",
-      lidarrMetadataProfileId: 1,
-      lastfmApiKey: "",
-      plexUrl: "",
-      plexToken: "",
-      importPath: "",
-      slskdUrl: "",
-      slskdApiKey: "",
-      slskdDownloadPath: "",
-    },
+    settings: emptySettings,
     isConnected: false,
     isLoading: false,
     saveSettings: vi.fn(),
@@ -36,16 +65,18 @@ function renderWithContext(
   };
 
   return render(
-    <LidarrContext.Provider value={defaultValue}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route element={<RequireOnboarding />}>
-            <Route path="/" element={<div>Main App</div>} />
-          </Route>
-          <Route path="/onboarding" element={<div>Onboarding</div>} />
-        </Routes>
-      </MemoryRouter>
-    </LidarrContext.Provider>
+    <AuthContext.Provider value={makeAuthValue(permissions)}>
+      <LidarrContext.Provider value={defaultValue}>
+        <MemoryRouter initialEntries={["/"]}>
+          <Routes>
+            <Route element={<RequireOnboarding />}>
+              <Route path="/" element={<div>Main App</div>} />
+            </Route>
+            <Route path="/onboarding" element={<div>Onboarding</div>} />
+          </Routes>
+        </MemoryRouter>
+      </LidarrContext.Provider>
+    </AuthContext.Provider>
   );
 }
 
@@ -55,28 +86,21 @@ describe("RequireOnboarding", () => {
     expect(container.textContent).toBe("");
   });
 
-  it("redirects to /onboarding when lidarrUrl is empty", () => {
-    renderWithContext({ isLoading: false });
+  it("redirects admin to /onboarding when lidarrUrl is empty", () => {
+    renderWithContext({ isLoading: false }, Permission.ADMIN);
     expect(screen.getByText("Onboarding")).toBeInTheDocument();
+  });
+
+  it("shows awaiting setup page for non-admin when lidarrUrl is empty", () => {
+    renderWithContext({ isLoading: false }, Permission.REQUEST);
+    expect(screen.getByText("Not Yet Configured")).toBeInTheDocument();
+    expect(screen.getByText(/contact your administrator/)).toBeInTheDocument();
   });
 
   it("renders outlet when lidarrUrl is configured", () => {
     renderWithContext({
       isLoading: false,
-      settings: {
-        lidarrUrl: "http://lidarr:8686",
-        lidarrApiKey: "key",
-        lidarrQualityProfileId: 1,
-        lidarrRootFolderPath: "/music",
-        lidarrMetadataProfileId: 1,
-        lastfmApiKey: "",
-        plexUrl: "",
-        plexToken: "",
-        importPath: "",
-        slskdUrl: "",
-        slskdApiKey: "",
-        slskdDownloadPath: "",
-      },
+      settings: { ...emptySettings, lidarrUrl: "http://lidarr:8686" },
     });
     expect(screen.getByText("Main App")).toBeInTheDocument();
   });

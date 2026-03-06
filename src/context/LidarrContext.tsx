@@ -13,6 +13,26 @@ interface LidarrContextProviderProps {
   children: ReactNode;
 }
 
+async function loadConfigStatus(
+  setSettings: (fn: (prev: LidarrSettings) => LidarrSettings) => void,
+  setIsLoading: (v: boolean) => void
+) {
+  setIsLoading(true);
+  try {
+    const res = await fetch("/api/settings/status");
+    if (res.ok) {
+      const data = await res.json();
+      if (data.configured) {
+        setSettings((prev) => ({ ...prev, lidarrUrl: "configured" }));
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load config status:", error);
+  } finally {
+    setIsLoading(false);
+  }
+}
+
 async function loadSettings(
   setSettings: (s: LidarrSettings) => void,
   setIsLoading: (v: boolean) => void
@@ -107,16 +127,21 @@ export const LidarrContextProvider = ({
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const isAuthenticated = status === "authenticated";
   const isAdmin =
-    status === "authenticated" &&
+    isAuthenticated &&
     user != null &&
     hasPermission(user.permissions, Permission.ADMIN);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     if (isAdmin) {
       loadSettings(setSettings, setIsLoading);
+    } else {
+      loadConfigStatus(setSettings, setIsLoading);
     }
-  }, [isAdmin]);
+  }, [isAuthenticated, isAdmin]);
 
   const savePartialSettings = async (partial: Partial<LidarrSettings>) => {
     const res = await fetch("/api/settings", {
@@ -175,7 +200,7 @@ export const LidarrContextProvider = ({
     options,
     settings,
     isConnected,
-    isLoading: isAdmin && isLoading,
+    isLoading: isAuthenticated && isLoading,
     saveSettings,
     savePartialSettings,
     testConnection,

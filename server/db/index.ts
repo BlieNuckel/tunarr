@@ -43,3 +43,5 @@ export async function closeDatabase(): Promise<void> {
 export type { UserType } from "./entity/User";
 export { User } from "./entity/User";
 export { Session } from "./entity/Session";
+export type { RequestStatus } from "./entity/Request";
+export { Request } from "./entity/Request";

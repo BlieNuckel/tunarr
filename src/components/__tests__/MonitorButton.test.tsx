@@ -8,9 +8,9 @@ describe("MonitorButton", () => {
   afterEach(() => onClick.mockClear());
 
   it.each([
-    ["idle", "Add to Lidarr"],
-    ["adding", "Adding..."],
-    ["success", "Added"],
+    ["idle", "Request"],
+    ["adding", "Requesting..."],
+    ["success", "Requested"],
     ["already_monitored", "Already Monitored"],
     ["error", "Error"],
   ] as [MonitorState, string][])(

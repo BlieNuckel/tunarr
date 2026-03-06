@@ -51,7 +51,7 @@ export default function ReleaseGroupCard({
   const year = releaseGroup["first-release-date"]?.slice(0, 4) || "";
   const coverUrl = `https://coverartarchive.org/release-group/${albumMbid}/front-500`;
 
-  const { state, errorMsg, addToLidarr } = useLidarr();
+  const { state, errorMsg, requestAlbum } = useLidarr();
   const {
     media,
     loading: tracksLoading,
@@ -75,13 +75,16 @@ export default function ReleaseGroupCard({
 
   const effectiveState: MonitorState = inLibrary
     ? "already_monitored"
-    : state === "idle" ||
-        state === "adding" ||
-        state === "success" ||
-        state === "already_monitored" ||
-        state === "error"
-      ? state
-      : "idle";
+    : state === "requesting"
+      ? "adding"
+      : state === "pending"
+        ? "success"
+        : state === "idle" ||
+            state === "success" ||
+            state === "already_monitored" ||
+            state === "error"
+          ? state
+          : "idle";
   const disabled =
     effectiveState === "adding" ||
     effectiveState === "success" ||
@@ -116,7 +119,7 @@ export default function ReleaseGroupCard({
 
   const handleMonitorClick = () => {
     if (!albumTitle) {
-      addToLidarr({ albumMbid });
+      requestAlbum({ albumMbid });
       return;
     }
 
@@ -126,7 +129,7 @@ export default function ReleaseGroupCard({
   };
 
   const handleAddToLibrary = () => {
-    addToLidarr({ albumMbid });
+    requestAlbum({ albumMbid });
   };
 
   const [coverError, setCoverError] = useState(false);
@@ -195,7 +198,7 @@ export default function ReleaseGroupCard({
             disabled={disabled}
             className={`w-12 h-12 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[effectiveState]}`}
             data-testid="mobile-monitor-button"
-            aria-label="Add to Lidarr"
+            aria-label="Request album"
           >
             {monitorIcon}
           </button>

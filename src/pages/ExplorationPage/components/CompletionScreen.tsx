@@ -22,7 +22,7 @@ export default function CompletionScreen({
     try {
       await Promise.all(
         collectedAlbums.map((album) =>
-          fetch("/api/lidarr/add", {
+          fetch("/api/requests", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ albumMbid: album.releaseGroup.id }),
@@ -91,12 +91,12 @@ export default function CompletionScreen({
         >
           {addingAll ? (
             <span className="flex items-center gap-2">
-              <Spinner /> Adding...
+              <Spinner /> Requesting...
             </span>
           ) : addAllDone ? (
-            "Added!"
+            "Requested!"
           ) : (
-            "Add All to Library"
+            "Request All"
           )}
         </button>
         <button

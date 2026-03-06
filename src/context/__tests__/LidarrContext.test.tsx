@@ -77,7 +77,11 @@ describe("LidarrContextProvider", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("does not fetch settings for non-admin users", () => {
+  it("fetches config status instead of full settings for non-admin users", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ configured: true }), { status: 200 })
+    );
+
     renderWithAuth({
       user: {
         id: 2,
@@ -89,8 +93,11 @@ describe("LidarrContextProvider", () => {
       },
     });
 
-    expect(screen.getByTestId("loading")).toHaveTextContent("false");
-    expect(fetch).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("false");
+    });
+    expect(fetch).toHaveBeenCalledWith("/api/settings/status");
+    expect(screen.getByTestId("url")).toHaveTextContent("configured");
   });
 
   it("loads settings on mount", async () => {

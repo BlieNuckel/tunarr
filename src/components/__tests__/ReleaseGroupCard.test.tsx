@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import ReleaseGroupCard from "../ReleaseGroupCard";
 import type { ReleaseGroup } from "../../types";
 
-const mockAddToLidarr = vi.fn();
+const mockRequestAlbum = vi.fn();
 const mockFetchTracks = vi.fn();
 const mockStop = vi.fn();
 
@@ -10,7 +10,7 @@ vi.mock("../../hooks/useLidarr", () => ({
   default: () => ({
     state: "idle",
     errorMsg: null,
-    addToLidarr: mockAddToLidarr,
+    requestAlbum: mockRequestAlbum,
   }),
 }));
 
