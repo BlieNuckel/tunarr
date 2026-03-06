@@ -10,6 +10,10 @@ vi.mock("./fetch", () => ({ lidarrFetch: mockFetch }));
 import { lidarrPost } from "./post";
 import { getLidarrConfig } from "./config";
 
+const jsonHeaders = {
+  get: (key: string) => (key === "content-type" ? "application/json" : null),
+};
+
 const mockGetLidarrConfig = vi.mocked(getLidarrConfig);
 
 beforeEach(() => {
@@ -25,6 +29,7 @@ describe("lidarrPost", () => {
     mockFetch.mockResolvedValue({
       status: 201,
       ok: true,
+      headers: jsonHeaders,
       json: async () => ({ id: 1 }),
     });
 
@@ -41,6 +46,7 @@ describe("lidarrPost", () => {
     mockFetch.mockResolvedValue({
       status: 201,
       ok: true,
+      headers: jsonHeaders,
       json: async () => ({ id: 1, name: "Radiohead" }),
     });
 
@@ -57,6 +63,7 @@ describe("lidarrPost", () => {
     mockFetch.mockResolvedValue({
       status: 400,
       ok: false,
+      headers: jsonHeaders,
       json: async () => [{ errorMessage: "Validation failed" }],
     });
 

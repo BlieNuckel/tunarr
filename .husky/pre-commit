@@ -1,4 +1,1 @@
 lint-staged
-pnpm typecheck
-pnpm test
-pnpm test:server

@@ -1,7 +1,9 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useLidarrContext } from "@/context/useLidarrContext";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import useAutoSetupStatus from "@/hooks/useAutoSetupStatus";
+import { useAuth } from "@/context/useAuth";
+import { hasPermission } from "@shared/permissions";
 import LidarrConnectionSection from "./components/LidarrConnectionSection";
 import LidarrOptionsSection from "./components/LidarrOptionsSection";
 import LastfmSection from "./components/LastfmSection";
@@ -10,32 +12,28 @@ import SlskdSection from "./components/SlskdSection";
 import AutoSetupModal from "./components/AutoSetupModal";
 import ImportSection from "./components/ImportSection";
 import RecommendationsSection from "./components/RecommendationsSection";
+import UsersSection from "./components/UsersSection";
 import LogsSection from "./components/LogsSection";
 import { DEFAULT_PROMOTED_ALBUM } from "@/context/promotedAlbumDefaults";
 import AccountSection from "./components/AccountSection";
 import ThemeToggle from "@/components/ThemeToggle";
 import Skeleton from "@/components/Skeleton";
 import SettingsTabs from "./components/SettingsTabs";
-import type { SettingsTab } from "./components/SettingsTabs";
 import SettingsSearch from "./components/SettingsSearch";
 import SaveStatusIndicator from "./components/SaveStatusIndicator";
 import {
   filterSections,
+  getVisibleTabs,
   SECTION_META,
+  TAB_LABELS,
   type SettingsSection,
+  type SettingsTab,
 } from "./settingsSearchConfig";
 
 type TestResult = {
   success: boolean;
   version?: string;
   error?: string;
-};
-
-const TAB_LABELS: Record<SettingsTab, string> = {
-  general: "General",
-  integrations: "Integrations",
-  recommendations: "Recommendations",
-  logs: "Logs",
 };
 
 function SectionBadge({ section }: { section: SettingsSection }) {
@@ -68,6 +66,8 @@ export default function SettingsPage() {
     loadLidarrOptionValues,
   } = useLidarrContext();
 
+  const { user } = useAuth();
+
   const { fields, saveStatus, saveError, updateField, updateFields } =
     useAutoSave(settings, savePartialSettings);
 
@@ -83,11 +83,15 @@ export default function SettingsPage() {
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [autoSetupModalOpen, setAutoSetupModalOpen] = useState(false);
 
+  const visibleTabs = useMemo(() => getVisibleTabs(user?.permissions), [user]);
+
   const handleAutoSetupSuccess = useCallback(() => {
     refetchAutoSetup();
   }, [refetchAutoSetup]);
 
-  const matchingSections = searchQuery ? filterSections(searchQuery) : [];
+  const matchingSections = searchQuery
+    ? filterSections(searchQuery, user?.permissions)
+    : [];
   const isSearching = searchQuery.length > 0;
 
   useEffect(() => {
@@ -155,8 +159,17 @@ export default function SettingsPage() {
     );
   }
 
-  const visible = (section: SettingsSection) =>
-    isSectionVisible(section, activeTab, searchQuery, matchingSections);
+  const visible = (section: SettingsSection) => {
+    const meta = SECTION_META[section];
+    if (
+      meta.permission !== undefined &&
+      user &&
+      !hasPermission(user.permissions, meta.permission)
+    ) {
+      return false;
+    }
+    return isSectionVisible(section, activeTab, searchQuery, matchingSections);
+  };
 
   return (
     <div className="space-y-6">
@@ -170,7 +183,11 @@ export default function SettingsPage() {
       <SettingsSearch query={searchQuery} onQueryChange={setSearchQuery} />
 
       {!isSearching && (
-        <SettingsTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <SettingsTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          visibleTabs={visibleTabs}
+        />
       )}
 
       <div className="space-y-6">
@@ -289,6 +306,13 @@ export default function SettingsPage() {
                 updateField("promotedAlbum", updated)
               }
             />
+          </div>
+        )}
+
+        {visible("users") && (
+          <div>
+            {isSearching && <SectionBadge section="users" />}
+            <UsersSection />
           </div>
         )}
 
