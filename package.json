@@ -2,7 +2,7 @@
   "name": "tunearr",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.30.1",
+  "packageManager": "pnpm@10.30.3",
   "type": "module",
   "dependencies": {
     "@heroicons/react": "^2.2.0",
