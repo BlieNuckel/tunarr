@@ -351,6 +351,105 @@ describe("getSuggestions", () => {
     expect(result.suggestions[0].tags.length).toBeGreaterThanOrEqual(2);
   });
 
+  it("prefers albums within year range of source album", async () => {
+    mockGetAlbumTopTags.mockResolvedValue([
+      { name: "rock", count: 80 },
+      { name: "indie", count: 60 },
+      { name: "pop", count: 40 },
+    ]);
+
+    mockGetTopAlbumsByTag.mockResolvedValue({
+      albums: [
+        album("Old Album", "mbid-old", "Artist A"),
+        album("Same Era Album", "mbid-era", "Artist B"),
+      ],
+      pagination: { page: 1, totalPages: 1 },
+    });
+
+    mockGetReleaseGroupIdFromRelease.mockImplementation((mbid: string) => {
+      if (mbid === "mbid-old") {
+        return Promise.resolve({
+          id: "rg-old",
+          firstReleaseDate: "1965-01-01",
+        });
+      }
+      return Promise.resolve({ id: "rg-era", firstReleaseDate: "2018-06-01" });
+    });
+
+    const result = await getSuggestions("Source", "Album", [], [], 2019);
+
+    expect(result.suggestions[0].releaseGroup.id).toBe("rg-era");
+  });
+
+  it("falls back to out-of-range albums when not enough in-range candidates", async () => {
+    mockGetAlbumTopTags.mockResolvedValue([
+      { name: "rock", count: 80 },
+      { name: "indie", count: 60 },
+      { name: "pop", count: 40 },
+    ]);
+
+    mockGetTopAlbumsByTag.mockResolvedValue({
+      albums: [album("Old Album", "mbid-old", "Artist A")],
+      pagination: { page: 1, totalPages: 1 },
+    });
+
+    mockGetReleaseGroupIdFromRelease.mockResolvedValue({
+      id: "rg-old",
+      firstReleaseDate: "1960-01-01",
+    });
+
+    const result = await getSuggestions("Source", "Album", [], [], 2019);
+
+    expect(result.suggestions.length).toBe(1);
+    expect(result.suggestions[0].releaseGroup.id).toBe("rg-old");
+  });
+
+  it("treats candidates without a release date as within range", async () => {
+    mockGetAlbumTopTags.mockResolvedValue([
+      { name: "rock", count: 80 },
+      { name: "indie", count: 60 },
+      { name: "pop", count: 40 },
+    ]);
+
+    mockGetTopAlbumsByTag.mockResolvedValue({
+      albums: [album("No Date Album", "mbid-nodate", "Artist A")],
+      pagination: { page: 1, totalPages: 1 },
+    });
+
+    mockGetReleaseGroupIdFromRelease.mockResolvedValue({
+      id: "rg-nodate",
+      firstReleaseDate: "",
+    });
+
+    const result = await getSuggestions("Source", "Album", [], [], 2019);
+
+    expect(result.suggestions.length).toBe(1);
+    expect(result.suggestions[0].releaseGroup.id).toBe("rg-nodate");
+  });
+
+  it("does not filter by year when sourceYear is not provided", async () => {
+    mockGetAlbumTopTags.mockResolvedValue([
+      { name: "rock", count: 80 },
+      { name: "indie", count: 60 },
+      { name: "pop", count: 40 },
+    ]);
+
+    mockGetTopAlbumsByTag.mockResolvedValue({
+      albums: [album("Old Album", "mbid-old", "Artist A")],
+      pagination: { page: 1, totalPages: 1 },
+    });
+
+    mockGetReleaseGroupIdFromRelease.mockResolvedValue({
+      id: "rg-old",
+      firstReleaseDate: "1960-01-01",
+    });
+
+    const result = await getSuggestions("Source", "Album", [], []);
+
+    expect(result.suggestions.length).toBe(1);
+    expect(result.suggestions[0].releaseGroup.id).toBe("rg-old");
+  });
+
   it("falls back to single-tag matches when no multi-tag overlap exists", async () => {
     mockGetAlbumTopTags.mockResolvedValue([
       { name: "rock", count: 80 },

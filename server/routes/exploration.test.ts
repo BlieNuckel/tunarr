@@ -50,7 +50,8 @@ describe("POST /suggestions", () => {
       "Radiohead",
       "OK Computer",
       [],
-      []
+      [],
+      undefined
     );
   });
 
@@ -81,6 +82,27 @@ describe("POST /suggestions", () => {
     expect(res.body.error).toBeTruthy();
   });
 
+  it("passes sourceYear when provided", async () => {
+    mockGetSuggestions.mockResolvedValue({ suggestions: [], newTags: [] });
+
+    await request(app).post("/suggestions").send({
+      artistName: "Radiohead",
+      albumName: "OK Computer",
+      albumMbid: "alb-1",
+      excludeMbids: [],
+      accumulatedTags: [],
+      sourceYear: 1997,
+    });
+
+    expect(mockGetSuggestions).toHaveBeenCalledWith(
+      "Radiohead",
+      "OK Computer",
+      [],
+      [],
+      1997
+    );
+  });
+
   it("defaults excludeMbids and accumulatedTags to empty arrays", async () => {
     mockGetSuggestions.mockResolvedValue({ suggestions: [], newTags: [] });
 
@@ -90,7 +112,13 @@ describe("POST /suggestions", () => {
       albumMbid: "mbid",
     });
 
-    expect(mockGetSuggestions).toHaveBeenCalledWith("Artist", "Album", [], []);
+    expect(mockGetSuggestions).toHaveBeenCalledWith(
+      "Artist",
+      "Album",
+      [],
+      [],
+      undefined
+    );
   });
 });
 

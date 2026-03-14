@@ -23,12 +23,19 @@ type SuggestionsResponse = {
   newTags: TagWeight[];
 };
 
+function parseYear(date: string | undefined): number | undefined {
+  if (!date) return undefined;
+  const year = parseInt(date.slice(0, 4), 10);
+  return Number.isNaN(year) ? undefined : year;
+}
+
 async function fetchSuggestions(
   artistName: string,
   albumName: string,
   albumMbid: string,
   excludeMbids: string[],
-  accumulatedTags: TagWeight[]
+  accumulatedTags: TagWeight[],
+  sourceYear: number | undefined
 ): Promise<SuggestionsResponse> {
   const res = await fetch("/api/exploration/suggestions", {
     method: "POST",
@@ -39,6 +46,7 @@ async function fetchSuggestions(
       albumMbid,
       excludeMbids,
       accumulatedTags,
+      sourceYear,
     }),
   });
 
@@ -68,6 +76,7 @@ export default function useExploration() {
   const [suggestions, setSuggestions] = useState<ExplorationSuggestion[]>([]);
   const [accumulatedTags, setAccumulatedTags] = useState<TagWeight[]>([]);
   const [skippedMbids, setSkippedMbids] = useState<string[]>([]);
+  const [sourceYear, setSourceYear] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,7 +85,8 @@ export default function useExploration() {
       source: ReleaseGroup,
       collected: CollectedAlbum[],
       tags: TagWeight[],
-      skipped: string[]
+      skipped: string[],
+      year: number | undefined
     ) => {
       setLoading(true);
       setError(null);
@@ -88,7 +98,8 @@ export default function useExploration() {
           source.title,
           source.id,
           getExcludeMbids(collected, skipped),
-          tags
+          tags,
+          year
         );
 
         setSuggestions(result.suggestions);
@@ -107,12 +118,14 @@ export default function useExploration() {
   const startExploration = useCallback(
     (sourceAlbum: ReleaseGroup) => {
       const collected = [{ releaseGroup: sourceAlbum }];
+      const year = parseYear(sourceAlbum["first-release-date"]);
       setCollectedAlbums(collected);
       setRound(1);
       setPhase("round");
       setAccumulatedTags([]);
       setSkippedMbids([]);
-      loadSuggestions(sourceAlbum, collected, [], []);
+      setSourceYear(year);
+      loadSuggestions(sourceAlbum, collected, [], [], year);
     },
     [loadSuggestions]
   );
@@ -147,7 +160,8 @@ export default function useExploration() {
         suggestion.releaseGroup,
         newCollected,
         accumulatedTags,
-        newSkipped
+        newSkipped,
+        sourceYear
       );
     },
     [
@@ -156,6 +170,7 @@ export default function useExploration() {
       skippedMbids,
       round,
       accumulatedTags,
+      sourceYear,
       loadSuggestions,
     ]
   );
@@ -167,6 +182,7 @@ export default function useExploration() {
     setSkippedMbids([]);
     setSuggestions([]);
     setAccumulatedTags([]);
+    setSourceYear(undefined);
     setLoading(false);
     setError(null);
   }, []);

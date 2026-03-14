@@ -4,6 +4,9 @@ import { getReleaseGroupIdFromRelease } from "../api/musicbrainz/releaseGroups";
 import type { MusicBrainzReleaseGroup } from "../api/musicbrainz/types";
 import { getConfigValue } from "../config";
 import { weightedRandomPick, shuffle } from "../utils/random";
+
+const YEAR_PROXIMITY_RANGE = 15;
+
 import type {
   TagWeight,
   ExplorationSuggestion,
@@ -174,11 +177,27 @@ function scoreCandidatesByTagOverlap(
   return result;
 }
 
+function parseReleaseYear(date: string | undefined): number | null {
+  if (!date) return null;
+  const year = parseInt(date.slice(0, 4), 10);
+  return Number.isNaN(year) ? null : year;
+}
+
+function isWithinYearRange(
+  candidateDate: string | undefined,
+  sourceYear: number
+): boolean {
+  const candidateYear = parseReleaseYear(candidateDate);
+  if (candidateYear === null) return true;
+  return Math.abs(candidateYear - sourceYear) <= YEAR_PROXIMITY_RANGE;
+}
+
 export async function getSuggestions(
   artistName: string,
   albumName: string,
   excludeMbids: string[],
-  accumulatedTags: TagWeight[]
+  accumulatedTags: TagWeight[],
+  sourceYear?: number
 ): Promise<SuggestionsResponse> {
   const rawNewTags = await fetchAlbumTags(artistName, albumName);
   const allTags = mergeTags(accumulatedTags, rawNewTags);
@@ -218,6 +237,7 @@ export async function getSuggestions(
 
   const suggestions: ExplorationSuggestion[] = [];
   const usedRgIds = new Set<string>();
+  const fallbacks: ExplorationSuggestion[] = [];
 
   for (const { candidate, tags } of ranked) {
     if (suggestions.length >= 3) break;
@@ -232,10 +252,24 @@ export async function getSuggestions(
 
       usedRgIds.add(releaseGroup.id);
       excludeSet.add(releaseGroup.id);
+
+      if (
+        sourceYear &&
+        !isWithinYearRange(releaseGroup["first-release-date"], sourceYear)
+      ) {
+        fallbacks.push({ releaseGroup, tags });
+        continue;
+      }
+
       suggestions.push({ releaseGroup, tags });
     } catch {
       continue;
     }
+  }
+
+  for (const fallback of fallbacks) {
+    if (suggestions.length >= 3) break;
+    suggestions.push(fallback);
   }
 
   return { suggestions, newTags: allTags };

@@ -6,8 +6,14 @@ import { getAlbumTopTags } from "../api/lastfm/albums";
 const router = express.Router();
 
 router.post("/suggestions", async (req: Request, res: Response) => {
-  const { artistName, albumName, albumMbid, excludeMbids, accumulatedTags } =
-    req.body;
+  const {
+    artistName,
+    albumName,
+    albumMbid,
+    excludeMbids,
+    accumulatedTags,
+    sourceYear,
+  } = req.body;
 
   if (!artistName || !albumName || !albumMbid) {
     return res
@@ -19,7 +25,8 @@ router.post("/suggestions", async (req: Request, res: Response) => {
     artistName,
     albumName,
     Array.isArray(excludeMbids) ? excludeMbids : [],
-    Array.isArray(accumulatedTags) ? accumulatedTags : []
+    Array.isArray(accumulatedTags) ? accumulatedTags : [],
+    typeof sourceYear === "number" ? sourceYear : undefined
   );
 
   res.json(result);

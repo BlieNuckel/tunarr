@@ -16,6 +16,7 @@ export type SuggestionsRequest = {
   albumMbid: string;
   excludeMbids: string[];
   accumulatedTags: TagWeight[];
+  sourceYear?: number;
 };
 
 export type SuggestionsResponse = {
