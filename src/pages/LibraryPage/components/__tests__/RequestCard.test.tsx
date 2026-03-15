@@ -12,6 +12,7 @@ const baseRequest: RequestItem = {
   updatedAt: "2024-01-15T00:00:00Z",
   approvedAt: null,
   user: { id: 1, username: "testuser", thumb: null },
+  lidarr: null,
 };
 
 describe("RequestCard", () => {
@@ -138,5 +139,86 @@ describe("RequestCard", () => {
     render(<RequestCard request={noArtist} index={0} />);
 
     expect(screen.getByText("Unknown Artist")).toBeInTheDocument();
+  });
+
+  it("shows lidarr lifecycle status in badge when available", () => {
+    const downloading = {
+      ...baseRequest,
+      status: "approved" as const,
+      lidarr: {
+        status: "downloading" as const,
+        downloadProgress: 50,
+        quality: "FLAC",
+        sourceIndexer: null,
+        lastEvent: null,
+        lidarrAlbumId: null,
+      },
+    };
+    render(<RequestCard request={downloading} index={0} />);
+
+    const badge = screen.getByTestId("status-badge");
+    expect(badge).toHaveAttribute("data-status", "downloading");
+  });
+
+  it("shows admin details when showAdminDetails is true and lidarr data exists", () => {
+    const downloading = {
+      ...baseRequest,
+      status: "approved" as const,
+      lidarr: {
+        status: "downloading" as const,
+        downloadProgress: 75,
+        quality: "FLAC",
+        sourceIndexer: null,
+        lastEvent: null,
+        lidarrAlbumId: null,
+      },
+    };
+    render(<RequestCard request={downloading} index={0} showAdminDetails />);
+
+    expect(screen.getByText("75%")).toBeInTheDocument();
+    expect(screen.getByText("FLAC")).toBeInTheDocument();
+  });
+
+  it("does not show admin details when lidarr is null", () => {
+    render(<RequestCard request={baseRequest} index={0} showAdminDetails />);
+
+    expect(screen.queryByText("FLAC")).not.toBeInTheDocument();
+  });
+
+  it("shows search and unmonitor buttons for wanted items in admin view", () => {
+    const wanted = {
+      ...baseRequest,
+      status: "approved" as const,
+      lidarr: {
+        status: "wanted" as const,
+        downloadProgress: null,
+        quality: null,
+        sourceIndexer: null,
+        lastEvent: null,
+        lidarrAlbumId: 42,
+      },
+    };
+    render(<RequestCard request={wanted} index={0} showAdminDetails />);
+
+    expect(screen.getByLabelText("Search")).toBeInTheDocument();
+    expect(screen.getByLabelText("Unmonitor")).toBeInTheDocument();
+  });
+
+  it("shows source indexer for imported items in admin view", () => {
+    const imported = {
+      ...baseRequest,
+      status: "approved" as const,
+      lidarr: {
+        status: "imported" as const,
+        downloadProgress: null,
+        quality: null,
+        sourceIndexer: "Soulseek",
+        lastEvent: null,
+        lidarrAlbumId: null,
+      },
+    };
+    render(<RequestCard request={imported} index={0} showAdminDetails />);
+
+    expect(screen.getByText("via Soulseek")).toBeInTheDocument();
   });
 });

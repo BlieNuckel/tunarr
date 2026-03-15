@@ -53,21 +53,18 @@ describe("LibraryPage", () => {
     expect(screen.getByText("Library")).toBeInTheDocument();
   });
 
-  it("shows My Requests tab for basic users", async () => {
+  it("does not show mine/all toggle for basic users", async () => {
     renderWithAuth(Permission.REQUEST);
 
     expect(
-      screen.getByRole("tab", { name: "My Requests" })
-    ).toBeInTheDocument();
+      screen.queryByRole("tab", { name: "My Requests" })
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("tab", { name: "All Requests" })
     ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("tab", { name: "Downloads" })
-    ).not.toBeInTheDocument();
   });
 
-  it("shows All Requests tab for users with REQUEST_VIEW permission", async () => {
+  it("shows mine/all toggle for users with REQUEST_VIEW permission", async () => {
     renderWithAuth(Permission.REQUEST | Permission.REQUEST_VIEW);
 
     expect(
@@ -76,12 +73,9 @@ describe("LibraryPage", () => {
     expect(
       screen.getByRole("tab", { name: "All Requests" })
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("tab", { name: "Downloads" })
-    ).not.toBeInTheDocument();
   });
 
-  it("shows All Requests tab for users with MANAGE_REQUESTS permission", async () => {
+  it("shows mine/all toggle for users with MANAGE_REQUESTS permission", async () => {
     renderWithAuth(Permission.REQUEST | Permission.MANAGE_REQUESTS);
 
     expect(
@@ -89,7 +83,7 @@ describe("LibraryPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows all tabs for admins", async () => {
+  it("shows mine/all toggle for admins", async () => {
     renderWithAuth(Permission.ADMIN);
 
     expect(
@@ -98,10 +92,9 @@ describe("LibraryPage", () => {
     expect(
       screen.getByRole("tab", { name: "All Requests" })
     ).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Downloads" })).toBeInTheDocument();
   });
 
-  it("defaults to My Requests tab", async () => {
+  it("defaults to showing user's own requests", async () => {
     renderWithAuth(Permission.REQUEST);
 
     await waitFor(() => {
@@ -109,7 +102,7 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("switches to All Requests tab", async () => {
+  it("fetches all requests when toggling to All Requests", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
 
@@ -120,7 +113,7 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("shows empty state for My Requests", async () => {
+  it("shows empty state for user's requests", async () => {
     renderWithAuth(Permission.REQUEST);
 
     await waitFor(() => {
@@ -144,6 +137,7 @@ describe("LibraryPage", () => {
             updatedAt: "2024-01-01T00:00:00Z",
             approvedAt: null,
             user: { id: 1, username: "testuser", thumb: null },
+            lidarr: null,
           },
         ]),
         { status: 200 }

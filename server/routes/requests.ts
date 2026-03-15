@@ -8,6 +8,7 @@ import {
   declineRequest,
   getRequests,
 } from "../services/requests/requestService";
+import { enrichRequestsWithLidarr } from "../services/requests/lidarrEnrichment";
 
 const router = express.Router();
 
@@ -38,8 +39,10 @@ router.get("/", async (req: Request, res: Response) => {
   const userId = req.query.userId ? Number(req.query.userId) : undefined;
 
   const requests = await getRequests({ status, userId });
+  const albumMbids = requests.map((r) => r.album_mbid);
+  const lifecycles = await enrichRequestsWithLidarr(albumMbids);
 
-  const sanitized = requests.map((r) => ({
+  const sanitized = requests.map((r, i) => ({
     id: r.id,
     albumMbid: r.album_mbid,
     artistName: r.artist_name,
@@ -55,6 +58,7 @@ router.get("/", async (req: Request, res: Response) => {
           thumb: r.user.plex_thumb,
         }
       : null,
+    lidarr: lifecycles[i] ?? null,
   }));
 
   res.json(sanitized);

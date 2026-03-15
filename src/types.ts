@@ -25,52 +25,23 @@ export interface Medium {
   tracks: Track[];
 }
 
-export interface QueueItem {
-  id: number;
-  status: string;
-  title: string;
-  size: number;
-  sizeleft: number;
-  trackedDownloadStatus: string;
-  artist: { artistName: string };
-  album: { title: string };
-  quality: { quality: { name: string } };
-}
-
-export interface WantedItemEvent {
-  eventType: number;
-  date: string;
-}
-
-export interface WantedItem {
-  id: number;
-  title: string;
-  foreignAlbumId: string;
-  artist: { artistName: string };
-  lastEvent: WantedItemEvent | null;
-}
-
-export interface RecentImport {
-  id: number;
-  albumId: number;
-  date: string;
-  sourceIndexer: string | null;
-  artist: {
-    artistName: string;
-    id: number;
-  };
-  album: {
-    id: number;
-    title: string;
-  };
-}
-
 export type RequestStatus = "pending" | "approved" | "declined";
 
 export interface RequestUser {
   id: number;
   username: string;
   thumb: string | null;
+}
+
+export type LidarrLifecycleStatus = "downloading" | "wanted" | "imported";
+
+export interface LidarrLifecycle {
+  status: LidarrLifecycleStatus | null;
+  downloadProgress: number | null;
+  quality: string | null;
+  sourceIndexer: string | null;
+  lastEvent: { eventType: number; date: string } | null;
+  lidarrAlbumId: number | null;
 }
 
 export interface RequestItem {
@@ -83,6 +54,7 @@ export interface RequestItem {
   updatedAt: string;
   approvedAt: string | null;
   user: RequestUser | null;
+  lidarr: LidarrLifecycle | null;
 }
 
 export type MonitorState =

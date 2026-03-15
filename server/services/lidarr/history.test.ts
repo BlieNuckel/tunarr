@@ -24,7 +24,7 @@ function makeRecord(
     downloadId: "dl-abc",
     data: {} as Record<string, string>,
     artist: { id: 1, artistName: "Test Artist" },
-    album: { id: 100, title: "Test Album" },
+    album: { id: 100, title: "Test Album", foreignAlbumId: "mbid-100" },
     ...overrides,
   };
 }

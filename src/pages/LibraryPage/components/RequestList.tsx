@@ -9,8 +9,11 @@ interface RequestListProps {
   emptyMessage: string;
   showUser?: boolean;
   showActions?: boolean;
+  showAdminDetails?: boolean;
   onApprove?: (id: number) => void;
   onDecline?: (id: number) => void;
+  onSearch?: (albumId: number) => void;
+  onUnmonitor?: (albumMbid: string) => void;
 }
 
 export default function RequestList({
@@ -20,8 +23,11 @@ export default function RequestList({
   emptyMessage,
   showUser = false,
   showActions = false,
+  showAdminDetails = false,
   onApprove,
   onDecline,
+  onSearch,
+  onUnmonitor,
 }: RequestListProps) {
   if (loading) {
     return (
@@ -63,8 +69,11 @@ export default function RequestList({
           index={index}
           showUser={showUser}
           showActions={showActions}
+          showAdminDetails={showAdminDetails}
           onApprove={onApprove}
           onDecline={onDecline}
+          onSearch={onSearch}
+          onUnmonitor={onUnmonitor}
         />
       ))}
     </div>

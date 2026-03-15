@@ -4,12 +4,18 @@ const mockCreateRequest = vi.fn();
 const mockApproveRequest = vi.fn();
 const mockDeclineRequest = vi.fn();
 const mockGetRequests = vi.fn();
+const mockEnrichRequestsWithLidarr = vi.fn();
 
 vi.mock("../services/requests/requestService", () => ({
   createRequest: (...args: unknown[]) => mockCreateRequest(...args),
   approveRequest: (...args: unknown[]) => mockApproveRequest(...args),
   declineRequest: (...args: unknown[]) => mockDeclineRequest(...args),
   getRequests: (...args: unknown[]) => mockGetRequests(...args),
+}));
+
+vi.mock("../services/requests/lidarrEnrichment", () => ({
+  enrichRequestsWithLidarr: (...args: unknown[]) =>
+    mockEnrichRequestsWithLidarr(...args),
 }));
 
 vi.mock("../middleware/requireAuth", () => ({
@@ -90,7 +96,7 @@ describe("POST /", () => {
 });
 
 describe("GET /", () => {
-  it("returns sanitized request list", async () => {
+  it("returns sanitized request list with lidarr enrichment", async () => {
     mockGetRequests.mockResolvedValue([
       {
         id: 1,
@@ -109,6 +115,16 @@ describe("GET /", () => {
         },
       },
     ]);
+    mockEnrichRequestsWithLidarr.mockResolvedValue([
+      {
+        status: "downloading",
+        downloadProgress: 50,
+        quality: "FLAC",
+        sourceIndexer: null,
+        lastEvent: null,
+        lidarrAlbumId: null,
+      },
+    ]);
 
     const res = await request(app).get("/");
     expect(res.status).toBe(200);
@@ -123,11 +139,42 @@ describe("GET /", () => {
       updatedAt: "2024-01-01",
       approvedAt: null,
       user: { id: 1, username: "testuser", thumb: null },
+      lidarr: {
+        status: "downloading",
+        downloadProgress: 50,
+        quality: "FLAC",
+        sourceIndexer: null,
+        lastEvent: null,
+        lidarrAlbumId: null,
+      },
     });
+    expect(mockEnrichRequestsWithLidarr).toHaveBeenCalledWith(["mbid-1"]);
+  });
+
+  it("returns null lidarr field when enrichment returns null", async () => {
+    mockGetRequests.mockResolvedValue([
+      {
+        id: 1,
+        album_mbid: "mbid-1",
+        artist_name: "Artist",
+        album_title: "Album",
+        status: "pending",
+        created_at: "2024-01-01",
+        updated_at: "2024-01-01",
+        approved_at: null,
+        user: null,
+      },
+    ]);
+    mockEnrichRequestsWithLidarr.mockResolvedValue([null]);
+
+    const res = await request(app).get("/");
+    expect(res.status).toBe(200);
+    expect(res.body[0].lidarr).toBeNull();
   });
 
   it("passes status filter", async () => {
     mockGetRequests.mockResolvedValue([]);
+    mockEnrichRequestsWithLidarr.mockResolvedValue([]);
     await request(app).get("/?status=pending");
     expect(mockGetRequests).toHaveBeenCalledWith({
       status: "pending",

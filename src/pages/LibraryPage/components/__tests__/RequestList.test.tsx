@@ -13,6 +13,7 @@ const mockRequests: RequestItem[] = [
     updatedAt: "2024-01-01T00:00:00Z",
     approvedAt: null,
     user: { id: 1, username: "testuser", thumb: null },
+    lidarr: null,
   },
   {
     id: 2,
@@ -24,6 +25,7 @@ const mockRequests: RequestItem[] = [
     updatedAt: "2024-01-02T00:00:00Z",
     approvedAt: "2024-01-03T00:00:00Z",
     user: { id: 2, username: "admin", thumb: null },
+    lidarr: null,
   },
 ];
 

@@ -39,7 +39,7 @@ export type LidarrQueueItem = {
   sizeleft: number;
   trackedDownloadStatus: string;
   artist: { artistName: string };
-  album: { title: string };
+  album: { title: string; foreignAlbumId: string };
   quality: { quality: { name: string } };
 };
 
@@ -58,7 +58,7 @@ export type LidarrHistoryRecord = {
   downloadId: string;
   data: Record<string, string>;
   artist: { id: number; artistName: string };
-  album: { id: number; title: string };
+  album: { id: number; title: string; foreignAlbumId: string };
 };
 
 export type LidarrManualImportItem = {
