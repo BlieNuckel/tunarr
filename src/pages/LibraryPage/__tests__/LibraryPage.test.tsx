@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import LibraryPage from "../LibraryPage";
 import { AuthContext, type AuthContextValue } from "@/context/authContextDef";
@@ -6,8 +6,8 @@ import { Permission } from "@shared/permissions";
 
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn());
-  vi.mocked(fetch).mockResolvedValue(
-    new Response(JSON.stringify([]), { status: 200 })
+  vi.mocked(fetch).mockImplementation(() =>
+    Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
   );
 });
 
@@ -46,6 +46,11 @@ function renderWithAuth(permissions: number) {
   );
 }
 
+function getFilterGroup(label: string) {
+  const groupLabel = screen.getByText(label);
+  return within(groupLabel.parentElement!);
+}
+
 describe("LibraryPage", () => {
   it("renders page title", async () => {
     renderWithAuth(Permission.REQUEST);
@@ -53,48 +58,45 @@ describe("LibraryPage", () => {
     expect(screen.getByText("Library")).toBeInTheDocument();
   });
 
-  it("does not show mine/all toggle for basic users", async () => {
+  it("shows requester and status filter groups", async () => {
     renderWithAuth(Permission.REQUEST);
 
-    expect(
-      screen.queryByRole("tab", { name: "My Requests" })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("tab", { name: "All Requests" })
-    ).not.toBeInTheDocument();
+    expect(screen.getByText("Requester")).toBeInTheDocument();
+    expect(screen.getByText("Status")).toBeInTheDocument();
   });
 
-  it("shows mine/all toggle for users with REQUEST_VIEW permission", async () => {
-    renderWithAuth(Permission.REQUEST | Permission.REQUEST_VIEW);
+  it("shows all filter options", async () => {
+    renderWithAuth(Permission.REQUEST);
 
+    const requesterGroup = getFilterGroup("Requester");
     expect(
-      screen.getByRole("tab", { name: "My Requests" })
+      requesterGroup.getByRole("button", { name: "All" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("tab", { name: "All Requests" })
+      requesterGroup.getByRole("button", { name: "Mine" })
+    ).toBeInTheDocument();
+
+    const statusGroup = getFilterGroup("Status");
+    expect(
+      statusGroup.getByRole("button", { name: "Pending" })
+    ).toBeInTheDocument();
+    expect(
+      statusGroup.getByRole("button", { name: "Approved" })
+    ).toBeInTheDocument();
+    expect(
+      statusGroup.getByRole("button", { name: "Declined" })
     ).toBeInTheDocument();
   });
 
-  it("shows mine/all toggle for users with MANAGE_REQUESTS permission", async () => {
-    renderWithAuth(Permission.REQUEST | Permission.MANAGE_REQUESTS);
-
-    expect(
-      screen.getByRole("tab", { name: "All Requests" })
-    ).toBeInTheDocument();
-  });
-
-  it("shows mine/all toggle for admins", async () => {
+  it("defaults to showing all requests with 'All' filter active", async () => {
     renderWithAuth(Permission.ADMIN);
 
-    expect(
-      screen.getByRole("tab", { name: "My Requests" })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("tab", { name: "All Requests" })
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/requests");
+    });
   });
 
-  it("defaults to showing user's own requests", async () => {
+  it("fetches only user requests for basic users even with 'All' filter", async () => {
     renderWithAuth(Permission.REQUEST);
 
     await waitFor(() => {
@@ -102,19 +104,67 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("fetches all requests when toggling to All Requests", async () => {
+  it("fetches user requests when clicking 'Mine' filter", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
+    const requesterGroup = getFilterGroup("Requester");
 
-    await user.click(screen.getByRole("tab", { name: "All Requests" }));
+    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
 
     await waitFor(() => {
-      expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/requests");
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/requests?userId=1");
     });
   });
 
-  it("shows empty state for user's requests", async () => {
-    renderWithAuth(Permission.REQUEST);
+  it("fetches all requests when clicking 'All' filter as admin", async () => {
+    renderWithAuth(Permission.ADMIN);
+    const user = userEvent.setup();
+    const requesterGroup = getFilterGroup("Requester");
+
+    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
+    await user.click(requesterGroup.getByRole("button", { name: "All" }));
+
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenLastCalledWith("/api/requests");
+    });
+  });
+
+  it("fetches filtered requests when selecting a status", async () => {
+    renderWithAuth(Permission.ADMIN);
+    const user = userEvent.setup();
+    const statusGroup = getFilterGroup("Status");
+
+    await user.click(statusGroup.getByRole("button", { name: "Pending" }));
+
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+        "/api/requests?status=pending"
+      );
+    });
+  });
+
+  it("combines requester and status filters", async () => {
+    renderWithAuth(Permission.ADMIN);
+    const user = userEvent.setup();
+    const requesterGroup = getFilterGroup("Requester");
+    const statusGroup = getFilterGroup("Status");
+
+    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
+    await user.click(statusGroup.getByRole("button", { name: "Approved" }));
+
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+        "/api/requests?userId=1&status=approved"
+      );
+    });
+  });
+
+  it("shows empty state for user's requests when 'Mine' filter active", async () => {
+    renderWithAuth(Permission.ADMIN);
+    const user = userEvent.setup();
+    const requesterGroup = getFilterGroup("Requester");
+
+    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
 
     await waitFor(() => {
       expect(
@@ -123,24 +173,34 @@ describe("LibraryPage", () => {
     });
   });
 
+  it("shows empty state for all requests when 'All' filter active", async () => {
+    renderWithAuth(Permission.ADMIN);
+
+    await waitFor(() => {
+      expect(screen.getByText("No requests yet")).toBeInTheDocument();
+    });
+  });
+
   it("renders request cards when data is loaded", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(
-        JSON.stringify([
-          {
-            id: 1,
-            albumMbid: "abc",
-            artistName: "Radiohead",
-            albumTitle: "OK Computer",
-            status: "pending",
-            createdAt: "2024-01-01T00:00:00Z",
-            updatedAt: "2024-01-01T00:00:00Z",
-            approvedAt: null,
-            user: { id: 1, username: "testuser", thumb: null },
-            lidarr: null,
-          },
-        ]),
-        { status: 200 }
+    vi.mocked(fetch).mockImplementation(() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify([
+            {
+              id: 1,
+              albumMbid: "abc",
+              artistName: "Radiohead",
+              albumTitle: "OK Computer",
+              status: "pending",
+              createdAt: "2024-01-01T00:00:00Z",
+              updatedAt: "2024-01-01T00:00:00Z",
+              approvedAt: null,
+              user: { id: 1, username: "testuser", thumb: null },
+              lidarr: null,
+            },
+          ]),
+          { status: 200 }
+        )
       )
     );
 

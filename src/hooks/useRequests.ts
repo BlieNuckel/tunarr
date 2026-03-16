@@ -3,6 +3,7 @@ import { RequestItem } from "@/types";
 
 type UseRequestsOptions = {
   userId?: number;
+  status?: string;
 };
 
 type UseRequestsReturn = {
@@ -19,12 +20,16 @@ function buildUrl(options: UseRequestsOptions): string {
   if (options.userId !== undefined) {
     params.set("userId", String(options.userId));
   }
+  if (options.status) {
+    params.set("status", options.status);
+  }
   const qs = params.toString();
   return qs ? `/api/requests?${qs}` : "/api/requests";
 }
 
 export function useRequests({
   userId,
+  status,
 }: UseRequestsOptions = {}): UseRequestsReturn {
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +37,7 @@ export function useRequests({
 
   const fetchRequests = useCallback(async () => {
     try {
-      const res = await fetch(buildUrl({ userId }));
+      const res = await fetch(buildUrl({ userId, status }));
       if (!res.ok) throw new Error("Failed to fetch requests");
       const data = await res.json();
       setRequests(data);
@@ -44,7 +49,7 @@ export function useRequests({
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, status]);
 
   useEffect(() => {
     fetchRequests();

@@ -1,24 +1,30 @@
 import { useState } from "react";
 import useLogs from "@/hooks/useLogs";
 import LogsTable from "./LogsTable";
+import FilterBar from "@/components/FilterBar";
 import Pagination from "@/components/Pagination";
 import Skeleton from "@/components/Skeleton";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
-const LEVEL_OPTIONS: { value: LogLevel | "all"; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "info", label: "Info" },
-  { value: "warn", label: "Warnings" },
-  { value: "error", label: "Errors" },
+const LOGS_FILTERS = [
+  {
+    key: "level",
+    options: [
+      { value: "all", label: "All" },
+      { value: "info", label: "Info" },
+      { value: "warn", label: "Warnings" },
+      { value: "error", label: "Errors" },
+    ],
+  },
 ];
 
 export default function LogsSection() {
   const [page, setPage] = useState(1);
-  const [level, setLevel] = useState<LogLevel | undefined>(undefined);
+  const [levelFilter, setLevelFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
 
+  const level = levelFilter === "all" ? undefined : (levelFilter as LogLevel);
   const { data, loading, error, refetch } = useLogs({
     page,
     pageSize: 25,
@@ -26,14 +32,13 @@ export default function LogsSection() {
     search,
   });
 
-  const handleLevelChange = (newLevel: LogLevel | "all") => {
-    setLevel(newLevel === "all" ? undefined : newLevel);
+  const handleFilterChange = (key: string, value: string) => {
+    if (key === "level") setLevelFilter(value);
     setPage(1);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearch(searchInput.trim());
+  const handleSearch = (query: string) => {
+    setSearch(query);
     setPage(1);
   };
 
@@ -72,44 +77,15 @@ export default function LogsSection() {
         </button>
       </div>
 
-      {/* Search form */}
-      <form onSubmit={handleSearchSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Search logs by message or label..."
-          className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-400 shadow-cartoon-md text-[16px]"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black font-bold rounded-lg border-2 border-black shadow-cartoon-md hover:translate-y-[-1px] hover:shadow-cartoon-lg active:translate-y-[1px] active:shadow-cartoon-pressed transition-all"
-        >
-          Search
-        </button>
-      </form>
-
-      {/* Level filter buttons */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {LEVEL_OPTIONS.map((option) => {
-          const isActive =
-            option.value === "all" ? !level : level === option.value;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => handleLevelChange(option.value)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all whitespace-nowrap ${
-                isActive
-                  ? "bg-amber-400 text-black"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
+      <FilterBar
+        filters={LOGS_FILTERS}
+        values={{ level: levelFilter }}
+        onChange={handleFilterChange}
+        search={{
+          placeholder: "Search logs by message or label...",
+          onSearch: handleSearch,
+        }}
+      />
 
       {/* Loading skeleton */}
       {loading && (
