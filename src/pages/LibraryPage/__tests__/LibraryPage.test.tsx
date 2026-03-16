@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import LibraryPage from "../LibraryPage";
 import { AuthContext, type AuthContextValue } from "@/context/authContextDef";
@@ -46,9 +46,16 @@ function renderWithAuth(permissions: number) {
   );
 }
 
-function getFilterGroup(label: string) {
-  const groupLabel = screen.getByText(label);
-  return within(groupLabel.parentElement!);
+async function selectFilter(
+  user: ReturnType<typeof userEvent.setup>,
+  pillText: string,
+  optionText: string
+) {
+  const pill = screen.getByRole("button", { name: new RegExp(pillText) });
+  await user.click(pill);
+  const options = screen.getAllByRole("button", { name: optionText });
+  const dropdownOption = options.find((el) => el.closest(".absolute"))!;
+  await user.click(dropdownOption);
 }
 
 describe("LibraryPage", () => {
@@ -58,33 +65,38 @@ describe("LibraryPage", () => {
     expect(screen.getByText("Library")).toBeInTheDocument();
   });
 
-  it("shows requester and status filter groups", async () => {
+  it("shows requester and status filter pills", async () => {
     renderWithAuth(Permission.REQUEST);
 
-    expect(screen.getByText("Requester")).toBeInTheDocument();
-    expect(screen.getByText("Status")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Requester/ })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Status/ })).toBeInTheDocument();
   });
 
-  it("shows all filter options", async () => {
+  it("shows filter options when pill is clicked", async () => {
     renderWithAuth(Permission.REQUEST);
+    const user = userEvent.setup();
 
-    const requesterGroup = getFilterGroup("Requester");
-    expect(
-      requesterGroup.getByRole("button", { name: "All" })
-    ).toBeInTheDocument();
-    expect(
-      requesterGroup.getByRole("button", { name: "Mine" })
-    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Requester/ }));
 
-    const statusGroup = getFilterGroup("Status");
+    expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Me" })).toBeInTheDocument();
+  });
+
+  it("shows status filter options when status pill is clicked", async () => {
+    renderWithAuth(Permission.REQUEST);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /Status/ }));
+
+    expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pending" })).toBeInTheDocument();
     expect(
-      statusGroup.getByRole("button", { name: "Pending" })
+      screen.getByRole("button", { name: "Approved" })
     ).toBeInTheDocument();
     expect(
-      statusGroup.getByRole("button", { name: "Approved" })
-    ).toBeInTheDocument();
-    expect(
-      statusGroup.getByRole("button", { name: "Declined" })
+      screen.getByRole("button", { name: "Declined" })
     ).toBeInTheDocument();
   });
 
@@ -104,25 +116,23 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("fetches user requests when clicking 'Mine' filter", async () => {
+  it("fetches user requests when selecting 'Me' filter", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
-    const requesterGroup = getFilterGroup("Requester");
 
-    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
+    await selectFilter(user, "Requester", "Me");
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/requests?userId=1");
     });
   });
 
-  it("fetches all requests when clicking 'All' filter as admin", async () => {
+  it("fetches all requests when selecting 'All' filter as admin", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
-    const requesterGroup = getFilterGroup("Requester");
 
-    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
-    await user.click(requesterGroup.getByRole("button", { name: "All" }));
+    await selectFilter(user, "Requester", "Me");
+    await selectFilter(user, "Requester: Me", "All");
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenLastCalledWith("/api/requests");
@@ -132,9 +142,8 @@ describe("LibraryPage", () => {
   it("fetches filtered requests when selecting a status", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
-    const statusGroup = getFilterGroup("Status");
 
-    await user.click(statusGroup.getByRole("button", { name: "Pending" }));
+    await selectFilter(user, "Status", "Pending");
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenCalledWith(
@@ -146,11 +155,9 @@ describe("LibraryPage", () => {
   it("combines requester and status filters", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
-    const requesterGroup = getFilterGroup("Requester");
-    const statusGroup = getFilterGroup("Status");
 
-    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
-    await user.click(statusGroup.getByRole("button", { name: "Approved" }));
+    await selectFilter(user, "Requester", "Me");
+    await selectFilter(user, "Status", "Approved");
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenCalledWith(
@@ -159,17 +166,39 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("shows empty state for user's requests when 'Mine' filter active", async () => {
+  it("shows empty state for user's requests when 'Me' filter active", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
-    const requesterGroup = getFilterGroup("Requester");
 
-    await user.click(requesterGroup.getByRole("button", { name: "Mine" }));
+    await selectFilter(user, "Requester", "Me");
 
     await waitFor(() => {
       expect(
         screen.getByText("You haven't made any requests yet")
       ).toBeInTheDocument();
+    });
+  });
+
+  it("does not show reset button when filters are at defaults", async () => {
+    renderWithAuth(Permission.ADMIN);
+
+    expect(screen.queryByText("Reset filters")).not.toBeInTheDocument();
+  });
+
+  it("shows reset button when a filter is active and resets on click", async () => {
+    renderWithAuth(Permission.ADMIN);
+    const user = userEvent.setup();
+
+    await selectFilter(user, "Requester", "Me");
+    await selectFilter(user, "Status", "Approved");
+
+    expect(screen.getByText("Reset filters")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Reset filters"));
+
+    expect(screen.queryByText("Reset filters")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenLastCalledWith("/api/requests");
     });
   });
 

@@ -16,7 +16,7 @@ const REQUEST_FILTERS = [
     label: "Requester",
     options: [
       { value: "all", label: "All" },
-      { value: "mine", label: "Mine" },
+      { value: "mine", label: "Me" },
     ],
   },
   {
