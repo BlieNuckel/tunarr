@@ -10,8 +10,9 @@ type LogLevel = "debug" | "info" | "warn" | "error";
 const LOGS_FILTERS = [
   {
     key: "level",
+    label: "Level",
+    combineMode: "or" as const,
     options: [
-      { value: "all", label: "All" },
       { value: "info", label: "Info" },
       { value: "warn", label: "Warnings" },
       { value: "error", label: "Errors" },
@@ -21,10 +22,11 @@ const LOGS_FILTERS = [
 
 export default function LogsSection() {
   const [page, setPage] = useState(1);
-  const [levelFilter, setLevelFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
-  const level = levelFilter === "all" ? undefined : (levelFilter as LogLevel);
+  const level =
+    levelFilter.length > 0 ? (levelFilter as LogLevel[]) : undefined;
   const { data, loading, error, refetch } = useLogs({
     page,
     pageSize: 25,
@@ -32,8 +34,8 @@ export default function LogsSection() {
     search,
   });
 
-  const handleFilterChange = (key: string, value: string) => {
-    if (key === "level") setLevelFilter(value);
+  const handleFilterChange = (key: string, values: string[]) => {
+    if (key === "level") setLevelFilter(values);
     setPage(1);
   };
 
@@ -59,7 +61,6 @@ export default function LogsSection() {
           className="px-3 py-1.5 text-xs font-bold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-2 border-black rounded-lg shadow-cartoon-sm hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
           aria-label="Refresh logs"
         >
-          {/* Refresh icon */}
           <svg
             className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
             fill="none"
@@ -87,7 +88,6 @@ export default function LogsSection() {
         }}
       />
 
-      {/* Loading skeleton */}
       {loading && (
         <div className="space-y-2">
           {[...Array(5)].map((_, i) => (
@@ -106,17 +106,14 @@ export default function LogsSection() {
         </div>
       )}
 
-      {/* Error display */}
       {error && !loading && (
         <div className="bg-rose-400 text-white border-2 border-black rounded-xl p-3 text-sm font-medium shadow-cartoon-sm">
           {error}
         </div>
       )}
 
-      {/* Logs table */}
       {!loading && !error && data && <LogsTable logs={data.logs} />}
 
-      {/* Pagination */}
       {!loading && !error && data && data.totalPages > 1 && (
         <Pagination
           page={page}

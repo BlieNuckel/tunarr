@@ -8,7 +8,10 @@ import RequestList from "./components/RequestList";
 
 export default function LibraryPage() {
   const { user } = useAuth();
-  const [filters, setFilters] = useState({ requester: "all", status: "all" });
+  const [filters, setFilters] = useState<Record<string, string[]>>({
+    requester: [],
+    status: [],
+  });
 
   const canViewAll =
     user !== null &&
@@ -22,20 +25,20 @@ export default function LibraryPage() {
   const isAdmin =
     user !== null && hasPermission(user.permissions, Permission.ADMIN);
 
-  const effectiveShowAll = canViewAll && filters.requester === "all";
-  const showMine = filters.requester === "mine" || !canViewAll;
+  const showMine = filters.requester.includes("mine") || !canViewAll;
+  const effectiveShowAll = canViewAll && !filters.requester.includes("mine");
   const requestsOptions = useMemo(
     () => ({
       ...(showMine ? { userId: user?.id } : {}),
-      ...(filters.status !== "all" ? { status: filters.status } : {}),
+      ...(filters.status.length > 0 ? { status: filters.status } : {}),
     }),
     [showMine, user?.id, filters.status]
   );
   const { requests, loading, error, approveRequest, declineRequest, refresh } =
     useRequests(requestsOptions);
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  const handleFilterChange = useCallback((key: string, values: string[]) => {
+    setFilters((prev) => ({ ...prev, [key]: values }));
   }, []);
 
   const handleSearch = useCallback(async (albumId: number) => {

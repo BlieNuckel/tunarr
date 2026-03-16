@@ -3,7 +3,7 @@ import { RequestItem } from "@/types";
 
 type UseRequestsOptions = {
   userId?: number;
-  status?: string;
+  status?: string[];
 };
 
 type UseRequestsReturn = {
@@ -21,7 +21,9 @@ function buildUrl(options: UseRequestsOptions): string {
     params.set("userId", String(options.userId));
   }
   if (options.status) {
-    params.set("status", options.status);
+    for (const s of options.status) {
+      params.append("status", s);
+    }
   }
   const qs = params.toString();
   return qs ? `/api/requests?${qs}` : "/api/requests";

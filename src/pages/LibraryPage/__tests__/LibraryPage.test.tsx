@@ -46,16 +46,27 @@ function renderWithAuth(permissions: number) {
   );
 }
 
-async function selectFilter(
+async function toggleFilterChip(
   user: ReturnType<typeof userEvent.setup>,
   pillText: string,
-  optionText: string
+  chipText: string
 ) {
-  const pill = screen.getByRole("button", { name: new RegExp(pillText) });
-  await user.click(pill);
-  const options = screen.getAllByRole("button", { name: optionText });
-  const dropdownOption = options.find((el) => el.closest(".absolute"))!;
-  await user.click(dropdownOption);
+  const desktop = document.querySelector('[class*="md:block"]')!;
+  const existingChips = desktop.querySelectorAll("button");
+  const alreadyVisible = Array.from(existingChips).find(
+    (el) => el.textContent === chipText && !el.textContent?.includes(":")
+  );
+  if (!alreadyVisible) {
+    const pills = screen.getAllByRole("button", { name: new RegExp(pillText) });
+    const desktopPill = pills[pills.length - 1];
+    await user.click(desktopPill);
+  }
+  const chips = screen.getAllByRole("button", { name: chipText });
+  const chip =
+    chips.find(
+      (el) => !el.querySelector("svg") || el.closest('[class*="md:block"]')
+    ) ?? chips[0];
+  await user.click(chip);
 }
 
 describe("LibraryPage", () => {
@@ -80,7 +91,6 @@ describe("LibraryPage", () => {
 
     await user.click(screen.getByRole("button", { name: /Requester/ }));
 
-    expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Me" })).toBeInTheDocument();
   });
 
@@ -90,7 +100,6 @@ describe("LibraryPage", () => {
 
     await user.click(screen.getByRole("button", { name: /Status/ }));
 
-    expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Pending" })).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Approved" })
@@ -100,7 +109,7 @@ describe("LibraryPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("defaults to showing all requests with 'All' filter active", async () => {
+  it("defaults to showing all requests with no filters active", async () => {
     renderWithAuth(Permission.ADMIN);
 
     await waitFor(() => {
@@ -108,7 +117,7 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("fetches only user requests for basic users even with 'All' filter", async () => {
+  it("fetches only user requests for basic users", async () => {
     renderWithAuth(Permission.REQUEST);
 
     await waitFor(() => {
@@ -120,20 +129,23 @@ describe("LibraryPage", () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
 
-    await selectFilter(user, "Requester", "Me");
+    await toggleFilterChip(user, "Requester", "Me");
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/requests?userId=1");
     });
   });
 
-  it("fetches all requests when selecting 'All' filter as admin", async () => {
+  it("fetches all requests when deselecting 'Me' filter as admin", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
 
-    await selectFilter(user, "Requester", "Me");
-    await selectFilter(user, "Requester: Me", "All");
+    await toggleFilterChip(user, "Requester", "Me");
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith("/api/requests?userId=1");
+    });
 
+    await toggleFilterChip(user, "Requester", "Me");
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenLastCalledWith("/api/requests");
     });
@@ -143,7 +155,7 @@ describe("LibraryPage", () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
 
-    await selectFilter(user, "Status", "Pending");
+    await toggleFilterChip(user, "Status", "Pending");
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenCalledWith(
@@ -156,8 +168,8 @@ describe("LibraryPage", () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
 
-    await selectFilter(user, "Requester", "Me");
-    await selectFilter(user, "Status", "Approved");
+    await toggleFilterChip(user, "Requester", "Me");
+    await toggleFilterChip(user, "Status", "Approved");
 
     await waitFor(() => {
       expect(vi.mocked(fetch)).toHaveBeenCalledWith(
@@ -166,11 +178,25 @@ describe("LibraryPage", () => {
     });
   });
 
+  it("sends repeated status params for multi-select", async () => {
+    renderWithAuth(Permission.ADMIN);
+    const user = userEvent.setup();
+
+    await toggleFilterChip(user, "Status", "Pending");
+    await toggleFilterChip(user, "Status", "Approved");
+
+    await waitFor(() => {
+      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+        "/api/requests?status=pending&status=approved"
+      );
+    });
+  });
+
   it("shows empty state for user's requests when 'Me' filter active", async () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
 
-    await selectFilter(user, "Requester", "Me");
+    await toggleFilterChip(user, "Requester", "Me");
 
     await waitFor(() => {
       expect(
@@ -179,7 +205,7 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("does not show reset button when filters are at defaults", async () => {
+  it("does not show reset button when no filters are active", async () => {
     renderWithAuth(Permission.ADMIN);
 
     expect(screen.queryByText("Reset filters")).not.toBeInTheDocument();
@@ -189,8 +215,8 @@ describe("LibraryPage", () => {
     renderWithAuth(Permission.ADMIN);
     const user = userEvent.setup();
 
-    await selectFilter(user, "Requester", "Me");
-    await selectFilter(user, "Status", "Approved");
+    await toggleFilterChip(user, "Requester", "Me");
+    await toggleFilterChip(user, "Status", "Approved");
 
     expect(screen.getByText("Reset filters")).toBeInTheDocument();
 
@@ -202,7 +228,7 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("shows empty state for all requests when 'All' filter active", async () => {
+  it("shows empty state for all requests when no filters active", async () => {
     renderWithAuth(Permission.ADMIN);
 
     await waitFor(() => {

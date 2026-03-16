@@ -1,29 +1,22 @@
 import FilterBar from "@/components/FilterBar";
 
-type RequestFilterValues = {
-  requester: string;
-  status: string;
-};
-
 interface RequestFilterProps {
-  values: RequestFilterValues;
-  onChange: (key: string, value: string) => void;
+  values: Record<string, string[]>;
+  onChange: (key: string, values: string[]) => void;
 }
 
 const REQUEST_FILTERS = [
   {
     key: "requester",
     label: "Requester",
-    options: [
-      { value: "all", label: "All" },
-      { value: "mine", label: "Me" },
-    ],
+    combineMode: "and" as const,
+    options: [{ value: "mine", label: "Me" }],
   },
   {
     key: "status",
     label: "Status",
+    combineMode: "or" as const,
     options: [
-      { value: "all", label: "All" },
       { value: "pending", label: "Pending" },
       { value: "approved", label: "Approved" },
       { value: "declined", label: "Declined" },
