@@ -47,8 +47,8 @@ function SettingsLink({
         to={route}
         className={`px-3 py-2 text-sm font-medium transition duration-300 rounded-lg whitespace-nowrap ${
           isActive
-            ? "bg-pink-400 text-black shadow-cartoon-sm dark:text-black"
-            : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-pink-50 dark:hover:bg-gray-700"
+            ? "bg-amber-300 text-black shadow-cartoon-sm dark:text-black"
+            : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-amber-50 dark:hover:bg-gray-700"
         }`}
         aria-current={isActive ? "page" : undefined}
       >
@@ -62,7 +62,7 @@ function SettingsLink({
       to={route}
       className={`px-1 py-4 ml-8 text-sm font-medium leading-5 transition duration-300 border-b-2 whitespace-nowrap first:ml-0 ${
         isActive
-          ? "text-pink-500 border-pink-600 dark:text-pink-400 dark:border-pink-500"
+          ? "text-amber-500 border-amber-600 dark:text-amber-400 dark:border-amber-500"
           : "border-transparent text-gray-500 dark:tI ext-gray-400 hover:text-gray-700 hover:border-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-500"
       }`}
       aria-current={isActive ? "page" : undefined}
