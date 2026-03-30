@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import LibraryPage from "../LibraryPage";
 import { AuthContext, type AuthContextValue } from "@/context/authContextDef";
 import { Permission } from "@shared/permissions";
@@ -38,11 +39,13 @@ function makeAuthContext(permissions: number): AuthContextValue {
   };
 }
 
-function renderWithAuth(permissions: number) {
+function renderWithAuth(permissions: number, route = "/library/requests") {
   return render(
-    <AuthContext.Provider value={makeAuthContext(permissions)}>
-      <LibraryPage />
-    </AuthContext.Provider>
+    <MemoryRouter initialEntries={[route]}>
+      <AuthContext.Provider value={makeAuthContext(permissions)}>
+        <LibraryPage />
+      </AuthContext.Provider>
+    </MemoryRouter>
   );
 }
 

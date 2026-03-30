@@ -27,7 +27,14 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<DiscoverPage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/library" element={<LibraryPage />} />
+            <Route path="/library" element={<LibraryPage />}>
+              <Route
+                index
+                element={<Navigate to="/library/wanted" replace />}
+              />
+              <Route path="wanted" element={null} />
+              <Route path="requests" element={null} />
+            </Route>
             <Route path="/settings" element={<SettingsLayout />}>
               <Route
                 index
