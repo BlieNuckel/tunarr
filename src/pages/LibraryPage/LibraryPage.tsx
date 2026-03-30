@@ -4,9 +4,11 @@ import { useAuth } from "@/context/useAuth";
 import { hasPermission } from "@shared/permissions";
 import { Permission } from "@shared/permissions";
 import { useRequests } from "@/hooks/useRequests";
+import useWantedList from "@/hooks/useWantedList";
 import SettingsTabs, { type SettingsRoute } from "@/components/SettingsTabs";
 import RequestFilter from "./components/RequestFilter";
 import RequestList from "./components/RequestList";
+import WantedList from "./components/WantedList";
 
 const libraryTabs: SettingsRoute[] = [
   {
@@ -30,6 +32,7 @@ export default function LibraryPage() {
   });
 
   const isRequestsTab = /^\/library\/requests/.test(location.pathname);
+  const isWantedTab = !isRequestsTab;
 
   const canViewAll =
     user !== null &&
@@ -54,6 +57,12 @@ export default function LibraryPage() {
   );
   const { requests, loading, error, approveRequest, declineRequest, refresh } =
     useRequests(requestsOptions);
+  const {
+    items: wantedItems,
+    loading: wantedLoading,
+    error: wantedError,
+    removeItem: removeWantedItem,
+  } = useWantedList();
 
   const handleFilterChange = useCallback((key: string, values: string[]) => {
     setFilters((prev) => ({ ...prev, [key]: values }));
@@ -95,7 +104,16 @@ export default function LibraryPage() {
 
       <SettingsTabs settingsRoutes={libraryTabs} />
 
-      {isRequestsTab ? (
+      {isWantedTab && (
+        <WantedList
+          items={wantedItems}
+          loading={wantedLoading}
+          error={wantedError}
+          onRemove={removeWantedItem}
+        />
+      )}
+
+      {isRequestsTab && (
         <>
           <RequestFilter values={filters} onChange={handleFilterChange} />
 
@@ -115,7 +133,7 @@ export default function LibraryPage() {
             onUnmonitor={handleUnmonitor}
           />
         </>
-      ) : null}
+      )}
     </div>
   );
 }

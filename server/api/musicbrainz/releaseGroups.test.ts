@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   searchReleaseGroups,
   searchArtistReleaseGroups,
+  getReleaseGroupById,
   getReleaseGroupIdFromRelease,
 } from "./releaseGroups";
 
@@ -105,6 +106,53 @@ describe("searchArtistReleaseGroups", () => {
     await expect(searchArtistReleaseGroups("Test")).rejects.toThrow(
       "MusicBrainz returned 429"
     );
+  });
+});
+
+describe("getReleaseGroupById", () => {
+  it("returns artist name and album title from release group MBID", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        id: "rg-123",
+        title: "OK Computer",
+        "artist-credit": [
+          { name: "Radiohead", artist: { id: "a1", name: "Radiohead" } },
+        ],
+      })
+    );
+
+    const result = await getReleaseGroupById("rg-123");
+    expect(result).toEqual({
+      artistName: "Radiohead",
+      albumTitle: "OK Computer",
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://musicbrainz.test/ws/2/release-group/rg-123?inc=artist-credits&fmt=json",
+      { headers: { "User-Agent": "test" } }
+    );
+  });
+
+  it("returns null when release group not found", async () => {
+    mockFetch.mockResolvedValue(errorResponse(404));
+
+    const result = await getReleaseGroupById("nonexistent");
+    expect(result).toBeNull();
+  });
+
+  it("returns 'Unknown Artist' when artist-credit is empty", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        id: "rg-123",
+        title: "Mystery Album",
+        "artist-credit": [],
+      })
+    );
+
+    const result = await getReleaseGroupById("rg-123");
+    expect(result).toEqual({
+      artistName: "Unknown Artist",
+      albumTitle: "Mystery Album",
+    });
   });
 });
 

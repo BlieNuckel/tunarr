@@ -45,4 +45,5 @@ export { User } from "./entity/User";
 export { Session } from "./entity/Session";
 export type { RequestStatus } from "./entity/Request";
 export { Request } from "./entity/Request";
+export { WantedItem } from "./entity/WantedItem";
 export { Config } from "./entity/Config";

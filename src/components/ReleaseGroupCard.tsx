@@ -7,10 +7,12 @@ import { CheckIcon, PlusIcon } from "@/components/icons";
 import ImageWithShimmer from "./ImageWithShimmer";
 import OptionSelect from "./OptionSelect";
 import useLidarr from "../hooks/useLidarr";
+import useWanted from "../hooks/useWanted";
 import useReleaseTracks from "../hooks/useReleaseTracks";
 import useAudioPreview from "../hooks/useAudioPreview";
 import { pastelColorFromId } from "../utils/color";
 import { getMonitorState } from "../utils/monitorState";
+import type { Option } from "./OptionSelect";
 import { MonitorState, ReleaseGroup } from "../types";
 
 const mobileMonitorStyles: Record<MonitorState, string> = {
@@ -25,12 +27,16 @@ interface ReleaseGroupCardProps {
   releaseGroup: ReleaseGroup;
   inLibrary?: boolean;
   defaultExpanded?: boolean;
+  initialWanted?: boolean;
+  onRemovedFromWanted?: (albumMbid: string) => void;
 }
 
 export default function ReleaseGroupCard({
   releaseGroup,
   inLibrary = false,
   defaultExpanded = false,
+  initialWanted = false,
+  onRemovedFromWanted,
 }: ReleaseGroupCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -45,6 +51,11 @@ export default function ReleaseGroupCard({
   const coverUrl = `https://coverartarchive.org/release-group/${albumMbid}/front-500`;
 
   const { state, errorMsg, requestAlbum } = useLidarr();
+  const {
+    state: wantedState,
+    addToWanted,
+    removeFromWanted,
+  } = useWanted(initialWanted);
   const {
     media,
     loading: tracksLoading,
@@ -114,6 +125,17 @@ export default function ReleaseGroupCard({
     requestAlbum({ albumMbid });
   };
 
+  const isWanted = wantedState === "wanted";
+  const handleRemoveFromWanted = async () => {
+    await removeFromWanted(albumMbid);
+    onRemovedFromWanted?.(albumMbid);
+  };
+  const wantedOptions: Option[] = [
+    isWanted
+      ? { label: "Remove from wanted", onClick: handleRemoveFromWanted }
+      : { label: "Add to wanted", onClick: () => addToWanted(albumMbid) },
+  ];
+
   const [coverError, setCoverError] = useState(false);
 
   const coverImage = !coverError ? (
@@ -167,7 +189,7 @@ export default function ReleaseGroupCard({
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0 mr-3">
             <div onClick={(e) => e.stopPropagation()}>
-              <OptionSelect options={[]} title={albumTitle} />
+              <OptionSelect options={wantedOptions} title={albumTitle} />
             </div>
             <button
               onClick={(e) => {
@@ -265,7 +287,7 @@ export default function ReleaseGroupCard({
             </div>
 
             <div className="flex-shrink-0 mt-2 flex items-center justify-end gap-1.5">
-              <OptionSelect options={[]} title={albumTitle} />
+              <OptionSelect options={wantedOptions} title={albumTitle} />
               <MonitorButton
                 state={effectiveState}
                 onClick={handleMonitorClick}

@@ -13,12 +13,23 @@ Object.defineProperty(window, "matchMedia", {
 const mockRequestAlbum = vi.fn();
 const mockFetchTracks = vi.fn();
 const mockStop = vi.fn();
+const mockAddToWanted = vi.fn();
+const mockRemoveFromWanted = vi.fn();
 
 vi.mock("../../hooks/useLidarr", () => ({
   default: () => ({
     state: "idle",
     errorMsg: null,
     requestAlbum: mockRequestAlbum,
+  }),
+}));
+
+vi.mock("../../hooks/useWanted", () => ({
+  default: () => ({
+    state: "idle",
+    errorMsg: null,
+    addToWanted: mockAddToWanted,
+    removeFromWanted: mockRemoveFromWanted,
   }),
 }));
 
@@ -257,6 +268,25 @@ describe("ReleaseGroupCard", () => {
 
       const moreButtons = screen.getAllByLabelText("More options");
       expect(moreButtons.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("shows 'Add to wanted' option when menu is opened", () => {
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
+
+      const moreButtons = screen.getAllByLabelText("More options");
+      fireEvent.click(moreButtons[0]);
+
+      expect(screen.getByText("Add to wanted")).toBeInTheDocument();
+    });
+
+    it("calls addToWanted when 'Add to wanted' is clicked", () => {
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
+
+      const moreButtons = screen.getAllByLabelText("More options");
+      fireEvent.click(moreButtons[0]);
+      fireEvent.click(screen.getByText("Add to wanted"));
+
+      expect(mockAddToWanted).toHaveBeenCalledWith("abc-123");
     });
 
     it("does not expand card when more menu is clicked on mobile", () => {
