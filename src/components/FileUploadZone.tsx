@@ -65,7 +65,7 @@ export default function FileUploadZone({ onFiles }: FileUploadZoneProps) {
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
       onClick={() => fileInputRef.current?.click()}
-      className="border-2 border-dashed border-amber-400 hover:border-amber-500 rounded-xl p-6 text-center cursor-pointer bg-amber-50 dark:bg-gray-700/50 shadow-cartoon-md transition-all hover:translate-y-[-2px] hover:shadow-cartoon-lg"
+      className="border-2 border-dashed border-amber-400 hover:border-amber-500 rounded-xl p-6 text-center cursor-pointer bg-amber-50 dark:bg-gray-700/50 transition-colors"
     >
       <CloudUploadIcon className="w-8 h-8 mx-auto text-amber-400 dark:text-amber-500 mb-2" />
       <p className="text-gray-600 dark:text-gray-400 text-sm">
