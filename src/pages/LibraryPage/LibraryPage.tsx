@@ -1,17 +1,38 @@
 import { useState, useMemo, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 import { hasPermission } from "@shared/permissions";
 import { Permission } from "@shared/permissions";
 import { useRequests } from "@/hooks/useRequests";
+import useWantedList from "@/hooks/useWantedList";
+import SettingsTabs, { type SettingsRoute } from "@/components/SettingsTabs";
 import RequestFilter from "./components/RequestFilter";
 import RequestList from "./components/RequestList";
+import WantedList from "./components/WantedList";
+
+const libraryTabs: SettingsRoute[] = [
+  {
+    text: "Wanted",
+    route: "/library/wanted",
+    regex: /^\/library\/wanted/,
+  },
+  {
+    text: "Requests",
+    route: "/library/requests",
+    regex: /^\/library\/requests/,
+  },
+];
 
 export default function LibraryPage() {
   const { user } = useAuth();
+  const location = useLocation();
   const [filters, setFilters] = useState<Record<string, string[]>>({
     requester: [],
     status: [],
   });
+
+  const isRequestsTab = /^\/library\/requests/.test(location.pathname);
+  const isWantedTab = !isRequestsTab;
 
   const canViewAll =
     user !== null &&
@@ -36,6 +57,12 @@ export default function LibraryPage() {
   );
   const { requests, loading, error, approveRequest, declineRequest, refresh } =
     useRequests(requestsOptions);
+  const {
+    items: wantedItems,
+    loading: wantedLoading,
+    error: wantedError,
+    removeItem: removeWantedItem,
+  } = useWantedList();
 
   const handleFilterChange = useCallback((key: string, values: string[]) => {
     setFilters((prev) => ({ ...prev, [key]: values }));
@@ -75,23 +102,38 @@ export default function LibraryPage() {
         Library
       </h1>
 
-      <RequestFilter values={filters} onChange={handleFilterChange} />
+      <SettingsTabs settingsRoutes={libraryTabs} />
 
-      <RequestList
-        requests={requests}
-        loading={loading}
-        error={error}
-        emptyMessage={
-          showMine ? "You haven't made any requests yet" : "No requests yet"
-        }
-        showUser={effectiveShowAll}
-        showActions={canManageRequests && effectiveShowAll}
-        showAdminDetails={isAdmin}
-        onApprove={approveRequest}
-        onDecline={declineRequest}
-        onSearch={handleSearch}
-        onUnmonitor={handleUnmonitor}
-      />
+      {isWantedTab && (
+        <WantedList
+          items={wantedItems}
+          loading={wantedLoading}
+          error={wantedError}
+          onRemove={removeWantedItem}
+        />
+      )}
+
+      {isRequestsTab && (
+        <>
+          <RequestFilter values={filters} onChange={handleFilterChange} />
+
+          <RequestList
+            requests={requests}
+            loading={loading}
+            error={error}
+            emptyMessage={
+              showMine ? "You haven't made any requests yet" : "No requests yet"
+            }
+            showUser={effectiveShowAll}
+            showActions={canManageRequests && effectiveShowAll}
+            showAdminDetails={isAdmin}
+            onApprove={approveRequest}
+            onDecline={declineRequest}
+            onSearch={handleSearch}
+            onUnmonitor={handleUnmonitor}
+          />
+        </>
+      )}
     </div>
   );
 }

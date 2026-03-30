@@ -1,6 +1,7 @@
 import { resilientFetch } from "../resilientFetch";
 import { MB_BASE, MB_HEADERS, rateLimitedMbFetch } from "./config";
 import type {
+  MusicBrainzReleaseGroup,
   MusicBrainzSearchResponse,
   MusicBrainzArtistSearchResponse,
   ReleaseGroupSearchResult,
@@ -78,6 +79,24 @@ export async function searchArtistReleaseGroups(
     ...data,
     "release-groups": sorted,
     count: sorted.length,
+  };
+}
+
+/** Look up a release group by its MBID, returning title and artist credit */
+export async function getReleaseGroupById(
+  releaseGroupMbid: string
+): Promise<{ artistName: string; albumTitle: string } | null> {
+  const url = `${MB_BASE}/release-group/${releaseGroupMbid}?inc=artist-credits&fmt=json`;
+  const response = await rateLimitedMbFetch(url, { headers: MB_HEADERS });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data: MusicBrainzReleaseGroup = await response.json();
+  return {
+    artistName: data["artist-credit"]?.[0]?.name ?? "Unknown Artist",
+    albumTitle: data.title ?? "Unknown Album",
   };
 }
 

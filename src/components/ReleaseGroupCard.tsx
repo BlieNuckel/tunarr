@@ -5,11 +5,14 @@ import PurchaseLinksModal from "./PurchaseLinksModal";
 import Spinner from "./Spinner";
 import { CheckIcon, PlusIcon } from "@/components/icons";
 import ImageWithShimmer from "./ImageWithShimmer";
+import OptionSelect from "./OptionSelect";
 import useLidarr from "../hooks/useLidarr";
+import useWanted from "../hooks/useWanted";
 import useReleaseTracks from "../hooks/useReleaseTracks";
 import useAudioPreview from "../hooks/useAudioPreview";
 import { pastelColorFromId } from "../utils/color";
 import { getMonitorState } from "../utils/monitorState";
+import type { Option } from "./OptionSelect";
 import { MonitorState, ReleaseGroup } from "../types";
 
 const mobileMonitorStyles: Record<MonitorState, string> = {
@@ -24,12 +27,16 @@ interface ReleaseGroupCardProps {
   releaseGroup: ReleaseGroup;
   inLibrary?: boolean;
   defaultExpanded?: boolean;
+  initialWanted?: boolean;
+  onRemovedFromWanted?: (albumMbid: string) => void;
 }
 
 export default function ReleaseGroupCard({
   releaseGroup,
   inLibrary = false,
   defaultExpanded = false,
+  initialWanted = false,
+  onRemovedFromWanted,
 }: ReleaseGroupCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -44,6 +51,11 @@ export default function ReleaseGroupCard({
   const coverUrl = `https://coverartarchive.org/release-group/${albumMbid}/front-500`;
 
   const { state, errorMsg, requestAlbum } = useLidarr();
+  const {
+    state: wantedState,
+    addToWanted,
+    removeFromWanted,
+  } = useWanted(initialWanted);
   const {
     media,
     loading: tracksLoading,
@@ -113,6 +125,17 @@ export default function ReleaseGroupCard({
     requestAlbum({ albumMbid });
   };
 
+  const isWanted = wantedState === "wanted";
+  const handleRemoveFromWanted = async () => {
+    await removeFromWanted(albumMbid);
+    onRemovedFromWanted?.(albumMbid);
+  };
+  const wantedOptions: Option[] = [
+    isWanted
+      ? { label: "Remove from wanted", onClick: handleRemoveFromWanted }
+      : { label: "Add to wanted", onClick: () => addToWanted(albumMbid) },
+  ];
+
   const [coverError, setCoverError] = useState(false);
 
   const coverImage = !coverError ? (
@@ -154,16 +177,9 @@ export default function ReleaseGroupCard({
             {coverImage}
           </div>
           <div className="flex-1 min-w-0 px-4 py-3">
-            <div className="flex items-center gap-1.5">
-              <h3 className="text-gray-900 dark:text-gray-100 font-semibold text-base truncate">
-                {albumTitle}
-              </h3>
-              {inLibrary && (
-                <span className="text-xs bg-amber-300 text-black px-1.5 py-0.5 rounded-full flex-shrink-0 border-2 border-black font-bold shadow-cartoon-sm whitespace-nowrap">
-                  In Library
-                </span>
-              )}
-            </div>
+            <h3 className="text-gray-900 dark:text-gray-100 font-semibold text-base truncate">
+              {albumTitle}
+            </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
               {artistName}
             </p>
@@ -171,18 +187,23 @@ export default function ReleaseGroupCard({
               <p className="text-gray-400 dark:text-gray-500 text-xs">{year}</p>
             )}
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleMonitorClick();
-            }}
-            disabled={disabled}
-            className={`w-12 h-12 flex-shrink-0 mr-3 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[effectiveState]}`}
-            data-testid="mobile-monitor-button"
-            aria-label="Request album"
-          >
-            {monitorIcon}
-          </button>
+          <div className="flex items-center gap-1.5 flex-shrink-0 mr-3">
+            <div onClick={(e) => e.stopPropagation()}>
+              <OptionSelect options={wantedOptions} title={albumTitle} />
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMonitorClick();
+              }}
+              disabled={disabled}
+              className={`w-12 h-12 flex items-center justify-center rounded-lg border-2 border-black shadow-cartoon-sm ${mobileMonitorStyles[effectiveState]}`}
+              data-testid="mobile-monitor-button"
+              aria-label="Request album"
+            >
+              {monitorIcon}
+            </button>
+          </div>
         </div>
         <div
           className="overflow-hidden transition-[height] duration-300"
@@ -228,16 +249,9 @@ export default function ReleaseGroupCard({
             </div>
 
             <div className="p-3 border-t-2 border-black">
-              <div className="flex items-center gap-1.5 mb-1">
-                <h3 className="text-gray-900 dark:text-gray-100 font-semibold text-sm truncate">
-                  {albumTitle}
-                </h3>
-                {inLibrary && (
-                  <span className="text-xs bg-amber-300 text-black px-1.5 py-0.5 rounded-full flex-shrink-0 border-2 border-black font-bold shadow-cartoon-sm whitespace-nowrap">
-                    In Library
-                  </span>
-                )}
-              </div>
+              <h3 className="text-gray-900 dark:text-gray-100 font-semibold text-sm truncate mb-1">
+                {albumTitle}
+              </h3>
               <p className="text-gray-500 dark:text-gray-400 text-xs truncate">
                 {artistName}
               </p>
@@ -272,7 +286,8 @@ export default function ReleaseGroupCard({
               />
             </div>
 
-            <div className="flex-shrink-0 mt-2">
+            <div className="flex-shrink-0 mt-2 flex items-center justify-end gap-1.5">
+              <OptionSelect options={wantedOptions} title={albumTitle} />
               <MonitorButton
                 state={effectiveState}
                 onClick={handleMonitorClick}

@@ -18,7 +18,7 @@ type NavItem = {
 const links: NavItem[] = [
   { to: "/", label: "Discover", icon: DiscoverIcon },
   { to: "/search", label: "Search", icon: SearchIcon },
-  { to: "/library", label: "Library", icon: LibraryIcon },
+  { to: "/library/wanted", label: "Library", icon: LibraryIcon },
 ];
 
 const mobileLinks: NavItem[] = [
@@ -37,9 +37,11 @@ function MobileNav() {
     left: 0,
     width: 0,
   });
-  const activeIndex = mobileLinks.findIndex((link) =>
-    link.to === "/" ? pathname === "/" : pathname.startsWith(link.to)
-  );
+  const activeIndex = mobileLinks.findIndex((link) => {
+    if (link.to === "/") return pathname === "/";
+    const base = link.to.split("/").slice(0, 2).join("/");
+    return pathname.startsWith(base);
+  });
 
   const measure = useCallback(() => {
     const nav = navRef.current;
@@ -113,6 +115,27 @@ function MobileNav() {
         </ul>
       </div>
     </nav>
+  );
+}
+
+function DesktopNavLink({ link }: { link: NavItem }) {
+  const { pathname } = useLocation();
+  const base = link.to.split("/").slice(0, 2).join("/");
+  const isActive =
+    link.to === "/" ? pathname === "/" : pathname.startsWith(base);
+
+  return (
+    <NavLink
+      to={link.to}
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-bold transition-all border-2 ${
+        isActive
+          ? "bg-amber-300 text-black border-black shadow-cartoon-sm dark:text-black"
+          : "text-gray-700 dark:text-gray-300 border-transparent hover:bg-amber-50 dark:hover:bg-gray-700 hover:border-black hover:text-gray-900 dark:hover:text-gray-100"
+      }`}
+    >
+      <link.icon className="w-5 h-5" />
+      <span>{link.label}</span>
+    </NavLink>
   );
 }
 
@@ -222,20 +245,7 @@ export default function Sidebar() {
           <ul className="space-y-2">
             {links.map((link) => (
               <li key={link.to}>
-                <NavLink
-                  to={link.to}
-                  end={link.to === "/"}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-lg text-base font-bold transition-all border-2 ${
-                      isActive
-                        ? "bg-amber-300 text-black border-black shadow-cartoon-sm dark:text-black"
-                        : "text-gray-700 dark:text-gray-300 border-transparent hover:bg-amber-50 dark:hover:bg-gray-700 hover:border-black hover:text-gray-900 dark:hover:text-gray-100"
-                    }`
-                  }
-                >
-                  <link.icon className="w-5 h-5" />
-                  <span>{link.label}</span>
-                </NavLink>
+                <DesktopNavLink link={link} />
               </li>
             ))}
           </ul>

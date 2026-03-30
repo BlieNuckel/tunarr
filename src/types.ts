@@ -57,6 +57,14 @@ export interface RequestItem {
   lidarr: LidarrLifecycle | null;
 }
 
+export interface WantedItem {
+  id: number;
+  albumMbid: string;
+  artistName: string;
+  albumTitle: string;
+  createdAt: string;
+}
+
 export type MonitorState =
   | "idle"
   | "adding"

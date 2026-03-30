@@ -86,7 +86,7 @@ describe("Sidebar", () => {
   });
 
   it("highlights Library link on library page", () => {
-    renderSidebar("/library");
+    renderSidebar("/library/wanted");
     const libraryLinks = screen.getAllByRole("link", { name: /Library/ });
     expect(libraryLinks).toHaveLength(2);
     expect(libraryLinks[0]).toHaveClass("bg-amber-300");

@@ -1,8 +1,42 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import LibraryPage from "../LibraryPage";
 import { AuthContext, type AuthContextValue } from "@/context/authContextDef";
 import { Permission } from "@shared/permissions";
+
+Object.defineProperty(window, "matchMedia", {
+  value: vi.fn().mockReturnValue({
+    matches: true,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }),
+});
+
+vi.mock("@/hooks/useReleaseTracks", () => ({
+  default: () => ({
+    media: [],
+    loading: false,
+    error: null,
+    fetchTracks: vi.fn(),
+  }),
+}));
+
+vi.mock("@/hooks/useAudioPreview", () => ({
+  default: () => ({
+    toggle: vi.fn(),
+    stop: vi.fn(),
+    isTrackPlaying: () => false,
+  }),
+}));
+
+vi.mock("@/components/PurchaseLinksModal", () => ({
+  default: () => null,
+}));
+
+vi.mock("@/components/TrackList", () => ({
+  default: () => <div data-testid="track-list" />,
+}));
 
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn());
@@ -38,11 +72,13 @@ function makeAuthContext(permissions: number): AuthContextValue {
   };
 }
 
-function renderWithAuth(permissions: number) {
+function renderWithAuth(permissions: number, route = "/library/requests") {
   return render(
-    <AuthContext.Provider value={makeAuthContext(permissions)}>
-      <LibraryPage />
-    </AuthContext.Provider>
+    <MemoryRouter initialEntries={[route]}>
+      <AuthContext.Provider value={makeAuthContext(permissions)}>
+        <LibraryPage />
+      </AuthContext.Provider>
+    </MemoryRouter>
   );
 }
 
@@ -257,5 +293,55 @@ describe("LibraryPage", () => {
       expect(screen.getByText("OK Computer")).toBeInTheDocument();
     });
     expect(screen.getByText("Radiohead")).toBeInTheDocument();
+  });
+
+  it("shows empty wanted list on wanted tab", async () => {
+    renderWithAuth(Permission.REQUEST, "/library/wanted");
+
+    await waitFor(() => {
+      expect(screen.getByText("Your wanted list is empty")).toBeInTheDocument();
+    });
+  });
+
+  it("renders wanted items on wanted tab", async () => {
+    vi.mocked(fetch).mockImplementation((url) => {
+      if (typeof url === "string" && url.includes("/api/wanted")) {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify([
+              {
+                id: 1,
+                albumMbid: "mbid-1",
+                artistName: "Radiohead",
+                albumTitle: "OK Computer",
+                createdAt: "2024-01-01T00:00:00Z",
+              },
+            ]),
+            { status: 200 }
+          )
+        );
+      }
+      return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
+    });
+
+    renderWithAuth(Permission.REQUEST, "/library/wanted");
+
+    await waitFor(() => {
+      expect(screen.getAllByText("OK Computer").length).toBeGreaterThanOrEqual(
+        1
+      );
+    });
+    expect(screen.getAllByText("Radiohead").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("does not show request filters on wanted tab", () => {
+    renderWithAuth(Permission.REQUEST, "/library/wanted");
+
+    expect(
+      screen.queryByRole("button", { name: /Requester/ })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Status/ })
+    ).not.toBeInTheDocument();
   });
 });

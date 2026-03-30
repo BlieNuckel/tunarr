@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 import { hasPermission, type Permission } from "@shared/permissions";
 
@@ -82,6 +82,7 @@ export default function SettingsTabs({
   settingsRoutes,
 }: SettingsTabsProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const checkPermission = (route: SettingsRoute): boolean => {
@@ -104,7 +105,7 @@ export default function SettingsTabs({
   );
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    window.location.href = e.target.value;
+    navigate(e.target.value);
   };
 
   return (
