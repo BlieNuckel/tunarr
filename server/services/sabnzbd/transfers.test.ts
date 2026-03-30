@@ -107,6 +107,54 @@ describe("estimateTimeLeft", () => {
 
     expect(estimateTimeLeft(transfers)).toBe("99:99:99");
   });
+
+  it("includes queued transfers in time estimate", () => {
+    const transfers = [
+      makeTransfer({
+        state: "InProgress",
+        size: 10000000,
+        bytesTransferred: 5000000,
+        averageSpeed: 100000,
+      }),
+      makeTransfer({
+        state: "Queued",
+        size: 10000000,
+        bytesTransferred: 0,
+        averageSpeed: 0,
+      }),
+    ];
+
+    // 5MB remaining active + 10MB queued = 15MB at 100KB/s = 150s
+    const result = estimateTimeLeft(transfers);
+    expect(result).toBe("00:02:30");
+  });
+
+  it("includes multiple queued transfers in time estimate", () => {
+    const transfers = [
+      makeTransfer({
+        state: "InProgress",
+        size: 5000000,
+        bytesTransferred: 5000000,
+        averageSpeed: 500000,
+      }),
+      makeTransfer({
+        state: "Queued",
+        size: 10000000,
+        bytesTransferred: 0,
+        averageSpeed: 0,
+      }),
+      makeTransfer({
+        state: "Queued",
+        size: 10000000,
+        bytesTransferred: 0,
+        averageSpeed: 0,
+      }),
+    ];
+
+    // 0 remaining active + 20MB queued = 20MB at 500KB/s = 40s
+    const result = estimateTimeLeft(transfers);
+    expect(result).toBe("00:00:40");
+  });
 });
 
 describe("extractDirectoryName", () => {

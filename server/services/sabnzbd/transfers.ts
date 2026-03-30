@@ -29,10 +29,17 @@ export function estimateTimeLeft(transfers: SlskdTransfer[]): string {
   );
   if (activeTransfers.length === 0) return "00:00:00";
 
-  const totalRemaining = activeTransfers.reduce(
+  const queuedTransfers = transfers.filter(
+    (t) => mapTransferState(t.state) === "Queued"
+  );
+
+  const activeRemaining = activeTransfers.reduce(
     (sum, t) => sum + (t.size - t.bytesTransferred),
     0
   );
+  const queuedRemaining = queuedTransfers.reduce((sum, t) => sum + t.size, 0);
+  const totalRemaining = activeRemaining + queuedRemaining;
+
   const totalSpeed = activeTransfers.reduce(
     (sum, t) => sum + t.averageSpeed,
     0
