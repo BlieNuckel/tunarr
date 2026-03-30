@@ -51,7 +51,7 @@ export async function searchArtistReleaseGroups(
   }
 
   const artistId = artistData.artists[0].id;
-  const url = `${MB_BASE}/release-group?artist=${artistId}&type=album|ep&limit=50&inc=artist-credits&fmt=json`;
+  const url = `${MB_BASE}/release-group?artist=${artistId}&type=album|ep|single&limit=100&inc=artist-credits&fmt=json`;
   const response = await resilientFetch(url, { headers: MB_HEADERS });
 
   if (!response.ok) {
