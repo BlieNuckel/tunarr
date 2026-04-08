@@ -7,7 +7,7 @@ interface WantedListProps {
   items: WantedItem[];
   loading: boolean;
   error: string | null;
-  onRemove: (albumMbid: string) => void;
+  onRemove: (albumMbid: string) => void | Promise<void>;
 }
 
 function toReleaseGroup(item: WantedItem): ReleaseGroup {

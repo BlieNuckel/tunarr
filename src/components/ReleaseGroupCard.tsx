@@ -31,7 +31,7 @@ interface ReleaseGroupCardProps {
   inLibrary?: boolean;
   defaultExpanded?: boolean;
   initialWanted?: boolean;
-  onRemovedFromWanted?: (albumMbid: string) => void;
+  onRemovedFromWanted?: (albumMbid: string) => void | Promise<void>;
 }
 
 export default function ReleaseGroupCard({
@@ -135,8 +135,11 @@ export default function ReleaseGroupCard({
 
   const isWanted = wantedState === "wanted";
   const handleRemoveFromWanted = async () => {
-    await removeFromWanted(albumMbid);
-    onRemovedFromWanted?.(albumMbid);
+    if (onRemovedFromWanted) {
+      await onRemovedFromWanted(albumMbid);
+    } else {
+      await removeFromWanted(albumMbid);
+    }
   };
   const wantedOptions: Option[] = [
     isWanted
