@@ -1,5 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  autoUpdate,
+} from "@floating-ui/react-dom";
 
 const links = [
   { to: "/", label: "Discover" },
@@ -12,6 +19,16 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const [referenceEl, setReferenceEl] = useState<HTMLElement | null>(null);
+  const [floatingEl, setFloatingEl] = useState<HTMLElement | null>(null);
+
+  const { floatingStyles, placement } = useFloating({
+    elements: { reference: referenceEl, floating: floatingEl },
+    placement: "bottom-end",
+    transform: false,
+    middleware: [offset(4), flip(), shift({ padding: 8 })],
+    whileElementsMounted: autoUpdate,
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -30,6 +47,10 @@ export default function Navbar() {
         l.to === location.pathname ||
         (l.to !== "/" && location.pathname.startsWith(l.to))
     )?.label ?? "Menu";
+
+  const originClass = placement.startsWith("top")
+    ? "origin-bottom-right"
+    : "origin-top-right";
 
   return (
     <nav className="bg-white border-b-4 border-black">
@@ -78,8 +99,9 @@ export default function Navbar() {
           </span>
         </NavLink>
 
-        <div className="relative" ref={menuRef}>
+        <div ref={menuRef}>
           <button
+            ref={setReferenceEl}
             onClick={() => setOpen((v) => !v)}
             className="flex items-center gap-1.5 text-sm font-bold text-gray-900 hover:text-amber-500 transition-colors px-3 py-1.5 rounded-lg border-2 border-black"
           >
@@ -99,7 +121,11 @@ export default function Navbar() {
           </button>
 
           {open && (
-            <div className="absolute right-0 top-full mt-1 w-40 bg-white border-2 border-black rounded-lg shadow-lg overflow-hidden z-50 animate-dropdown-in origin-top-right">
+            <div
+              ref={setFloatingEl}
+              style={floatingStyles}
+              className={`w-40 bg-white border-2 border-black rounded-lg shadow-lg overflow-hidden z-50 animate-dropdown-in ${originClass}`}
+            >
               {links.map((link) => (
                 <NavLink
                   key={link.to}

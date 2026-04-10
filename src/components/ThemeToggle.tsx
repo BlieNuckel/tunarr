@@ -1,4 +1,11 @@
 import { useState, useRef, useEffect } from "react";
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  autoUpdate,
+} from "@floating-ui/react-dom";
 import { useTheme } from "@/context/useTheme";
 import type { Theme } from "@/context/themeContextDef";
 
@@ -78,13 +85,23 @@ function getLabel(themeValue: Theme) {
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [referenceEl, setReferenceEl] = useState<HTMLElement | null>(null);
+  const [floatingEl, setFloatingEl] = useState<HTMLElement | null>(null);
+
+  const { floatingStyles } = useFloating({
+    elements: { reference: referenceEl, floating: floatingEl },
+    placement: "bottom-start",
+    transform: false,
+    middleware: [offset(8), flip(), shift({ padding: 8 })],
+    whileElementsMounted: autoUpdate,
+  });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -94,8 +111,9 @@ const ThemeToggle = () => {
   }, []);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div ref={wrapperRef}>
       <button
+        ref={setReferenceEl}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-[2px_2px_0_0_black] transition-all hover:bg-amber-50 active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_black] dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
         title={`Theme: ${getLabel(theme)}`}
@@ -118,7 +136,11 @@ const ThemeToggle = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2 w-40 rounded-lg border-2 border-black bg-white p-2 shadow-cartoon-lg dark:bg-gray-800">
+        <div
+          ref={setFloatingEl}
+          style={floatingStyles}
+          className="z-50 w-40 rounded-lg border-2 border-black bg-white p-2 shadow-cartoon-lg dark:bg-gray-800"
+        >
           <div className="space-y-1">
             {THEME_OPTIONS.map((option) => (
               <button

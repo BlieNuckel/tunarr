@@ -1,4 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  size,
+  autoUpdate,
+} from "@floating-ui/react-dom";
 import { ChevronDownIcon } from "@/components/icons";
 
 export interface DropdownOption {
@@ -23,12 +31,41 @@ export default function Dropdown({
 }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
-  const ref = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [referenceEl, setReferenceEl] = useState<HTMLElement | null>(null);
+  const [floatingEl, setFloatingEl] = useState<HTMLElement | null>(null);
+
+  const setSearchRef = useCallback((node: HTMLInputElement | null) => {
+    inputRef.current = node;
+    setReferenceEl(node);
+  }, []);
+
+  const { floatingStyles, placement } = useFloating({
+    elements: { reference: referenceEl, floating: floatingEl },
+    placement: "bottom-start",
+    transform: false,
+    middleware: [
+      offset(4),
+      flip(),
+      shift({ padding: 8 }),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
+    whileElementsMounted: autoUpdate,
+  });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
         setFilter("");
       }
@@ -49,11 +86,15 @@ export default function Dropdown({
   const triggerClasses =
     "w-full px-3 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-lg text-base sm:text-sm text-left shadow-cartoon-md focus:outline-none focus:border-amber-400";
 
+  const originClass = placement.startsWith("top")
+    ? "origin-bottom"
+    : "origin-top";
+
   return (
-    <div className="relative" ref={ref}>
+    <div ref={wrapperRef}>
       {searchable ? (
         <input
-          ref={inputRef}
+          ref={setSearchRef}
           type="text"
           value={open ? filter : (selectedLabel ?? "")}
           onChange={(e) => setFilter(e.target.value)}
@@ -66,6 +107,7 @@ export default function Dropdown({
         />
       ) : (
         <button
+          ref={setReferenceEl}
           type="button"
           onClick={() => setOpen(!open)}
           className={`${triggerClasses} flex items-center justify-between`}
@@ -85,7 +127,11 @@ export default function Dropdown({
         </button>
       )}
       {open && (
-        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl border-2 border-black p-2 shadow-cartoon-lg animate-dropdown-in origin-top">
+        <div
+          ref={setFloatingEl}
+          style={floatingStyles}
+          className={`z-10 bg-white dark:bg-gray-800 rounded-xl border-2 border-black p-2 shadow-cartoon-lg animate-dropdown-in ${originClass}`}
+        >
           <div className="max-h-64 overflow-y-auto space-y-1">
             {filteredOptions.length === 0 ? (
               <p className="text-gray-400 dark:text-gray-500 text-sm px-3 py-2">

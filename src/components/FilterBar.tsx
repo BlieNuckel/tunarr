@@ -1,4 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  autoUpdate,
+} from "@floating-ui/react-dom";
 import BottomSheet from "./BottomSheet";
 
 interface FilterOption {
@@ -335,13 +342,27 @@ function FilterDropdown({
   onToggleOpen: () => void;
   onChange: (values: string[]) => void;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [referenceEl, setReferenceEl] = useState<HTMLElement | null>(null);
+  const [floatingEl, setFloatingEl] = useState<HTMLElement | null>(null);
+
+  const setReference = useCallback((node: HTMLButtonElement | null) => {
+    setReferenceEl(node);
+  }, []);
+
+  const { floatingStyles, placement } = useFloating({
+    elements: { reference: referenceEl, floating: floatingEl },
+    placement: "bottom-start",
+    transform: false,
+    middleware: [offset(6), flip(), shift({ padding: 8 })],
+    whileElementsMounted: autoUpdate,
+  });
 
   useEffect(() => {
     if (!isOpen) return;
 
     const listener = (e: MouseEvent) =>
-      handleClickOutside(e, ref, onToggleOpen);
+      handleClickOutside(e, wrapperRef, onToggleOpen);
 
     document.addEventListener("mousedown", listener);
     return () => document.removeEventListener("mousedown", listener);
@@ -356,9 +377,14 @@ function FilterDropdown({
       ? group.label
       : `${group.label}: ${selectedLabels.join(", ")}`;
 
+  const originClass = placement.startsWith("top")
+    ? "origin-bottom"
+    : "origin-top";
+
   return (
-    <div ref={ref} className="relative">
+    <div ref={wrapperRef}>
       <button
+        ref={setReference}
         type="button"
         onClick={onToggleOpen}
         className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all whitespace-nowrap ${
@@ -373,8 +399,10 @@ function FilterDropdown({
 
       {isOpen && (
         <div
+          ref={setFloatingEl}
+          style={floatingStyles}
           role="listbox"
-          className="absolute top-full left-0 mt-1.5 min-w-48 bg-white dark:bg-gray-800 border-2 border-black rounded-xl shadow-cartoon-lg py-1 z-50 animate-dropdown-in"
+          className={`min-w-48 bg-white dark:bg-gray-800 border-2 border-black rounded-xl shadow-cartoon-lg py-1 z-50 animate-dropdown-in ${originClass}`}
         >
           {group.options.map((option) => (
             <DropdownOption

@@ -1,5 +1,12 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  autoUpdate,
+} from "@floating-ui/react-dom";
 import { EllipsisVerticalIcon } from "@/components/icons";
 import BottomSheet from "./BottomSheet";
 
@@ -27,28 +34,6 @@ function useIsMobile() {
   }, []);
 
   return isMobile;
-}
-
-function useAnchorPosition(
-  anchorRef: RefObject<HTMLElement | null>,
-  isOpen: boolean,
-  align: "left" | "right"
-) {
-  const [style, setStyle] = useState<React.CSSProperties>({});
-
-  useEffect(() => {
-    if (!isOpen || !anchorRef.current) return;
-    const rect = anchorRef.current.getBoundingClientRect();
-    setStyle({
-      position: "fixed",
-      top: rect.bottom + 6,
-      ...(align === "right"
-        ? { right: window.innerWidth - rect.right }
-        : { left: rect.left }),
-    });
-  }, [isOpen, align, anchorRef]);
-
-  return style;
 }
 
 function useClickOutside(
@@ -98,7 +83,7 @@ function OptionList({
 
 function Popup({
   anchorRef,
-  dropdownRef,
+  anchorEl,
   isOpen,
   onClose,
   options,
@@ -106,7 +91,7 @@ function Popup({
   align,
 }: {
   anchorRef: RefObject<HTMLElement | null>;
-  dropdownRef: RefObject<HTMLDivElement | null>;
+  anchorEl: HTMLElement | null;
   isOpen: boolean;
   onClose: () => void;
   options: Option[];
@@ -114,8 +99,23 @@ function Popup({
   align: "left" | "right";
 }) {
   const isMobile = useIsMobile();
-  const style = useAnchorPosition(anchorRef, isOpen && !isMobile, align);
-  useClickOutside([anchorRef, dropdownRef], isOpen && !isMobile, onClose);
+  const floatingRef = useRef<HTMLDivElement | null>(null);
+  const [floatingEl, setFloatingEl] = useState<HTMLElement | null>(null);
+
+  const setFloating = useCallback((node: HTMLDivElement | null) => {
+    floatingRef.current = node;
+    setFloatingEl(node);
+  }, []);
+
+  const { floatingStyles, placement } = useFloating({
+    elements: { reference: anchorEl, floating: floatingEl },
+    placement: align === "right" ? "bottom-end" : "bottom-start",
+    strategy: "fixed",
+    transform: false,
+    middleware: [offset(6), flip(), shift({ padding: 8 })],
+    whileElementsMounted: autoUpdate,
+  });
+  useClickOutside([anchorRef, floatingRef], isOpen && !isMobile, onClose);
 
   if (isMobile) {
     return (
@@ -127,11 +127,15 @@ function Popup({
 
   if (!isOpen) return null;
 
+  const originClass = placement.startsWith("top")
+    ? "origin-bottom"
+    : "origin-top";
+
   return createPortal(
     <div
-      ref={dropdownRef}
-      style={style}
-      className="min-w-48 bg-white dark:bg-gray-800 border-2 border-black rounded-xl shadow-cartoon-lg py-1 z-50 animate-dropdown-in"
+      ref={setFloating}
+      style={floatingStyles}
+      className={`min-w-48 bg-white dark:bg-gray-800 border-2 border-black rounded-xl shadow-cartoon-lg py-1 z-50 animate-dropdown-in ${originClass}`}
     >
       <OptionList options={options} onClose={onClose} />
     </div>,
@@ -146,13 +150,18 @@ export default function OptionSelect({
 }: OptionSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [triggerEl, setTriggerEl] = useState<HTMLElement | null>(null);
   const close = useCallback(() => setIsOpen(false), []);
+
+  const setTrigger = useCallback((node: HTMLButtonElement | null) => {
+    triggerRef.current = node;
+    setTriggerEl(node);
+  }, []);
 
   return (
     <>
       <button
-        ref={triggerRef}
+        ref={setTrigger}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -162,7 +171,7 @@ export default function OptionSelect({
       </button>
       <Popup
         anchorRef={triggerRef}
-        dropdownRef={dropdownRef}
+        anchorEl={triggerEl}
         isOpen={isOpen}
         onClose={close}
         options={options}
