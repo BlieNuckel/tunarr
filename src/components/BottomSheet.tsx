@@ -59,6 +59,16 @@ export default function BottomSheet({
     }
   }, [phase]);
 
+  useEffect(() => {
+    const scrollableMain = document.querySelector("main");
+    if (!scrollableMain) return;
+    const prev = scrollableMain.style.overflow;
+    scrollableMain.style.overflow = "hidden";
+    return () => {
+      scrollableMain.style.overflow = prev;
+    };
+  }, []);
+
   if (phase === "closed") return null;
 
   const handleTouchStart = (e: React.TouchEvent) => {
