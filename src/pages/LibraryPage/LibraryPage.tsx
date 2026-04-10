@@ -5,6 +5,7 @@ import { hasPermission } from "@shared/permissions";
 import { Permission } from "@shared/permissions";
 import { useRequests } from "@/hooks/useRequests";
 import useWantedList from "@/hooks/useWantedList";
+import useIsMobile from "@/hooks/useIsMobile";
 import SettingsTabs, { type SettingsRoute } from "@/components/SettingsTabs";
 import RequestFilter from "./components/RequestFilter";
 import RequestList from "./components/RequestList";
@@ -26,6 +27,7 @@ const libraryTabs: SettingsRoute[] = [
 export default function LibraryPage() {
   const { user } = useAuth();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [filters, setFilters] = useState<Record<string, string[]>>({
     requester: [],
     status: [],
@@ -96,13 +98,23 @@ export default function LibraryPage() {
     [refresh]
   );
 
+  const hasActiveChild = libraryTabs.some((r) =>
+    r.regex.test(location.pathname)
+  );
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-        Library
-      </h1>
+      {!(isMobile && hasActiveChild) && (
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Library
+        </h1>
+      )}
 
-      <SettingsTabs settingsRoutes={libraryTabs} parentRoute="/library">
+      <SettingsTabs
+        settingsRoutes={libraryTabs}
+        parentRoute="/library"
+        mobileBackLabel="Library"
+      >
         <>
           {isWantedTab && (
             <WantedList

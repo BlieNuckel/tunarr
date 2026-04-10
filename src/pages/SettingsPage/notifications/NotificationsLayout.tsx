@@ -5,49 +5,49 @@ type NotificationsLayoutProps = {
   children: React.ReactNode;
 };
 
+const settingsRoutes: SettingsRoute[] = [
+  {
+    text: "Email",
+    content: (
+      <span className="flex items-center gap-2">
+        <EnvelopeIcon className="h-4 w-4" />
+        Email
+      </span>
+    ),
+    route: "/settings/notifications/email",
+    regex: /^\/settings\/notifications\/email/,
+  },
+  {
+    text: "Webhook",
+    content: (
+      <span className="flex items-center gap-2">
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 10V3L4 14h7v7l9-11h-7z"
+          />
+        </svg>
+        Webhook
+      </span>
+    ),
+    route: "/settings/notifications/webhook",
+    regex: /^\/settings\/notifications\/webhook/,
+  },
+];
+
 export default function NotificationsLayout({
   children,
 }: NotificationsLayoutProps) {
-  const settingsRoutes: SettingsRoute[] = [
-    {
-      text: "Email",
-      content: (
-        <span className="flex items-center gap-2">
-          <EnvelopeIcon className="h-4 w-4" />
-          Email
-        </span>
-      ),
-      route: "/settings/notifications/email",
-      regex: /^\/settings\/notifications\/email/,
-    },
-    {
-      text: "Webhook",
-      content: (
-        <span className="flex items-center gap-2">
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
-          Webhook
-        </span>
-      ),
-      route: "/settings/notifications/webhook",
-      regex: /^\/settings\/notifications\/webhook/,
-    },
-  ];
-
   return (
     <>
-      <div className="mb-6">
+      <div className="mb-6 hidden sm:block">
         <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Notification Settings
         </h3>
@@ -59,6 +59,13 @@ export default function NotificationsLayout({
         tabType="button"
         settingsRoutes={settingsRoutes}
         parentRoute="/settings/notifications"
+        mobileBackLabel="Notifications"
+        mobileListHeader={{
+          backTo: "/settings",
+          backLabel: "Settings",
+          title: "Notifications",
+          subtitle: "Configure and enable notification agents.",
+        }}
       >
         {children}
       </SettingsTabs>

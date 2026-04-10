@@ -9,7 +9,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm start:server` — Express server only (via tsx)
 - `pnpm build` — Vite production build to `/build`
 - `pnpm lint` — ESLint (flat config, TypeScript + React)
+- `pnpm format` — Prettier format all files
+- `pnpm format:check` — Prettier check formatting
 - `pnpm typecheck` — TypeScript type checking for both frontend and server
+- `pnpm typecheck:client` — TypeScript type checking for frontend only
 - `pnpm typecheck:server` — TypeScript type checking for server code only (`cd server && tsc --noEmit`)
 - `pnpm test` — Run frontend tests (Vitest + jsdom + testing-library, config: `vitest.config.ts`)
 - `pnpm test:server` — Run server tests (Vitest + node, config: `server/vitest.config.ts`)
@@ -17,12 +20,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `pnpm vitest run --config server/vitest.config.ts server/config.test.ts` — Run a single server test file
 - `pnpm migration:generate server/db/migration/<Name>` — Generate a TypeORM migration
 - `pnpm migration:run` — Run pending TypeORM migrations
+- `pnpm seed` — Run dev seed script
+- `pnpm dev:mock` — Dev mode with `MOCK_LIDARR=true`
 
 ## Architecture
 
 Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `/api/*` to the Express server in development. In production, Express serves the built frontend as static files from `/build`.
 
-**Frontend (`/src`):** React with React Router DOM, Tailwind CSS v4 for styling. Path alias `@/*` maps to `./src/*`. Pages live under `src/pages/` (Discover at `/`, Search at `/search`, Status, Settings), each with co-located sub-components. Shared components in `src/components/`. Frontend uses plain `fetch()` to relative `/api/...` paths — no shared HTTP client.
+**Frontend (`/src`):** React with React Router DOM, Tailwind CSS v4 for styling. Path aliases: `@/*` maps to `./src/*`, `@shared/*` maps to `./shared/*`. Pages live under `src/pages/` with co-located sub-components:
+
+- `/` — DiscoverPage (similar artists from Plex/Last.fm)
+- `/search` — SearchPage (MusicBrainz album search)
+- `/explore` — ExplorationPage
+- `/library` — LibraryPage (subroutes: `/library/wanted`, `/library/requests`)
+- `/library/upload` — UploadPage (manual import)
+- `/settings` — SettingsLayout (subroutes: general, integrations, recommendations, users, logs, notifications with email/webhook sub-pages)
+- `/onboarding` — OnboardingPage (first-run setup)
+
+Shared components in `src/components/`. Frontend uses plain `fetch()` to relative `/api/...` paths — no shared HTTP client.
 
 **Tailwind CSS v4:** Uses `@tailwindcss/postcss` — the legacy `tailwind.config.cjs` is ignored. All custom theme values, keyframes, and animations are defined in `src/index.css` using `@theme` blocks and plain CSS.
 
@@ -31,11 +46,11 @@ Full-stack TypeScript app: React 19 frontend + Express 5 backend. Vite proxies `
 **Backend (`/server`):** Express with four layers:
 
 - **Service layer** (`/server/api/`) — each external API has a `<name>/` directory (e.g., `lidarr/`, `lastfm/`, `musicbrainz/`, `plex/`, `deezer/`, `apple/`, `slskd/`) containing `types.ts`, usually `config.ts`, and function files. Service configs read from `getConfig()` lazily at request time (no restart needed after settings change).
-- **Route layer** (`/server/routes/`) — maps Express routes to service functions. Routes mount at `/api/settings`, `/api/lidarr`, `/api/musicbrainz`, `/api/lastfm`, `/api/plex`, `/api/promoted-album`, `/api/torznab`, `/api/sabnzbd`, `/api/auth`, `/api/users`, `/api/requests`, `/api/exploration`, `/api/logs`. The Lidarr router is an aggregator that mounts sub-routers (add, albums, artists, history, import, queue, search, wanted, qualityProfile, rootPath, metadataProfile, autoSetup).
+- **Route layer** (`/server/routes/`) — maps Express routes to service functions. Routes mount at `/api/settings`, `/api/lidarr`, `/api/musicbrainz`, `/api/lastfm`, `/api/plex`, `/api/promoted-album`, `/api/torznab`, `/api/sabnzbd`, `/api/auth`, `/api/users`, `/api/requests`, `/api/wanted`, `/api/exploration`, `/api/logs`. The Lidarr router is an aggregator that mounts sub-routers (add, albums, artists, history, import, queue, search, wanted, qualityProfile, rootPath, metadataProfile, autoSetup).
 - **Middleware** (`/server/middleware/`) — `errorHandler.ts` (global Express error handler), `rateLimiter.ts` (MusicBrainz 1 req/sec), `requireAuth.ts` (session cookie authentication), `requirePermission.ts` (bitfield permission checks), `ApiError.ts` (typed error class with HTTP status).
 - **Auth layer** (`/server/auth/`) — session management (`sessions.ts`), password hashing (`password.ts`), user CRUD (`users.ts`). Sessions stored in SQLite alongside users.
 
-**Database (`/server/db/`):** SQLite via better-sqlite3 + TypeORM. Entities: `User`, `Session`, `Request`. Migrations in `/server/db/migration/` run automatically on startup (`migrationsRun: true`). WAL mode enabled. Access the singleton DataSource via `getDataSource()` after `initializeDatabase()`.
+**Database (`/server/db/`):** SQLite via better-sqlite3 + TypeORM. Entities in `/server/db/entity/`: `User`, `Session`, `Request`, `Config`, `WantedItem`. Migrations in `/server/db/migration/` run automatically on startup (`migrationsRun: true`). WAL mode enabled. Access the singleton DataSource via `getDataSource()` after `initializeDatabase()`.
 
 **Auth & permissions:** Bitfield-based permission system in `shared/permissions.ts` (shared between frontend and backend). Permissions: `ADMIN`, `MANAGE_USERS`, `MANAGE_REQUESTS`, `REQUEST`, `AUTO_APPROVE`, `REQUEST_VIEW`. `ADMIN` bypasses all checks. Auth uses HTTP-only session cookies (`tunearr_session`). Some routes (torznab, sabnzbd, logs, exploration, auth) are public; most require `requireAuth` middleware. Each user's Plex OAuth token is stored on the `User` entity (`plex_token` column) and used for per-user Plex media server queries. The server config only stores `plexUrl` (shared), not the token. `AuthUser` includes `hasPlexToken` (sent to frontend) and `plexToken` (server-side only). The `/api/auth/store-plex-token` endpoint updates a user's stored Plex token.
 

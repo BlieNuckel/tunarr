@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/useAuth";
 import { hasPermission, type Permission } from "@shared/permissions";
-import { ArrowLeftIcon, ChevronRightIcon } from "@/components/icons";
+import { ChevronRightIcon } from "@/components/icons";
+import MobileSubPageHeader from "@/components/MobileSubPageHeader";
 import useIsMobile from "@/hooks/useIsMobile";
 
 export interface SettingsRoute {
@@ -12,7 +13,17 @@ export interface SettingsRoute {
   requiredPermission?: Permission | Permission[];
   permissionType?: { type: "and" | "or" };
   hidden?: boolean;
+  title?: string;
+  subtitle?: string;
+  skipMobileHeader?: boolean;
 }
+
+type MobileListHeader = {
+  backTo: string;
+  backLabel: string;
+  title: string;
+  subtitle?: string;
+};
 
 type SettingsLinkProps = {
   tabType: "default" | "button";
@@ -27,6 +38,8 @@ type SettingsTabsProps = {
   tabType?: "default" | "button";
   settingsRoutes: SettingsRoute[];
   parentRoute?: string;
+  mobileBackLabel?: string;
+  mobileListHeader?: MobileListHeader;
   children?: React.ReactNode;
 };
 
@@ -87,18 +100,6 @@ function MobileNavItem({ route }: { route: SettingsRoute }) {
   );
 }
 
-function MobileBackButton({ to, label }: { to: string; label: string }) {
-  return (
-    <Link
-      to={to}
-      className="flex items-center gap-1.5 py-2 text-sm font-medium text-amber-600 dark:text-amber-400 transition duration-150 hover:text-amber-700 dark:hover:text-amber-300"
-    >
-      <ArrowLeftIcon className="h-4 w-4" />
-      {label}
-    </Link>
-  );
-}
-
 function checkRoutePermission(
   route: SettingsRoute,
   userPermissions: number | undefined
@@ -126,17 +127,19 @@ function getVisibleRoutes(
   );
 }
 
-function getActiveRouteLabel(
+function getActiveRoute(
   routes: SettingsRoute[],
   pathname: string
-): string | undefined {
-  return routes.find((route) => route.regex.test(pathname))?.text;
+): SettingsRoute | undefined {
+  return routes.find((route) => route.regex.test(pathname));
 }
 
 export default function SettingsTabs({
   tabType = "default",
   settingsRoutes,
   parentRoute,
+  mobileBackLabel,
+  mobileListHeader,
   children,
 }: SettingsTabsProps) {
   const location = useLocation();
@@ -145,9 +148,8 @@ export default function SettingsTabs({
   const isMobile = useIsMobile();
 
   const visibleRoutes = getVisibleRoutes(settingsRoutes, user?.permissions);
-  const hasActiveChild = visibleRoutes.some((route) =>
-    route.regex.test(location.pathname)
-  );
+  const activeRoute = getActiveRoute(visibleRoutes, location.pathname);
+  const hasActiveChild = activeRoute !== undefined;
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     navigate(e.target.value);
@@ -158,22 +160,36 @@ export default function SettingsTabs({
   return (
     <>
       {showDrillDown ? (
-        <div className="sm:hidden" data-testid="mobile-drill-down">
-          {hasActiveChild ? (
-            <MobileBackButton
-              to={parentRoute}
-              label={
-                getActiveRouteLabel(visibleRoutes, location.pathname) ?? "Back"
-              }
-            />
-          ) : (
-            <nav className="overflow-hidden rounded-lg border-2 border-black bg-white shadow-cartoon-sm dark:bg-gray-800 dark:border-gray-600 divide-y divide-gray-200 dark:divide-gray-700">
-              {visibleRoutes.map((route, index) => (
-                <MobileNavItem route={route} key={`mobile-nav-${index}`} />
-              ))}
-            </nav>
-          )}
-        </div>
+        hasActiveChild && activeRoute.skipMobileHeader ? null : (
+          <div className="sm:hidden" data-testid="mobile-drill-down">
+            {hasActiveChild ? (
+              <MobileSubPageHeader
+                backTo={parentRoute}
+                backLabel={mobileBackLabel ?? "Back"}
+                title={activeRoute.title ?? activeRoute.text}
+                subtitle={activeRoute.subtitle}
+              />
+            ) : (
+              <>
+                {mobileListHeader && (
+                  <MobileSubPageHeader
+                    backTo={mobileListHeader.backTo}
+                    backLabel={mobileListHeader.backLabel}
+                    title={mobileListHeader.title}
+                    subtitle={mobileListHeader.subtitle}
+                  />
+                )}
+                <nav
+                  className={`overflow-hidden rounded-lg border-2 border-black bg-white shadow-cartoon-sm dark:bg-gray-800 dark:border-gray-600 divide-y divide-gray-200 dark:divide-gray-700 ${mobileListHeader ? "mt-4" : ""}`}
+                >
+                  {visibleRoutes.map((route, index) => (
+                    <MobileNavItem route={route} key={`mobile-nav-${index}`} />
+                  ))}
+                </nav>
+              </>
+            )}
+          </div>
+        )
       ) : (
         <>
           <div className="sm:hidden">
@@ -241,7 +257,12 @@ export default function SettingsTabs({
       )}
 
       {showDrillDown
-        ? hasActiveChild && <div className="mt-6">{children}</div>
+        ? hasActiveChild &&
+          (activeRoute.skipMobileHeader ? (
+            children
+          ) : (
+            <div className="mt-6">{children}</div>
+          ))
         : children && <div className="mt-6">{children}</div>}
     </>
   );
