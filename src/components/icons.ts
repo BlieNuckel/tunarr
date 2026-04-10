@@ -23,4 +23,6 @@ export {
   ChevronRightIcon,
   XMarkIcon,
   DocumentIcon,
+  InformationCircleIcon,
+  HeartIcon,
 } from "@heroicons/react/20/solid";

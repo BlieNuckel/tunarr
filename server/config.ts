@@ -14,6 +14,11 @@ export type LibraryPreference =
   | "prefer_library"
   | "no_preference";
 
+export type PurchaseDecisionConfig = {
+  labelBlocklist: string[];
+  oldReleaseThresholdYears: number;
+};
+
 export type PromotedAlbumConfig = {
   cacheDurationMinutes: number;
   topArtistsCount: number;
@@ -38,11 +43,21 @@ export type IConfig = {
   slskdApiKey: string;
   slskdDownloadPath: string;
   promotedAlbum: PromotedAlbumConfig;
+  purchaseDecision: PurchaseDecisionConfig;
 };
 
-/** Input type for setConfig — promotedAlbum is optional since defaults are deep-merged */
-export type IConfigInput = Omit<IConfig, "promotedAlbum"> & {
+/** Input type for setConfig — nested objects are optional since defaults are deep-merged */
+export type IConfigInput = Omit<
+  IConfig,
+  "promotedAlbum" | "purchaseDecision"
+> & {
   promotedAlbum?: Partial<PromotedAlbumConfig>;
+  purchaseDecision?: Partial<PurchaseDecisionConfig>;
+};
+
+export const DEFAULT_PURCHASE_DECISION: PurchaseDecisionConfig = {
+  labelBlocklist: [],
+  oldReleaseThresholdYears: 50,
 };
 
 export const DEFAULT_PROMOTED_ALBUM: PromotedAlbumConfig = {
@@ -82,6 +97,7 @@ const DEFAULT_CONFIG: IConfig = {
   slskdApiKey: "",
   slskdDownloadPath: "",
   promotedAlbum: DEFAULT_PROMOTED_ALBUM,
+  purchaseDecision: DEFAULT_PURCHASE_DECISION,
 };
 
 type RawStatement = {
@@ -107,6 +123,10 @@ function mergeWithDefaults(saved: Record<string, unknown>): IConfig {
       ...DEFAULT_PROMOTED_ALBUM,
       ...((saved.promotedAlbum as Record<string, unknown>) ?? {}),
     },
+    purchaseDecision: {
+      ...DEFAULT_PURCHASE_DECISION,
+      ...((saved.purchaseDecision as Record<string, unknown>) ?? {}),
+    },
   } as IConfig;
 }
 
@@ -117,7 +137,11 @@ export const getConfig = (): IConfig => {
     | undefined;
 
   if (!row) {
-    return { ...DEFAULT_CONFIG, promotedAlbum: { ...DEFAULT_PROMOTED_ALBUM } };
+    return {
+      ...DEFAULT_CONFIG,
+      promotedAlbum: { ...DEFAULT_PROMOTED_ALBUM },
+      purchaseDecision: { ...DEFAULT_PURCHASE_DECISION },
+    };
   }
 
   return mergeWithDefaults(JSON.parse(row.data));
@@ -161,6 +185,25 @@ function validatePromotedAlbumConfig(config: PromotedAlbumConfig) {
     throw new Error(
       `libraryPreference must be one of: ${VALID_LIBRARY_PREFERENCES.join(", ")}`
     );
+  }
+}
+
+function validatePurchaseDecisionConfig(config: PurchaseDecisionConfig) {
+  if (!Array.isArray(config.labelBlocklist)) {
+    throw new Error("labelBlocklist must be an array");
+  }
+  if (
+    !config.labelBlocklist.every(
+      (e) => typeof e === "string" && e.trim().length > 0
+    )
+  ) {
+    throw new Error("labelBlocklist entries must be non-empty strings");
+  }
+  if (
+    typeof config.oldReleaseThresholdYears !== "number" ||
+    config.oldReleaseThresholdYears < 0
+  ) {
+    throw new Error("oldReleaseThresholdYears must be a non-negative number");
   }
 }
 
@@ -209,12 +252,20 @@ export const setConfig = (newConfig: Partial<IConfigInput>) => {
       ...currentConfig.promotedAlbum,
       ...(newConfig.promotedAlbum ?? {}),
     },
+    purchaseDecision: {
+      ...currentConfig.purchaseDecision,
+      ...(newConfig.purchaseDecision ?? {}),
+    },
   };
 
   validateConfig(mergedConfig);
 
   if (newConfig.promotedAlbum !== undefined) {
     validatePromotedAlbumConfig(mergedConfig.promotedAlbum);
+  }
+
+  if (newConfig.purchaseDecision !== undefined) {
+    validatePurchaseDecisionConfig(mergedConfig.purchaseDecision);
   }
 
   const db = getRawDb();
@@ -244,6 +295,7 @@ export const initializeConfig = () => {
   let initialConfig: IConfig = {
     ...DEFAULT_CONFIG,
     promotedAlbum: { ...DEFAULT_PROMOTED_ALBUM },
+    purchaseDecision: { ...DEFAULT_PURCHASE_DECISION },
   };
 
   const configJsonPath = getConfigJsonPath();

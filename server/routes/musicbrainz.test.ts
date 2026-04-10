@@ -4,11 +4,32 @@ const mockSearchReleaseGroups = vi.fn();
 const mockSearchArtistReleaseGroups = vi.fn();
 const mockGetReleaseTracks = vi.fn();
 const mockEnrichTracksWithPreviews = vi.fn();
+const mockGetReleaseGroupLabel = vi.fn();
+const mockGetReleaseGroupDate = vi.fn();
+const mockGetLabelAncestors = vi.fn();
+const mockGetConfigValue = vi.fn();
+const mockEvaluatePurchaseDecision = vi.fn();
 
 vi.mock("../api/musicbrainz/releaseGroups", () => ({
   searchReleaseGroups: (...args: unknown[]) => mockSearchReleaseGroups(...args),
   searchArtistReleaseGroups: (...args: unknown[]) =>
     mockSearchArtistReleaseGroups(...args),
+  getReleaseGroupLabel: (...args: unknown[]) =>
+    mockGetReleaseGroupLabel(...args),
+  getReleaseGroupDate: (...args: unknown[]) => mockGetReleaseGroupDate(...args),
+}));
+
+vi.mock("../config", () => ({
+  getConfigValue: (...args: unknown[]) => mockGetConfigValue(...args),
+}));
+
+vi.mock("../api/musicbrainz/labels", () => ({
+  getLabelAncestors: (...args: unknown[]) => mockGetLabelAncestors(...args),
+}));
+
+vi.mock("../services/purchaseDecision/evaluatePurchaseDecision", () => ({
+  evaluatePurchaseDecision: (...args: unknown[]) =>
+    mockEvaluatePurchaseDecision(...args),
 }));
 
 vi.mock("../api/musicbrainz/tracks", () => ({
@@ -127,5 +148,77 @@ describe("GET /tracks/:releaseGroupId", () => {
     await request(app).get("/tracks/rg-456");
 
     expect(mockEnrichTracksWithPreviews).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /purchase-context/:releaseGroupId", () => {
+  it("passes label, ancestors, date, and config to pipeline", async () => {
+    const label = { name: "Warp Records", mbid: "label-warp" };
+    const ancestors = [{ name: "Some Parent", mbid: "label-parent" }];
+    const config = {
+      labelBlocklist: ["Universal"],
+      oldReleaseThresholdYears: 50,
+    };
+    const pipelineResult = {
+      recommendation: "buy",
+      signals: [
+        { factor: "label", recommendation: "buy", reason: "not blocklisted" },
+      ],
+      label,
+    };
+
+    mockGetReleaseGroupLabel.mockResolvedValue(label);
+    mockGetReleaseGroupDate.mockResolvedValue("2025-06-01");
+    mockGetLabelAncestors.mockResolvedValue(ancestors);
+    mockGetConfigValue.mockReturnValue(config);
+    mockEvaluatePurchaseDecision.mockReturnValue(pipelineResult);
+
+    const res = await request(app).get("/purchase-context/rg-123");
+
+    expect(res.status).toBe(200);
+    expect(mockGetLabelAncestors).toHaveBeenCalledWith("label-warp");
+    expect(mockEvaluatePurchaseDecision).toHaveBeenCalledWith(
+      { label, labelAncestors: ancestors, firstReleaseDate: "2025-06-01" },
+      config
+    );
+    expect(res.body).toEqual(pipelineResult);
+  });
+
+  it("skips ancestor fetch when no label found", async () => {
+    const pipelineResult = {
+      recommendation: "neutral",
+      signals: [],
+      label: null,
+    };
+
+    mockGetReleaseGroupLabel.mockResolvedValue(null);
+    mockGetReleaseGroupDate.mockResolvedValue(null);
+    mockGetConfigValue.mockReturnValue({
+      labelBlocklist: [],
+      oldReleaseThresholdYears: 50,
+    });
+    mockEvaluatePurchaseDecision.mockReturnValue(pipelineResult);
+
+    const res = await request(app).get("/purchase-context/rg-456");
+
+    expect(mockGetLabelAncestors).not.toHaveBeenCalled();
+    expect(mockEvaluatePurchaseDecision).toHaveBeenCalledWith(
+      { label: null, labelAncestors: [], firstReleaseDate: null },
+      { labelBlocklist: [], oldReleaseThresholdYears: 50 }
+    );
+    expect(res.body).toEqual(pipelineResult);
+  });
+
+  it("returns neutral fallback on unexpected error", async () => {
+    mockGetReleaseGroupLabel.mockRejectedValue(new Error("network fail"));
+    mockGetReleaseGroupDate.mockRejectedValue(new Error("network fail"));
+
+    const res = await request(app).get("/purchase-context/rg-error");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      recommendation: "neutral",
+      signals: [],
+      label: null,
+    });
   });
 });

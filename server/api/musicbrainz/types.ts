@@ -69,3 +69,29 @@ export type ReleaseGroupInfo = {
   id: string;
   firstReleaseDate: string;
 };
+
+export type MusicBrainzLabelRelation = {
+  type: string;
+  direction: "forward" | "backward";
+  ended: boolean;
+  label: { id: string; name: string };
+};
+
+export type MusicBrainzLabelWithRels = {
+  id: string;
+  name: string;
+  relations?: MusicBrainzLabelRelation[];
+};
+
+export type MusicBrainzLabelInfo = {
+  label?: { id: string; name: string };
+};
+
+export type MusicBrainzReleaseWithLabels = {
+  id: string;
+  "label-info"?: MusicBrainzLabelInfo[];
+};
+
+export type MusicBrainzLabelReleasesResponse = {
+  releases: MusicBrainzReleaseWithLabels[];
+};

@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getLidarrConfig } from "./config";
-import { DEFAULT_PROMOTED_ALBUM } from "../../config";
+import {
+  DEFAULT_PROMOTED_ALBUM,
+  DEFAULT_PURCHASE_DECISION,
+} from "../../config";
 
 vi.mock("../../config", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../config")>();
@@ -25,6 +28,7 @@ const baseConfig = {
   slskdDownloadPath: "",
   theme: "system" as const,
   promotedAlbum: DEFAULT_PROMOTED_ALBUM,
+  purchaseDecision: DEFAULT_PURCHASE_DECISION,
 };
 
 beforeEach(() => {

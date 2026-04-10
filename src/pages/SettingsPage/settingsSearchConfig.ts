@@ -4,6 +4,7 @@ export type SettingsTab =
   | "general"
   | "integrations"
   | "recommendations"
+  | "purchaseDecision"
   | "notifications"
   | "admin"
   | "logs";
@@ -12,6 +13,7 @@ export const TAB_LABELS: Record<SettingsTab, string> = {
   general: "General",
   integrations: "Integrations",
   recommendations: "Recommendations",
+  purchaseDecision: "Purchase",
   notifications: "Notifications",
   admin: "Users",
   logs: "Logs",
@@ -27,6 +29,7 @@ export type SettingsSection =
   | "plex"
   | "slskd"
   | "recommendations"
+  | "purchaseDecision"
   | "users"
   | "logs";
 
@@ -116,6 +119,24 @@ export const SECTION_META: Record<SettingsSection, SectionMeta> = {
     ],
     permission: Permission.ADMIN,
   },
+  purchaseDecision: {
+    label: "Purchase Decision",
+    tab: "purchaseDecision",
+    keywords: [
+      "purchase",
+      "buy",
+      "label",
+      "blocklist",
+      "block",
+      "major",
+      "indie",
+      "decision",
+      "age",
+      "new release",
+      "threshold",
+    ],
+    permission: Permission.ADMIN,
+  },
   users: {
     label: "User Management",
     tab: "admin",
@@ -143,6 +164,7 @@ const TAB_ORDER: SettingsTab[] = [
   "general",
   "integrations",
   "recommendations",
+  "purchaseDecision",
   "notifications",
   "logs",
   "admin",

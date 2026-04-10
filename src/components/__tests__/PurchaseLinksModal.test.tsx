@@ -1,17 +1,21 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import PurchaseLinksModal from "../PurchaseLinksModal";
-import { Permission } from "@shared/permissions";
 
-const mockNavigate = vi.fn();
+const mockFetchContext = vi.fn();
+const mockReset = vi.fn();
+const mockPurchaseContext = {
+  context: null as {
+    recommendation: string;
+    signals: { factor: string; recommendation: string; reason: string }[];
+    label: { name: string; mbid: string } | null;
+  } | null,
+  loading: false,
+  fetchContext: mockFetchContext,
+  reset: mockReset,
+};
 
-vi.mock("react-router-dom", () => ({
-  useNavigate: () => mockNavigate,
-}));
-
-vi.mock("../../context/useAuth", () => ({
-  useAuth: () => ({
-    user: { id: 1, permissions: Permission.ADMIN },
-  }),
+vi.mock("../../hooks/usePurchaseContext", () => ({
+  default: () => mockPurchaseContext,
 }));
 
 const defaultProps = {
@@ -24,6 +28,8 @@ const defaultProps = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockPurchaseContext.context = null;
+  mockPurchaseContext.loading = false;
 });
 
 describe("PurchaseLinksModal", () => {
@@ -36,20 +42,6 @@ describe("PurchaseLinksModal", () => {
   it("renders nothing when closed", () => {
     render(<PurchaseLinksModal {...defaultProps} isOpen={false} />);
     expect(screen.queryByText("Purchase Options")).not.toBeInTheDocument();
-  });
-
-  it("shows upload button for admin users", () => {
-    render(<PurchaseLinksModal {...defaultProps} />);
-    expect(screen.getByText("Upload purchased files")).toBeInTheDocument();
-  });
-
-  it("navigates to upload page when upload button clicked", () => {
-    const onClose = vi.fn();
-    render(<PurchaseLinksModal {...defaultProps} onClose={onClose} />);
-
-    fireEvent.click(screen.getByText("Upload purchased files"));
-    expect(onClose).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith("/library/upload?mbid=mbid-123");
   });
 
   it("shows Request Album button when onAddToLibrary provided", () => {
@@ -78,5 +70,67 @@ describe("PurchaseLinksModal", () => {
     fireEvent.click(screen.getByText("Request Album"));
     expect(onAddToLibrary).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("fetches purchase context when modal opens", () => {
+    render(<PurchaseLinksModal {...defaultProps} />);
+    expect(mockFetchContext).toHaveBeenCalledWith("mbid-123");
+  });
+
+  it("resets purchase context when modal closes", () => {
+    render(<PurchaseLinksModal {...defaultProps} isOpen={false} />);
+    expect(mockReset).toHaveBeenCalled();
+  });
+
+  it("shows request banner when recommendation is request", () => {
+    mockPurchaseContext.context = {
+      recommendation: "request",
+      signals: [
+        { factor: "label", recommendation: "request", reason: "blocklisted" },
+      ],
+      label: { name: "Universal Music", mbid: "label-umg" },
+    };
+    render(<PurchaseLinksModal {...defaultProps} />);
+    expect(screen.getByTestId("purchase-banner-request")).toBeInTheDocument();
+  });
+
+  it("shows buy banner when recommendation is buy", () => {
+    mockPurchaseContext.context = {
+      recommendation: "buy",
+      signals: [
+        { factor: "label", recommendation: "buy", reason: "not blocklisted" },
+      ],
+      label: { name: "Warp Records", mbid: "label-warp" },
+    };
+    render(<PurchaseLinksModal {...defaultProps} />);
+    expect(screen.getByTestId("purchase-banner-buy")).toBeInTheDocument();
+  });
+
+  it("shows label name and info links in header when label is present", () => {
+    mockPurchaseContext.context = {
+      recommendation: "buy",
+      signals: [
+        { factor: "label", recommendation: "buy", reason: "not blocklisted" },
+      ],
+      label: { name: "Warp Records", mbid: "label-warp" },
+    };
+    render(<PurchaseLinksModal {...defaultProps} />);
+    expect(screen.getByText(/Warp Records/)).toBeInTheDocument();
+    const mbLink = screen.getByText("MusicBrainz").closest("a");
+    expect(mbLink).toHaveAttribute(
+      "href",
+      "https://musicbrainz.org/label/label-warp"
+    );
+    expect(screen.getByText("Wikipedia")).toBeInTheDocument();
+  });
+
+  it("does not show label info when label is null", () => {
+    mockPurchaseContext.context = {
+      recommendation: "neutral",
+      signals: [],
+      label: null,
+    };
+    render(<PurchaseLinksModal {...defaultProps} />);
+    expect(screen.queryByText("MusicBrainz")).not.toBeInTheDocument();
   });
 });

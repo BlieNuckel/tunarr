@@ -10,6 +10,7 @@ import SettingsLayout from "./pages/SettingsPage/SettingsLayout";
 import GeneralSettingsPage from "./pages/SettingsPage/pages/GeneralSettingsPage";
 import IntegrationsSettingsPage from "./pages/SettingsPage/pages/IntegrationsSettingsPage";
 import RecommendationsSettingsPage from "./pages/SettingsPage/pages/RecommendationsSettingsPage";
+import PurchaseDecisionSettingsPage from "./pages/SettingsPage/pages/PurchaseDecisionSettingsPage";
 import UsersSettingsPage from "./pages/SettingsPage/pages/UsersSettingsPage";
 import LogsSettingsPage from "./pages/SettingsPage/pages/LogsSettingsPage";
 import NotificationsPage from "./pages/SettingsPage/notifications/NotificationsPage";
@@ -51,6 +52,10 @@ function App() {
               <Route
                 path="recommendations"
                 element={<RecommendationsSettingsPage />}
+              />
+              <Route
+                path="purchase-decision"
+                element={<PurchaseDecisionSettingsPage />}
               />
               <Route path="users" element={<UsersSettingsPage />} />
               <Route path="logs" element={<LogsSettingsPage />} />

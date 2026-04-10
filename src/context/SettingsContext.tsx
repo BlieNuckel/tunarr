@@ -6,6 +6,7 @@ import {
   type SettingsContextValue,
 } from "./settingsContextDef";
 import { DEFAULT_PROMOTED_ALBUM } from "./promotedAlbumDefaults";
+import { DEFAULT_PURCHASE_DECISION } from "./purchaseDecisionDefaults";
 import { useAuth } from "./useAuth";
 import { hasPermission, Permission } from "@shared/permissions";
 
@@ -57,6 +58,10 @@ async function loadSettings(
         promotedAlbum: {
           ...DEFAULT_PROMOTED_ALBUM,
           ...(data.promotedAlbum ?? {}),
+        },
+        purchaseDecision: {
+          ...DEFAULT_PURCHASE_DECISION,
+          ...(data.purchaseDecision ?? {}),
         },
       });
     }
@@ -116,6 +121,7 @@ export const SettingsContextProvider = ({
     slskdApiKey: "",
     slskdDownloadPath: "",
     promotedAlbum: DEFAULT_PROMOTED_ALBUM,
+    purchaseDecision: DEFAULT_PURCHASE_DECISION,
   });
   const [options, setOptions] = useState<LidarrOptions>({
     qualityProfiles: [],

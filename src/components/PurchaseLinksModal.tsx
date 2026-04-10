@@ -1,9 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import Modal from "./Modal";
 import PurchaseLinks from "./PurchaseLinks";
-import { useAuth } from "../context/useAuth";
-import { hasPermission, Permission } from "@shared/permissions";
-import { CloudUploadIcon } from "@/components/icons";
+import PurchaseDecisionBanner from "./PurchaseDecisionBanner";
+import { ExternalLinkIcon } from "@/components/icons";
+import usePurchaseContext from "@/hooks/usePurchaseContext";
+import type { LabelInfo } from "@/hooks/usePurchaseContext";
 
 interface PurchaseLinksModalProps {
   isOpen: boolean;
@@ -14,6 +15,33 @@ interface PurchaseLinksModalProps {
   onAddToLibrary?: () => void;
 }
 
+function LabelInfoLinks({ label }: { label: LabelInfo }) {
+  const query = encodeURIComponent(label.name);
+
+  return (
+    <span className="inline-flex gap-2 ml-1">
+      <a
+        href={`https://musicbrainz.org/label/${label.mbid}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-0.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+      >
+        MusicBrainz
+        <ExternalLinkIcon className="w-3 h-3" />
+      </a>
+      <a
+        href={`https://en.wikipedia.org/w/index.php?search=${query}+record+label`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-0.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+      >
+        Wikipedia
+        <ExternalLinkIcon className="w-3 h-3" />
+      </a>
+    </span>
+  );
+}
+
 export default function PurchaseLinksModal({
   isOpen,
   onClose,
@@ -22,19 +50,19 @@ export default function PurchaseLinksModal({
   albumMbid,
   onAddToLibrary,
 }: PurchaseLinksModalProps) {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const isAdmin =
-    user !== null && hasPermission(user.permissions, Permission.ADMIN);
+  const { context, loading, fetchContext, reset } = usePurchaseContext();
+
+  useEffect(() => {
+    if (isOpen && albumMbid) {
+      fetchContext(albumMbid);
+    } else {
+      reset();
+    }
+  }, [isOpen, albumMbid, fetchContext, reset]);
 
   const handleAddToLibrary = () => {
     onAddToLibrary?.();
     onClose();
-  };
-
-  const handleUploadClick = () => {
-    onClose();
-    navigate(`/library/upload?mbid=${albumMbid}`);
   };
 
   return (
@@ -47,21 +75,17 @@ export default function PurchaseLinksModal({
           <p className="text-gray-500 dark:text-gray-400 text-sm">
             {albumTitle} by {artistName}
           </p>
+          {context?.label && (
+            <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
+              {context.label.name}
+              <LabelInfoLinks label={context.label} />
+            </p>
+          )}
         </div>
 
-        <PurchaseLinks artistName={artistName} albumTitle={albumTitle} />
+        <PurchaseDecisionBanner context={context} loading={loading} />
 
-        {isAdmin && (
-          <div className="border-t-2 border-black pt-4">
-            <button
-              onClick={handleUploadClick}
-              className="w-full flex items-center justify-center gap-2 bg-amber-50 dark:bg-gray-700/50 hover:bg-amber-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium py-3 px-4 rounded-xl border-2 border-dashed border-amber-400 hover:border-amber-500 transition-all text-sm"
-            >
-              <CloudUploadIcon className="w-5 h-5 text-amber-400" />
-              Upload purchased files
-            </button>
-          </div>
-        )}
+        <PurchaseLinks artistName={artistName} albumTitle={albumTitle} />
 
         <div className="pt-4 border-t-2 border-black space-y-2">
           {onAddToLibrary ? (

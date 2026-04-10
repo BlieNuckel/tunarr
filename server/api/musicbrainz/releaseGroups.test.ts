@@ -4,6 +4,8 @@ import {
   searchArtistReleaseGroups,
   getReleaseGroupById,
   getReleaseGroupIdFromRelease,
+  getReleaseGroupLabel,
+  getReleaseGroupDate,
 } from "./releaseGroups";
 
 const mockFetch = vi.fn();
@@ -210,6 +212,107 @@ describe("getReleaseGroupIdFromRelease", () => {
     );
 
     const result = await getReleaseGroupIdFromRelease("release-123");
+    expect(result).toBeNull();
+  });
+});
+
+describe("getReleaseGroupLabel", () => {
+  it("returns label name and mbid from first release", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        releases: [
+          {
+            id: "rel-1",
+            "label-info": [{ label: { id: "label-1", name: "Warp Records" } }],
+          },
+        ],
+      })
+    );
+
+    const result = await getReleaseGroupLabel("rg-123");
+    expect(result).toEqual({ name: "Warp Records", mbid: "label-1" });
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://musicbrainz.test/ws/2/release?release-group=rg-123&inc=labels&limit=1&fmt=json",
+      { headers: { "User-Agent": "test" } }
+    );
+  });
+
+  it("returns null when no releases exist", async () => {
+    mockFetch.mockResolvedValue(okResponse({ releases: [] }));
+
+    const result = await getReleaseGroupLabel("rg-empty");
+    expect(result).toBeNull();
+  });
+
+  it("returns null when label-info is empty", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        releases: [{ id: "rel-1", "label-info": [] }],
+      })
+    );
+
+    const result = await getReleaseGroupLabel("rg-nolabel");
+    expect(result).toBeNull();
+  });
+
+  it("returns null when label-info is missing", async () => {
+    mockFetch.mockResolvedValue(okResponse({ releases: [{ id: "rel-1" }] }));
+
+    const result = await getReleaseGroupLabel("rg-nolabelinfo");
+    expect(result).toBeNull();
+  });
+
+  it("returns null when label object is missing from label-info entry", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({
+        releases: [{ id: "rel-1", "label-info": [{}] }],
+      })
+    );
+
+    const result = await getReleaseGroupLabel("rg-nolabelobj");
+    expect(result).toBeNull();
+  });
+
+  it("returns null on non-ok response", async () => {
+    mockFetch.mockResolvedValue(errorResponse(500));
+
+    const result = await getReleaseGroupLabel("rg-error");
+    expect(result).toBeNull();
+  });
+});
+
+describe("getReleaseGroupDate", () => {
+  it("returns first-release-date from release group", async () => {
+    mockFetch.mockResolvedValue(
+      okResponse({ "first-release-date": "1997-06-16" })
+    );
+
+    const result = await getReleaseGroupDate("rg-123");
+    expect(result).toBe("1997-06-16");
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://musicbrainz.test/ws/2/release-group/rg-123?fmt=json",
+      { headers: { "User-Agent": "test" } }
+    );
+  });
+
+  it("returns null when date is empty string", async () => {
+    mockFetch.mockResolvedValue(okResponse({ "first-release-date": "" }));
+
+    const result = await getReleaseGroupDate("rg-nodate");
+    expect(result).toBeNull();
+  });
+
+  it("returns null when date field is missing", async () => {
+    mockFetch.mockResolvedValue(okResponse({}));
+
+    const result = await getReleaseGroupDate("rg-nofield");
+    expect(result).toBeNull();
+  });
+
+  it("returns null on non-ok response", async () => {
+    mockFetch.mockResolvedValue(errorResponse(404));
+
+    const result = await getReleaseGroupDate("rg-notfound");
     expect(result).toBeNull();
   });
 });

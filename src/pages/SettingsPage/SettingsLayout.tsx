@@ -23,6 +23,12 @@ const settingsRoutes: SettingsRoute[] = [
     requiredPermission: Permission.ADMIN,
   },
   {
+    text: "Purchase",
+    route: "/settings/purchase-decision",
+    regex: /^\/settings\/purchase-decision/,
+    requiredPermission: Permission.ADMIN,
+  },
+  {
     text: "Notifications",
     route: "/settings/notifications",
     regex: /^\/settings\/notifications/,

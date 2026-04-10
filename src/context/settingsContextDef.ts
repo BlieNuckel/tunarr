@@ -16,6 +16,11 @@ export interface PromotedAlbumSettings {
   libraryPreference: LibraryPreference;
 }
 
+export interface PurchaseDecisionSettings {
+  labelBlocklist: string[];
+  oldReleaseThresholdYears: number;
+}
+
 export interface AppSettings {
   lidarrUrl: string;
   lidarrApiKey: string;
@@ -29,6 +34,7 @@ export interface AppSettings {
   slskdApiKey: string;
   slskdDownloadPath: string;
   promotedAlbum?: PromotedAlbumSettings;
+  purchaseDecision?: PurchaseDecisionSettings;
 }
 
 export type LidarrOptions = {

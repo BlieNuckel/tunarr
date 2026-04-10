@@ -5,9 +5,14 @@ import {
   searchReleaseGroups,
   searchArtistReleaseGroups,
   getReleaseGroupById,
+  getReleaseGroupLabel,
+  getReleaseGroupDate,
 } from "../api/musicbrainz/releaseGroups";
+import { getLabelAncestors } from "../api/musicbrainz/labels";
 import { getReleaseTracks } from "../api/musicbrainz/tracks";
 import { enrichTracksWithPreviews } from "../services/musicbrainz";
+import { getConfigValue } from "../config";
+import { evaluatePurchaseDecision } from "../services/purchaseDecision/evaluatePurchaseDecision";
 
 const router = express.Router();
 
@@ -54,6 +59,31 @@ router.get(
     }
 
     res.json(result);
+  }
+);
+
+router.get(
+  "/purchase-context/:releaseGroupId",
+  rateLimiter,
+  async (req: Request, res: Response) => {
+    try {
+      const { releaseGroupId } = req.params;
+      const [label, firstReleaseDate] = await Promise.all([
+        getReleaseGroupLabel(releaseGroupId as string),
+        getReleaseGroupDate(releaseGroupId as string),
+      ]);
+      const labelAncestors = label ? await getLabelAncestors(label.mbid) : [];
+      const config = getConfigValue("purchaseDecision");
+
+      res.json(
+        evaluatePurchaseDecision(
+          { label, labelAncestors, firstReleaseDate },
+          config
+        )
+      );
+    } catch {
+      res.json({ recommendation: "neutral", signals: [], label: null });
+    }
   }
 );
 
