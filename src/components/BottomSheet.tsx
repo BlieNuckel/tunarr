@@ -59,7 +59,10 @@ export default function BottomSheet({
     }
   }, [phase]);
 
+  const isVisible = phase !== "closed";
+
   useEffect(() => {
+    if (!isVisible) return;
     const scrollableMain = document.querySelector("main");
     if (!scrollableMain) return;
     const prev = scrollableMain.style.overflow;
@@ -67,7 +70,7 @@ export default function BottomSheet({
     return () => {
       scrollableMain.style.overflow = prev;
     };
-  }, []);
+  }, [isVisible]);
 
   if (phase === "closed") return null;
 

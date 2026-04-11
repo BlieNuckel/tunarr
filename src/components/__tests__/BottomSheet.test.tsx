@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import BottomSheet from "../BottomSheet";
 
@@ -47,6 +47,47 @@ describe("BottomSheet", () => {
     await user.click(backdrop);
 
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("does not lock main scroll when closed", () => {
+    const main = document.createElement("main");
+    document.body.appendChild(main);
+
+    render(
+      <BottomSheet isOpen={false} onClose={vi.fn()}>
+        content
+      </BottomSheet>
+    );
+
+    expect(main.style.overflow).toBe("");
+    document.body.removeChild(main);
+  });
+
+  it("locks main scroll when open and restores on close", () => {
+    vi.useFakeTimers();
+    const main = document.createElement("main");
+    document.body.appendChild(main);
+
+    const { rerender } = render(
+      <BottomSheet isOpen={true} onClose={vi.fn()}>
+        content
+      </BottomSheet>
+    );
+
+    expect(main.style.overflow).toBe("hidden");
+
+    rerender(
+      <BottomSheet isOpen={false} onClose={vi.fn()}>
+        content
+      </BottomSheet>
+    );
+
+    act(() => {
+      vi.runAllTimers();
+    });
+    expect(main.style.overflow).toBe("");
+    document.body.removeChild(main);
+    vi.useRealTimers();
   });
 
   it("does not call onClose when sheet content is clicked", async () => {
