@@ -62,9 +62,16 @@ vi.mock("@/components/TrackList", () => ({
 
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn());
-  vi.mocked(fetch).mockImplementation(() =>
-    Promise.resolve(new Response(JSON.stringify([]), { status: 200 }))
-  );
+  vi.mocked(fetch).mockImplementation((url) => {
+    if (typeof url === "string" && url.includes("/purchases/summary")) {
+      return Promise.resolve(
+        new Response(JSON.stringify({ month: 0, allTime: 0, albumCount: 0 }), {
+          status: 200,
+        })
+      );
+    }
+    return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
+  });
 });
 
 afterEach(() => {
@@ -364,6 +371,25 @@ describe("LibraryPage", () => {
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /Status/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows purchase dashboard at library root", async () => {
+    renderWithAuth(Permission.REQUEST, "/library");
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Supporting artists this month")
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText("All-time artist support")).toBeInTheDocument();
+  });
+
+  it("hides purchase dashboard on mobile sub-tabs", () => {
+    renderWithAuth(Permission.REQUEST, "/library/requests");
+
+    expect(
+      screen.queryByText("Supporting artists this month")
     ).not.toBeInTheDocument();
   });
 });

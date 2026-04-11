@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import PurchaseList from "../PurchaseList";
 import { Permission } from "@shared/permissions";
-import type { PurchaseItem, SpendingSummary } from "@/types";
+import type { PurchaseItem } from "@/types";
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
@@ -10,14 +10,6 @@ vi.mock("react-router-dom", () => ({
 vi.mock("@/context/useAuth", () => ({
   useAuth: () => ({
     user: { id: 1, permissions: Permission.ADMIN },
-  }),
-}));
-
-vi.mock("@/context/useSettings", () => ({
-  useSettings: () => ({
-    settings: {
-      spending: { currency: "USD", monthlyLimit: null },
-    },
   }),
 }));
 
@@ -50,22 +42,10 @@ const mockItems: PurchaseItem[] = [
   },
 ];
 
-const mockSummary: SpendingSummary = {
-  month: 2499,
-  allTime: 2499,
-  albumCount: 2,
-};
-
 describe("PurchaseList", () => {
   it("renders loading skeletons when loading", () => {
     render(
-      <PurchaseList
-        items={[]}
-        summary={null}
-        loading={true}
-        error={null}
-        onRemove={vi.fn()}
-      />
+      <PurchaseList items={[]} loading={true} error={null} onRemove={vi.fn()} />
     );
 
     const skeletons = document.querySelectorAll(".animate-shimmer");
@@ -76,7 +56,6 @@ describe("PurchaseList", () => {
     render(
       <PurchaseList
         items={[]}
-        summary={null}
         loading={false}
         error="Network error"
         onRemove={vi.fn()}
@@ -92,7 +71,6 @@ describe("PurchaseList", () => {
     render(
       <PurchaseList
         items={[]}
-        summary={mockSummary}
         loading={false}
         error={null}
         onRemove={vi.fn()}
@@ -106,7 +84,6 @@ describe("PurchaseList", () => {
     render(
       <PurchaseList
         items={mockItems}
-        summary={mockSummary}
         loading={false}
         error={null}
         onRemove={vi.fn()}
@@ -123,7 +100,6 @@ describe("PurchaseList", () => {
     render(
       <PurchaseList
         items={mockItems}
-        summary={mockSummary}
         loading={false}
         error={null}
         onRemove={vi.fn()}
@@ -132,22 +108,5 @@ describe("PurchaseList", () => {
 
     expect(screen.getAllByText("$9.99").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("$15.00").length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("renders spending summary when provided", () => {
-    render(
-      <PurchaseList
-        items={mockItems}
-        summary={mockSummary}
-        loading={false}
-        error={null}
-        onRemove={vi.fn()}
-      />
-    );
-
-    expect(
-      screen.getByText("Supporting artists this month")
-    ).toBeInTheDocument();
-    expect(screen.getByText("All-time artist support")).toBeInTheDocument();
   });
 });

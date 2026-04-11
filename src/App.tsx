@@ -34,11 +34,11 @@ function App() {
             <Route path="/library" element={<LibraryPage />}>
               <Route
                 index
-                element={<ConditionalRedirect to="/library/wanted" />}
+                element={<ConditionalRedirect to="/library/purchases" />}
               />
+              <Route path="purchases" element={null} />
               <Route path="wanted" element={null} />
               <Route path="requests" element={null} />
-              <Route path="purchases" element={null} />
             </Route>
             <Route path="/settings" element={<SettingsLayout />}>
               <Route
