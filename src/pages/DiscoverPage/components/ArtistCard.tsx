@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import useArtistAlbums from "@/hooks/useArtistAlbums";
+import useHaptics from "@/hooks/useHaptics";
 import ReleaseGroupCard from "@/components/ReleaseGroupCard";
 import { ChevronDownIcon, MusicalNoteIcon } from "@/components/icons";
 import ImageWithShimmer from "@/components/ImageWithShimmer";
@@ -45,6 +46,7 @@ export default function ArtistCard({
   inLibrary,
   isAlbumInLibrary,
 }: ArtistCardProps) {
+  const haptics = useHaptics();
   const [expanded, setExpanded] = useState(false);
   const [animatingOut, setAnimatingOut] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -59,6 +61,7 @@ export default function ArtistCard({
 
   const handleToggle = () => {
     if (animatingOut) return;
+    haptics.light();
 
     if (expanded) {
       setAnimatingOut(true);

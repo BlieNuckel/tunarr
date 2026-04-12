@@ -7,6 +7,7 @@ import {
   shift,
   autoUpdate,
 } from "@floating-ui/react-dom";
+import useHaptics from "../hooks/useHaptics";
 
 const links = [
   { to: "/", label: "Discover" },
@@ -16,6 +17,7 @@ const links = [
 ];
 
 export default function Navbar() {
+  const haptics = useHaptics();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -102,7 +104,10 @@ export default function Navbar() {
         <div ref={menuRef}>
           <button
             ref={setReferenceEl}
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => {
+              haptics.light();
+              setOpen((v) => !v);
+            }}
             className="flex items-center gap-1.5 text-sm font-bold text-gray-900 hover:text-amber-500 transition-colors px-3 py-1.5 rounded-lg border-2 border-black"
           >
             {currentLabel}

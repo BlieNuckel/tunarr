@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ManagedUser } from "@/hooks/useUsers";
+import useHaptics from "@/hooks/useHaptics";
 import { Permission, PERMISSION_LABELS } from "@shared/permissions";
 import { UserCircleIcon } from "@/components/icons";
 import PermissionBadge from "./PermissionBadge";
@@ -76,6 +77,7 @@ function DeleteButton({
   onConfirm: () => void;
   disabled: boolean;
 }) {
+  const haptics = useHaptics();
   const [confirming, setConfirming] = useState(false);
 
   if (confirming) {
@@ -83,6 +85,7 @@ function DeleteButton({
       <div className="flex gap-1">
         <button
           onClick={() => {
+            haptics.strong();
             onConfirm();
             setConfirming(false);
           }}

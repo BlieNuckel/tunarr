@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CollectedAlbum } from "@/hooks/useExploration";
+import useHaptics from "@/hooks/useHaptics";
 import AlbumCard from "./AlbumCard";
 import SuggestionOverlay from "./SuggestionOverlay";
 import Spinner from "@/components/Spinner";
@@ -13,6 +14,7 @@ export default function CompletionScreen({
   collectedAlbums,
   onReset,
 }: CompletionScreenProps) {
+  const haptics = useHaptics();
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [addingAll, setAddingAll] = useState(false);
   const [addAllDone, setAddAllDone] = useState(false);
@@ -85,7 +87,10 @@ export default function CompletionScreen({
 
       <div className="flex justify-center gap-3">
         <button
-          onClick={handleAddAll}
+          onClick={() => {
+            haptics.medium();
+            handleAddAll();
+          }}
           disabled={addingAll || addAllDone}
           className="px-5 py-2 font-bold bg-gradient-to-r from-pink-300 to-amber-300 hover:from-pink-200 hover:to-amber-200 text-black border-2 border-black rounded-lg shadow-cartoon-md active:shadow-cartoon-pressed active:translate-x-[1px] active:translate-y-[1px] transition-all disabled:opacity-50"
         >

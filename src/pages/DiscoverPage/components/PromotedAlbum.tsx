@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { PromotedAlbumData } from "@/hooks/usePromotedAlbum";
 import MonitorButton from "@/components/MonitorButton";
 import OptionSelect from "@/components/OptionSelect";
+import useHaptics from "@/hooks/useHaptics";
 import PurchaseLinksModal from "@/components/PurchaseLinksModal";
 import RecommendationTraceModal from "./RecommendationTraceModal";
 import {
@@ -41,6 +42,7 @@ export default function PromotedAlbum({
   const [expandHeight, setExpandHeight] = useState(0);
   const expandContentRef = useRef<HTMLDivElement>(null);
 
+  const haptics = useHaptics();
   const { state, errorMsg, requestAlbum, reset: resetLidarr } = useLidarr();
   const {
     state: wantedState,
@@ -88,6 +90,7 @@ export default function PromotedAlbum({
   const effectiveState = getMonitorState(state, inLibrary);
 
   const handleMonitorClick = () => {
+    haptics.medium();
     if (effectiveState === "idle" || effectiveState === "error") {
       setIsModalOpen(true);
     }

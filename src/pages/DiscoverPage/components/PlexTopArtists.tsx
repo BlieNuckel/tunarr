@@ -1,3 +1,5 @@
+import useHaptics from "@/hooks/useHaptics";
+
 interface PlexArtist {
   name: string;
   thumb?: string;
@@ -15,6 +17,8 @@ export default function PlexTopArtists({
   selectedArtist,
   onSelect,
 }: PlexTopArtistsProps) {
+  const haptics = useHaptics();
+
   if (artists.length === 0) return null;
 
   return (
@@ -26,7 +30,10 @@ export default function PlexTopArtists({
         {artists.map((artist) => (
           <button
             key={artist.name}
-            onClick={() => onSelect(artist.name)}
+            onClick={() => {
+              haptics.light();
+              onSelect(artist.name);
+            }}
             className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-full text-sm border-2 border-black shadow-cartoon-sm hover:translate-y-[-1px] hover:shadow-cartoon-md active:translate-y-[1px] active:shadow-cartoon-pressed transition-all ${
               selectedArtist === artist.name
                 ? "bg-pink-400 text-black font-bold dark:text-black"

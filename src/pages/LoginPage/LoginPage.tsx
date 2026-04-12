@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useAuth } from "@/context/useAuth";
+import useHaptics from "@/hooks/useHaptics";
 
 export default function LoginPage() {
   const { login, plexLogin } = useAuth();
+  const haptics = useHaptics();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,6 +32,7 @@ export default function LoginPage() {
   };
 
   const handlePlexLogin = async () => {
+    haptics.medium();
     setError("");
     setPlexLoggingIn(true);
     try {
