@@ -1,63 +1,52 @@
 import { renderHook } from "@testing-library/react";
 import useHaptics from "../useHaptics";
 
+vi.mock("web-haptics/react", () => {
+  const trigger = vi.fn();
+  return {
+    useWebHaptics: () => ({
+      trigger,
+      cancel: vi.fn(),
+      isSupported: true,
+    }),
+  };
+});
+
+async function getTriggerMock() {
+  const mod = await import("web-haptics/react");
+  return mod.useWebHaptics().trigger as ReturnType<typeof vi.fn>;
+}
+
 describe("useHaptics", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
+  let trigger: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    trigger = await getTriggerMock();
+    trigger.mockClear();
   });
 
-  it("returns stable light/medium/strong methods", () => {
+  it("returns stable object when trigger reference is stable", () => {
     const { result, rerender } = renderHook(() => useHaptics());
     const first = result.current;
     rerender();
     expect(result.current).toBe(first);
   });
 
-  describe("when vibrate is supported", () => {
-    let vibrateSpy: ReturnType<typeof vi.fn>;
-
-    beforeEach(() => {
-      vibrateSpy = vi.fn(() => true);
-      Object.defineProperty(navigator, "vibrate", {
-        value: vibrateSpy,
-        writable: true,
-        configurable: true,
-      });
-    });
-
-    it("calls navigator.vibrate with 15ms for light", () => {
-      const { result } = renderHook(() => useHaptics());
-      result.current.light();
-      expect(vibrateSpy).toHaveBeenCalledWith(15);
-    });
-
-    it("calls navigator.vibrate with 40ms for medium", () => {
-      const { result } = renderHook(() => useHaptics());
-      result.current.medium();
-      expect(vibrateSpy).toHaveBeenCalledWith(40);
-    });
-
-    it("calls navigator.vibrate with 80ms for strong", () => {
-      const { result } = renderHook(() => useHaptics());
-      result.current.strong();
-      expect(vibrateSpy).toHaveBeenCalledWith(80);
-    });
+  it("calls trigger with 'light' preset for light()", () => {
+    const { result } = renderHook(() => useHaptics());
+    result.current.light();
+    expect(trigger).toHaveBeenCalledWith("light");
   });
 
-  describe("when vibrate is not supported", () => {
-    beforeEach(() => {
-      Object.defineProperty(navigator, "vibrate", {
-        value: undefined,
-        writable: true,
-        configurable: true,
-      });
-    });
+  it("calls trigger with 'medium' preset for medium()", () => {
+    const { result } = renderHook(() => useHaptics());
+    result.current.medium();
+    expect(trigger).toHaveBeenCalledWith("medium");
+  });
 
-    it("does not throw when calling haptic methods", () => {
-      const { result } = renderHook(() => useHaptics());
-      expect(() => result.current.light()).not.toThrow();
-      expect(() => result.current.medium()).not.toThrow();
-      expect(() => result.current.strong()).not.toThrow();
-    });
+  it("calls trigger with 'heavy' preset for strong()", () => {
+    const { result } = renderHook(() => useHaptics());
+    result.current.strong();
+    expect(trigger).toHaveBeenCalledWith("heavy");
   });
 });

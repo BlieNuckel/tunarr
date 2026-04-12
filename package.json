@@ -22,6 +22,7 @@
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.28",
     "undici": "^7.22.0",
+    "web-haptics": "^0.0.6",
     "web-vitals": "^5.1.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0"
