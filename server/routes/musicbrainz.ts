@@ -84,21 +84,30 @@ router.get(
         getReleaseGroupDate(releaseGroupId as string),
       ]);
 
+      const config = getConfigValue("purchaseDecision");
+      const blocklist = config.labelBlocklist;
+
       let labelAncestors: { name: string; mbid: string }[] = [];
       if (label) {
         sendSSE(res, "progress", {
           step: "Resolving label ownership",
           detail: label.name,
         });
-        labelAncestors = await getLabelAncestors(label.mbid, (ancestor) => {
-          sendSSE(res, "progress", {
-            step: "Resolving label ownership",
-            detail: ancestor.name,
-          });
+        labelAncestors = await getLabelAncestors(label.mbid, {
+          onAncestorFound: (ancestor) => {
+            sendSSE(res, "progress", {
+              step: "Resolving label ownership",
+              detail: ancestor.name,
+            });
+          },
+          shouldStop: (ancestors) =>
+            ancestors.some((a) =>
+              blocklist.some((b) =>
+                a.name.toLowerCase().includes(b.toLowerCase())
+              )
+            ),
         });
       }
-
-      const config = getConfigValue("purchaseDecision");
       const result = evaluatePurchaseDecision(
         { label, labelAncestors, firstReleaseDate },
         config

@@ -213,10 +213,10 @@ describe("GET /purchase-context/:releaseGroupId", () => {
     const resultEvent = events.find((e) => e.event === "result");
     expect(resultEvent?.data).toEqual(pipelineResult);
 
-    expect(mockGetLabelAncestors).toHaveBeenCalledWith(
-      "label-warp",
-      expect.any(Function)
-    );
+    expect(mockGetLabelAncestors).toHaveBeenCalledWith("label-warp", {
+      onAncestorFound: expect.any(Function),
+      shouldStop: expect.any(Function),
+    });
     expect(mockEvaluatePurchaseDecision).toHaveBeenCalledWith(
       { label, labelAncestors: ancestors, firstReleaseDate: "2025-06-01" },
       config

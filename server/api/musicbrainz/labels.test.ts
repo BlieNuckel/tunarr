@@ -11,7 +11,7 @@ vi.mock("./config", () => ({
 }));
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
 });
 
 function okResponse(data: unknown) {
@@ -230,5 +230,51 @@ describe("getLabelAncestors", () => {
       { name: "Top Corp", mbid: "l-4" },
     ]);
     expect(mockFetch).toHaveBeenCalledTimes(4);
+  });
+
+  it("stops early when shouldStop returns true", async () => {
+    mockFetch.mockResolvedValueOnce(
+      okResponse(
+        labelWithParent("l-1", "Interscope", "l-2", "Interscope Geffen")
+      )
+    );
+    mockFetch.mockResolvedValueOnce(
+      okResponse(
+        labelWithParent(
+          "l-2",
+          "Interscope Geffen",
+          "l-3",
+          "Universal Music Group"
+        )
+      )
+    );
+
+    const result = await getLabelAncestors("l-1", {
+      shouldStop: (ancestors) =>
+        ancestors.some((a) => a.name === "Interscope Geffen"),
+    });
+
+    expect(result).toEqual([{ name: "Interscope Geffen", mbid: "l-2" }]);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onAncestorFound for each discovered ancestor", async () => {
+    mockFetch.mockResolvedValueOnce(
+      okResponse(
+        labelWithParent("l-1", "Polydor", "l-2", "Universal Music Group")
+      )
+    );
+    mockFetch.mockResolvedValueOnce(
+      okResponse(labelWithoutParent("l-2", "Universal Music Group"))
+    );
+
+    const onFound = vi.fn();
+    await getLabelAncestors("l-1", { onAncestorFound: onFound });
+
+    expect(onFound).toHaveBeenCalledTimes(1);
+    expect(onFound).toHaveBeenCalledWith({
+      name: "Universal Music Group",
+      mbid: "l-2",
+    });
   });
 });

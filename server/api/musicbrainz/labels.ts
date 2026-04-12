@@ -25,10 +25,16 @@ async function fetchLabelWithRels(
   return response.json();
 }
 
+type AncestorWalkOptions = {
+  onAncestorFound?: (label: LabelInfo) => void;
+  /** Called after each BFS depth level; return true to stop walking further */
+  shouldStop?: (ancestors: LabelInfo[]) => boolean;
+};
+
 /** BFS walk up ownership chains, returning all ancestors nearest-first */
 export async function getLabelAncestors(
   labelMbid: string,
-  onAncestorFound?: (label: LabelInfo) => void
+  options?: AncestorWalkOptions
 ): Promise<LabelInfo[]> {
   const ancestors: LabelInfo[] = [];
   const visited = new Set<string>([labelMbid]);
@@ -45,11 +51,12 @@ export async function getLabelAncestors(
         if (visited.has(parent.mbid)) continue;
         visited.add(parent.mbid);
         ancestors.push(parent);
-        onAncestorFound?.(parent);
+        options?.onAncestorFound?.(parent);
         nextQueue.push(parent.mbid);
       }
     }
 
+    if (options?.shouldStop?.(ancestors)) break;
     queue = nextQueue;
   }
 
