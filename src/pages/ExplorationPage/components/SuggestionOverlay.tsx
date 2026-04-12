@@ -1,5 +1,6 @@
 import type { ReleaseGroup } from "@/types";
 import ReleaseGroupCard from "@/components/ReleaseGroupCard";
+import useHaptics from "@/hooks/useHaptics";
 
 interface SuggestionOverlayProps {
   releaseGroup: ReleaseGroup;
@@ -14,6 +15,7 @@ export default function SuggestionOverlay({
   onPick,
   onClose,
 }: SuggestionOverlayProps) {
+  const haptics = useHaptics();
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -40,7 +42,10 @@ export default function SuggestionOverlay({
         <div className="mt-3 flex gap-2">
           {onPick && (
             <button
-              onClick={onPick}
+              onClick={() => {
+                haptics.medium();
+                onPick?.();
+              }}
               className="flex-1 py-2 text-sm font-bold bg-amber-400 text-black border-2 border-black rounded-lg hover:bg-amber-300 transition-colors shadow-cartoon-sm"
             >
               Pick this

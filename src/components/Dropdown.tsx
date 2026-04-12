@@ -8,6 +8,7 @@ import {
   autoUpdate,
 } from "@floating-ui/react-dom";
 import { ChevronDownIcon } from "@/components/icons";
+import useHaptics from "../hooks/useHaptics";
 
 export interface DropdownOption {
   value: string;
@@ -29,6 +30,7 @@ export default function Dropdown({
   placeholder = "Select...",
   searchable = false,
 }: DropdownProps) {
+  const haptics = useHaptics();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -109,7 +111,10 @@ export default function Dropdown({
         <button
           ref={setReferenceEl}
           type="button"
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            haptics.light();
+            setOpen(!open);
+          }}
           className={`${triggerClasses} flex items-center justify-between`}
         >
           <span
@@ -143,6 +148,7 @@ export default function Dropdown({
                   key={option.value}
                   type="button"
                   onClick={() => {
+                    haptics.light();
                     onChange(option.value);
                     setOpen(false);
                     setFilter("");

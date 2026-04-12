@@ -7,6 +7,7 @@ import {
   autoUpdate,
 } from "@floating-ui/react-dom";
 import BottomSheet from "./BottomSheet";
+import useHaptics from "../hooks/useHaptics";
 
 interface FilterOption {
   value: string;
@@ -143,10 +144,15 @@ function SelectableChip({
   selected: boolean;
   onToggle: () => void;
 }) {
+  const haptics = useHaptics();
+
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={() => {
+        haptics.light();
+        onToggle();
+      }}
       className={`${chipBase} ${selected ? chipActive : chipInactive}`}
     >
       {label}
@@ -161,10 +167,15 @@ function RemovableChip({
   label: string;
   onRemove: () => void;
 }) {
+  const haptics = useHaptics();
+
   return (
     <button
       type="button"
-      onClick={onRemove}
+      onClick={() => {
+        haptics.light();
+        onRemove();
+      }}
       className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full bg-amber-400 text-black border-2 border-black shadow-cartoon-sm transition-all active:shadow-cartoon-pressed"
     >
       {label}

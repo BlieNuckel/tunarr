@@ -9,6 +9,7 @@ import {
 } from "@floating-ui/react-dom";
 import { EllipsisVerticalIcon } from "@/components/icons";
 import BottomSheet from "./BottomSheet";
+import useHaptics from "../hooks/useHaptics";
 
 interface Option {
   label: string;
@@ -62,6 +63,8 @@ function OptionList({
   options: Option[];
   onClose: () => void;
 }) {
+  const haptics = useHaptics();
+
   return (
     <div className="flex flex-col gap-1">
       {options.map((option) => (
@@ -69,6 +72,7 @@ function OptionList({
           key={option.label}
           type="button"
           onClick={() => {
+            haptics.light();
             option.onClick();
             onClose();
           }}
@@ -158,12 +162,17 @@ export default function OptionSelect({
     setTriggerEl(node);
   }, []);
 
+  const haptics = useHaptics();
+
   return (
     <>
       <button
         ref={setTrigger}
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => {
+          haptics.light();
+          setIsOpen((prev) => !prev);
+        }}
         className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         aria-label="More options"
       >

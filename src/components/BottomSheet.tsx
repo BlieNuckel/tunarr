@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import useHaptics from "../hooks/useHaptics";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export default function BottomSheet({
   children,
   title,
 }: BottomSheetProps) {
+  const haptics = useHaptics();
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const [phase, setPhase] = useState<SheetPhase>(
     isOpen ? "entering" : "closed"
@@ -82,6 +84,7 @@ export default function BottomSheet({
     touchStartY.current = e.touches[0].clientY;
     isDragging.current = true;
     setPhase("dragging");
+    haptics.light();
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -100,6 +103,7 @@ export default function BottomSheet({
     isDragging.current = false;
 
     if (dragY > DISMISS_THRESHOLD) {
+      haptics.medium();
       setPhase("exiting");
       clearTimeout(exitTimer.current);
       exitTimer.current = setTimeout(() => {

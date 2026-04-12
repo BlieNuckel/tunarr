@@ -1,6 +1,7 @@
 import { Medium } from "../types";
 import { PlayIcon, PauseIcon } from "./icons";
 import Skeleton from "./Skeleton";
+import useHaptics from "../hooks/useHaptics";
 
 /** @param {number | null} ms - duration in milliseconds */
 function formatDuration(ms: number | null): string {
@@ -26,6 +27,7 @@ export default function TrackList({
   onTogglePreview,
   isTrackPlaying,
 }: TrackListProps) {
+  const haptics = useHaptics();
   if (loading)
     return (
       <div className="space-y-3">
@@ -106,6 +108,7 @@ export default function TrackList({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        haptics.light();
                         onTogglePreview(track.previewUrl!);
                       }}
                       className="group w-full flex items-center gap-2 text-sm text-left min-h-[44px]"

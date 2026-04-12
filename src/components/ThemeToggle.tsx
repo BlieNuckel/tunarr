@@ -7,6 +7,7 @@ import {
   autoUpdate,
 } from "@floating-ui/react-dom";
 import { useTheme } from "@/context/useTheme";
+import useHaptics from "@/hooks/useHaptics";
 import type { Theme } from "@/context/themeContextDef";
 
 const THEME_OPTIONS: Theme[] = ["light", "dark", "system"];
@@ -84,6 +85,7 @@ function getLabel(themeValue: Theme) {
 
 const ThemeToggle = () => {
   const { theme, setTheme } = useTheme();
+  const haptics = useHaptics();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [referenceEl, setReferenceEl] = useState<HTMLElement | null>(null);
@@ -114,7 +116,10 @@ const ThemeToggle = () => {
     <div ref={wrapperRef}>
       <button
         ref={setReferenceEl}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          haptics.light();
+          setIsOpen(!isOpen);
+        }}
         className="flex items-center gap-2 rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-[2px_2px_0_0_black] transition-all hover:bg-amber-50 active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_black] dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
         title={`Theme: ${getLabel(theme)}`}
         aria-label={`Change theme (current: ${getLabel(theme)})`}
@@ -146,6 +151,7 @@ const ThemeToggle = () => {
               <button
                 key={option}
                 onClick={() => {
+                  haptics.light();
                   setTheme(option);
                   setIsOpen(false);
                 }}

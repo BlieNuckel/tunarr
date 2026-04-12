@@ -13,6 +13,7 @@ import useWanted from "../hooks/useWanted";
 import usePurchase from "../hooks/usePurchase";
 import useReleaseTracks from "../hooks/useReleaseTracks";
 import useAudioPreview from "../hooks/useAudioPreview";
+import useHaptics from "../hooks/useHaptics";
 import { useAuth } from "../context/useAuth";
 import { hasPermission, Permission } from "@shared/permissions";
 import { pastelColorFromId } from "../utils/color";
@@ -61,6 +62,7 @@ export default function ReleaseGroupCard({
   const year = releaseGroup["first-release-date"]?.slice(0, 4) || "";
   const coverUrl = `https://coverartarchive.org/release-group/${albumMbid}/front-500`;
 
+  const haptics = useHaptics();
   const { state, errorMsg, requestAlbum } = useLidarr();
   const {
     state: wantedState,
@@ -117,12 +119,14 @@ export default function ReleaseGroupCard({
   };
 
   const handleMobileCardClick = () => {
+    haptics.light();
     if (!isExpanded) loadTracksIfNeeded();
     if (isExpanded) stop();
     setIsExpanded(!isExpanded);
   };
 
   const handleMonitorClick = () => {
+    haptics.medium();
     if (!albumTitle) {
       requestAlbum({ albumMbid });
       return;
