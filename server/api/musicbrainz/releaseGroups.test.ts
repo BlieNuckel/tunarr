@@ -98,16 +98,95 @@ describe("searchArtistReleaseGroups", () => {
     );
   });
 
-  it("throws on release group lookup error", async () => {
+  it("returns empty when all browse requests fail", async () => {
     mockFetch
       .mockResolvedValueOnce(
         okResponse({ artists: [{ id: "artist-id-1", name: "Test" }] })
       )
       .mockResolvedValueOnce(errorResponse(429));
 
-    await expect(searchArtistReleaseGroups("Test")).rejects.toThrow(
-      "MusicBrainz returned 429"
-    );
+    const result = await searchArtistReleaseGroups("Test");
+    expect(result["release-groups"]).toEqual([]);
+    expect(result.count).toBe(0);
+  });
+
+  it("fetches release groups for multiple artists and deduplicates", async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        okResponse({
+          artists: [
+            { id: "artist-1", name: "Artist One" },
+            { id: "artist-2", name: "Artist Two" },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        okResponse({
+          "release-groups": [
+            {
+              id: "rg-1",
+              score: 100,
+              title: "Shared Album",
+              "first-release-date": "2020-01-01",
+            },
+            {
+              id: "rg-2",
+              score: 90,
+              title: "Solo A",
+              "first-release-date": "2022-01-01",
+            },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        okResponse({
+          "release-groups": [
+            {
+              id: "rg-1",
+              score: 80,
+              title: "Shared Album",
+              "first-release-date": "2020-01-01",
+            },
+            {
+              id: "rg-3",
+              score: 85,
+              title: "Solo B",
+              "first-release-date": "2021-06-01",
+            },
+          ],
+        })
+      );
+
+    const result = await searchArtistReleaseGroups("Artist");
+    expect(result["release-groups"].map((rg) => rg.id)).toEqual([
+      "rg-2",
+      "rg-3",
+      "rg-1",
+    ]);
+    expect(result.count).toBe(3);
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
+
+  it("skips artists whose browse fails and returns results from others", async () => {
+    mockFetch
+      .mockResolvedValueOnce(
+        okResponse({
+          artists: [
+            { id: "artist-1", name: "Good" },
+            { id: "artist-2", name: "Bad" },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        okResponse({
+          "release-groups": [{ id: "rg-1", score: 90, title: "Album" }],
+        })
+      )
+      .mockResolvedValueOnce(errorResponse(503));
+
+    const result = await searchArtistReleaseGroups("test");
+    expect(result["release-groups"]).toHaveLength(1);
+    expect(result["release-groups"][0].id).toBe("rg-1");
   });
 });
 
