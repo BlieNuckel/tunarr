@@ -5,6 +5,8 @@ import {
   getDataSource,
   User,
   Request,
+  WantedItem,
+  Purchase,
   closeDatabase,
 } from "../db/index";
 import { hashPassword } from "../auth/password";
@@ -26,6 +28,24 @@ type SeedRequest = {
   album_title: string;
   status: "pending" | "approved" | "declined";
   created_at: string;
+};
+
+type SeedWantedItem = {
+  username: string;
+  album_mbid: string;
+  artist_name: string;
+  album_title: string;
+  created_at: string;
+};
+
+type SeedPurchase = {
+  username: string;
+  album_mbid: string;
+  artist_name: string;
+  album_title: string;
+  price: number;
+  currency: string;
+  purchased_at: string;
 };
 
 const USERS: SeedUser[] = [
@@ -198,6 +218,133 @@ const REQUESTS: SeedRequest[] = [
   },
 ];
 
+const WANTED_ITEMS: SeedWantedItem[] = [
+  {
+    username: "requester",
+    album_mbid: "deadbeef-want-4000-8000-000000000001",
+    artist_name: "Tame Impala",
+    album_title: "Currents",
+    created_at: "2026-03-20T10:00:00Z",
+  },
+  {
+    username: "requester",
+    album_mbid: "deadbeef-want-4000-8000-000000000002",
+    artist_name: "Kendrick Lamar",
+    album_title: "To Pimp a Butterfly",
+    created_at: "2026-03-19T11:00:00Z",
+  },
+  {
+    username: "plex_alice",
+    album_mbid: "deadbeef-want-4000-8000-000000000003",
+    artist_name: "FKA twigs",
+    album_title: "Magdalene",
+    created_at: "2026-03-21T14:30:00Z",
+  },
+  {
+    username: "plex_alice",
+    album_mbid: "deadbeef-want-4000-8000-000000000004",
+    artist_name: "Caroline Polachek",
+    album_title: "Desire, I Want to Turn Into You",
+    created_at: "2026-03-18T09:15:00Z",
+  },
+  {
+    username: "plex_bob",
+    album_mbid: "deadbeef-want-4000-8000-000000000005",
+    artist_name: "Mount Kimbie",
+    album_title: "Cold Spring Fault Less Youth",
+    created_at: "2026-03-17T16:45:00Z",
+  },
+  {
+    username: "manager",
+    album_mbid: "deadbeef-want-4000-8000-000000000006",
+    artist_name: "Jamie xx",
+    album_title: "In Colour",
+    created_at: "2026-03-22T12:00:00Z",
+  },
+  {
+    username: "viewer",
+    album_mbid: "deadbeef-want-4000-8000-000000000007",
+    artist_name: "Arca",
+    album_title: "KICK i",
+    created_at: "2026-03-16T18:00:00Z",
+  },
+];
+
+const PURCHASES: SeedPurchase[] = [
+  {
+    username: "requester",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000001",
+    artist_name: "Daft Punk",
+    album_title: "Discovery",
+    price: 1499,
+    currency: "USD",
+    purchased_at: "2026-04-02T10:00:00Z",
+  },
+  {
+    username: "requester",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000002",
+    artist_name: "The Strokes",
+    album_title: "Is This It",
+    price: 999,
+    currency: "USD",
+    purchased_at: "2026-03-28T14:00:00Z",
+  },
+  {
+    username: "plex_alice",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000003",
+    artist_name: "Mitski",
+    album_title: "Be the Cowboy",
+    price: 1199,
+    currency: "USD",
+    purchased_at: "2026-04-10T09:30:00Z",
+  },
+  {
+    username: "plex_alice",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000004",
+    artist_name: "Phoebe Bridgers",
+    album_title: "Punisher",
+    price: 1299,
+    currency: "USD",
+    purchased_at: "2026-03-25T11:00:00Z",
+  },
+  {
+    username: "plex_bob",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000005",
+    artist_name: "Beach House",
+    album_title: "Once Twice Melody",
+    price: 1799,
+    currency: "USD",
+    purchased_at: "2026-04-15T16:00:00Z",
+  },
+  {
+    username: "plex_bob",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000006",
+    artist_name: "King Krule",
+    album_title: "The OOZ",
+    price: 1399,
+    currency: "USD",
+    purchased_at: "2026-02-20T13:00:00Z",
+  },
+  {
+    username: "manager",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000007",
+    artist_name: "Fleet Foxes",
+    album_title: "Helplessness Blues",
+    price: 1099,
+    currency: "USD",
+    purchased_at: "2026-04-18T08:00:00Z",
+  },
+  {
+    username: "autoapprover",
+    album_mbid: "deadbeef-buy0-4000-8000-000000000008",
+    artist_name: "Yves Tumor",
+    album_title: "Heaven to a Tortured Mind",
+    price: 1199,
+    currency: "USD",
+    purchased_at: "2026-04-20T19:30:00Z",
+  },
+];
+
 async function createSeedUser(
   userRepo: Repository<User>,
   seedUser: SeedUser
@@ -250,6 +397,38 @@ async function createSeedRequest(
   return requestRepo.save(request);
 }
 
+async function createSeedWantedItem(
+  wantedRepo: Repository<WantedItem>,
+  seedItem: SeedWantedItem,
+  userId: number
+): Promise<WantedItem> {
+  const item = wantedRepo.create({
+    user_id: userId,
+    album_mbid: seedItem.album_mbid,
+    artist_name: seedItem.artist_name,
+    album_title: seedItem.album_title,
+    created_at: seedItem.created_at,
+  });
+  return wantedRepo.save(item);
+}
+
+async function createSeedPurchase(
+  purchaseRepo: Repository<Purchase>,
+  seedItem: SeedPurchase,
+  userId: number
+): Promise<Purchase> {
+  const item = purchaseRepo.create({
+    user_id: userId,
+    album_mbid: seedItem.album_mbid,
+    artist_name: seedItem.artist_name,
+    album_title: seedItem.album_title,
+    price: seedItem.price,
+    currency: seedItem.currency,
+    purchased_at: seedItem.purchased_at,
+  });
+  return purchaseRepo.save(item);
+}
+
 async function seed() {
   console.log("Initializing database...");
   await initializeDatabase();
@@ -257,6 +436,8 @@ async function seed() {
   const ds = getDataSource();
   const userRepo = ds.getRepository(User);
   const requestRepo = ds.getRepository(Request);
+  const wantedRepo = ds.getRepository(WantedItem);
+  const purchaseRepo = ds.getRepository(Purchase);
 
   console.log("\nCreating users...");
   const userMap = new Map<string, User>();
@@ -293,8 +474,62 @@ async function seed() {
     created++;
   }
 
+  console.log("\nCreating wanted items...");
+  let wantedCreated = 0;
+  let wantedSkipped = 0;
+  for (const seedItem of WANTED_ITEMS) {
+    const user = userMap.get(seedItem.username);
+    if (!user) {
+      console.log(
+        `  Skipping wanted item: user "${seedItem.username}" not found`
+      );
+      wantedSkipped++;
+      continue;
+    }
+
+    const existing = await wantedRepo.findOne({
+      where: { album_mbid: seedItem.album_mbid, user_id: user.id },
+    });
+    if (existing) {
+      wantedSkipped++;
+      continue;
+    }
+
+    await createSeedWantedItem(wantedRepo, seedItem, user.id);
+    console.log(
+      `  wanted   "${seedItem.album_title}" by ${seedItem.artist_name} (${seedItem.username})`
+    );
+    wantedCreated++;
+  }
+
+  console.log("\nCreating purchases...");
+  let purchaseCreated = 0;
+  let purchaseSkipped = 0;
+  for (const seedItem of PURCHASES) {
+    const user = userMap.get(seedItem.username);
+    if (!user) {
+      console.log(`  Skipping purchase: user "${seedItem.username}" not found`);
+      purchaseSkipped++;
+      continue;
+    }
+
+    const existing = await purchaseRepo.findOne({
+      where: { album_mbid: seedItem.album_mbid, user_id: user.id },
+    });
+    if (existing) {
+      purchaseSkipped++;
+      continue;
+    }
+
+    await createSeedPurchase(purchaseRepo, seedItem, user.id);
+    console.log(
+      `  purchase "${seedItem.album_title}" by ${seedItem.artist_name} (${seedItem.username}, ${seedItem.price} ${seedItem.currency})`
+    );
+    purchaseCreated++;
+  }
+
   console.log(
-    `\nDone! Created ${created} requests, skipped ${skipped} duplicates.`
+    `\nDone! Created ${created} requests (skipped ${skipped}), ${wantedCreated} wanted items (skipped ${wantedSkipped}), ${purchaseCreated} purchases (skipped ${purchaseSkipped}).`
   );
   console.log("\nSeed accounts (password = username):");
   for (const u of USERS) {
