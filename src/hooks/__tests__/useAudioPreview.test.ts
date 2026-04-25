@@ -187,4 +187,64 @@ describe("useAudioPreview", () => {
       hookA.result.current.isTrackPlaying("https://example.com/track1.mp3")
     ).toBe(true);
   });
+
+  it("ignores AbortError from play() without resetting state", async () => {
+    const abortError = new DOMException("aborted", "AbortError");
+    mockPlay.mockRejectedValueOnce(abortError);
+
+    const useAudioPreview = await loadHook();
+    const { result } = renderHook(() => useAudioPreview());
+
+    await act(async () => {
+      result.current.toggle("https://example.com/preview.mp3");
+      await Promise.resolve();
+    });
+
+    expect(
+      result.current.isTrackPlaying("https://example.com/preview.mp3")
+    ).toBe(true);
+  });
+
+  it("clears playing state when play() rejects with NotAllowedError", async () => {
+    const notAllowed = new DOMException("blocked", "NotAllowedError");
+    mockPlay.mockRejectedValueOnce(notAllowed);
+
+    const useAudioPreview = await loadHook();
+    const { result } = renderHook(() => useAudioPreview());
+
+    await act(async () => {
+      result.current.toggle("https://example.com/preview.mp3");
+      await Promise.resolve();
+    });
+
+    expect(
+      result.current.isTrackPlaying("https://example.com/preview.mp3")
+    ).toBe(false);
+  });
+
+  it("pauses before swapping src to avoid load races", async () => {
+    const useAudioPreview = await loadHook();
+    const { result } = renderHook(() => useAudioPreview());
+
+    act(() => result.current.toggle("https://example.com/track1.mp3"));
+    mockAudioInstance.paused = false;
+    mockPause.mockClear();
+
+    act(() => result.current.toggle("https://example.com/track2.mp3"));
+
+    expect(mockPause).toHaveBeenCalled();
+    expect(mockAudioInstance.src).toBe("https://example.com/track2.mp3");
+  });
+
+  it("does not create the audio element until first user interaction", async () => {
+    const audioCtor = vi.fn(function () {
+      return mockAudioInstance;
+    });
+    vi.stubGlobal("Audio", audioCtor);
+
+    const useAudioPreview = await loadHook();
+    renderHook(() => useAudioPreview());
+
+    expect(audioCtor).not.toHaveBeenCalled();
+  });
 });

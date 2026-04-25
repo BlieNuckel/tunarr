@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 
-const audio = new Audio();
+let audio: HTMLAudioElement | null = null;
 const listeners = new Set<() => void>();
 let activeUrl: string | null = null;
 let activeOwner: symbol | null = null;
@@ -20,11 +20,23 @@ function emit() {
   listeners.forEach((fn) => fn());
 }
 
-audio.addEventListener("ended", () => {
-  activeUrl = null;
-  activeOwner = null;
-  emit();
-});
+/**
+ * Lazily creates the shared HTMLAudioElement on first use. Mobile Safari
+ * requires the element to be instantiated inside a user gesture for
+ * `play()` to be allowed; creating it at module load time triggers
+ * NotAllowedError on the first playback attempt.
+ */
+function getAudio(): HTMLAudioElement {
+  if (!audio) {
+    audio = new Audio();
+    audio.addEventListener("ended", () => {
+      activeUrl = null;
+      activeOwner = null;
+      emit();
+    });
+  }
+  return audio;
+}
 
 export default function useAudioPreview() {
   const playingUrl = useSyncExternalStore(subscribe, getSnapshot);
@@ -33,7 +45,7 @@ export default function useAudioPreview() {
   useEffect(() => {
     const id = ownerId.current;
     return () => {
-      if (activeOwner === id) {
+      if (activeOwner === id && audio) {
         audio.pause();
         audio.src = "";
         activeUrl = null;
@@ -44,25 +56,35 @@ export default function useAudioPreview() {
   }, []);
 
   const toggle = useCallback((previewUrl: string) => {
-    if (activeUrl === previewUrl && !audio.paused) {
-      audio.pause();
+    const a = getAudio();
+    if (activeUrl === previewUrl && !a.paused) {
+      a.pause();
       activeUrl = null;
       activeOwner = null;
-    } else {
-      audio.src = previewUrl;
-      activeUrl = previewUrl;
-      activeOwner = ownerId.current;
-      audio.play().catch(() => {
+      emit();
+      return;
+    }
+
+    a.pause();
+    a.src = previewUrl;
+    activeUrl = previewUrl;
+    activeOwner = ownerId.current;
+    emit();
+
+    const playPromise = a.play();
+    if (playPromise) {
+      playPromise.catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (activeUrl !== previewUrl) return;
         activeUrl = null;
         activeOwner = null;
         emit();
       });
     }
-    emit();
   }, []);
 
   const stop = useCallback(() => {
-    if (activeOwner !== ownerId.current) return;
+    if (activeOwner !== ownerId.current || !audio) return;
     audio.pause();
     audio.src = "";
     activeUrl = null;
