@@ -148,7 +148,7 @@ export default function LibraryPage() {
             )}
 
             {isRequestsTab && (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-6">
                 <RequestFilter values={filters} onChange={handleFilterChange} />
 
                 <RequestList
@@ -224,7 +224,7 @@ export default function LibraryPage() {
           )}
 
           {isRequestsTab && (
-            <>
+            <div className="flex flex-col gap-6">
               <RequestFilter values={filters} onChange={handleFilterChange} />
 
               <RequestList
@@ -244,7 +244,7 @@ export default function LibraryPage() {
                 onSearch={handleSearch}
                 onUnmonitor={handleUnmonitor}
               />
-            </>
+            </div>
           )}
         </>
       </SettingsTabs>
