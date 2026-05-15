@@ -125,7 +125,7 @@ export async function getSeenReleasesForUser(
      FROM seen_releases sr
      INNER JOIN followed_artists fa ON sr.followed_artist_id = fa.id
      WHERE fa.user_id = ?
-     ORDER BY sr.notified_at DESC
+     ORDER BY sr.release_date IS NULL, sr.release_date DESC, sr.notified_at DESC
      LIMIT ?`,
     [userId, limit]
   )) as (SeenRelease & { artist_name: string; artist_mbid: string })[];
