@@ -5,7 +5,6 @@ import TrackList from "./TrackList";
 import PurchaseLinksModal from "./PurchaseLinksModal";
 import PurchasePriceModal from "./PurchasePriceModal";
 import Spinner from "./Spinner";
-import FollowArtistButton from "./FollowArtistButton";
 import { CheckIcon, PlusIcon } from "@/components/icons";
 import ImageWithShimmer from "./ImageWithShimmer";
 import OptionSelect from "./OptionSelect";
@@ -14,6 +13,7 @@ import useWanted from "../hooks/useWanted";
 import usePurchase from "../hooks/usePurchase";
 import useReleaseTracks from "../hooks/useReleaseTracks";
 import useAudioPreview from "../hooks/useAudioPreview";
+import useFollowedArtists from "../hooks/useFollowedArtists";
 import useHaptics from "../hooks/useHaptics";
 import { useAuth } from "../context/useAuth";
 import { hasPermission, Permission } from "@shared/permissions";
@@ -79,6 +79,7 @@ export default function ReleaseGroupCard({
     fetchTracks,
   } = useReleaseTracks();
   const { toggle, stop, isTrackPlaying } = useAudioPreview();
+  const { isFollowing, follow, unfollow } = useFollowedArtists();
 
   const expandContentRef = useRef<HTMLDivElement>(null);
   const [expandHeight, setExpandHeight] = useState(0);
@@ -152,6 +153,7 @@ export default function ReleaseGroupCard({
     }
   };
   const isPurchased = purchaseState === "purchased";
+  const following = artistMbid ? isFollowing(artistMbid) : false;
   const cardOptions: Option[] = [
     isWanted
       ? { label: "Remove from wanted", onClick: handleRemoveFromWanted }
@@ -170,6 +172,23 @@ export default function ReleaseGroupCard({
             label: "Upload files",
             onClick: () => navigate(`/library/upload?mbid=${albumMbid}`),
           },
+        ]
+      : []),
+    ...(artistMbid
+      ? [
+          following
+            ? {
+                label: "Unfollow artist",
+                onClick: () => {
+                  void unfollow(artistMbid);
+                },
+              }
+            : {
+                label: "Follow artist",
+                onClick: () => {
+                  void follow(artistMbid, artistName);
+                },
+              },
         ]
       : []),
   ];
@@ -328,25 +347,13 @@ export default function ReleaseGroupCard({
               />
             </div>
 
-            <div className="flex-shrink-0 mt-2 flex items-center justify-between gap-1.5">
-              {artistMbid ? (
-                <FollowArtistButton
-                  artistMbid={artistMbid}
-                  artistName={artistName}
-                  size="sm"
-                  showLabel={false}
-                />
-              ) : (
-                <span />
-              )}
-              <div className="flex items-center gap-1.5">
-                <OptionSelect options={cardOptions} title={albumTitle} />
-                <MonitorButton
-                  state={effectiveState}
-                  onClick={handleMonitorClick}
-                  errorMsg={errorMsg ?? undefined}
-                />
-              </div>
+            <div className="flex-shrink-0 mt-2 flex items-center justify-end gap-1.5">
+              <OptionSelect options={cardOptions} title={albumTitle} />
+              <MonitorButton
+                state={effectiveState}
+                onClick={handleMonitorClick}
+                errorMsg={errorMsg ?? undefined}
+              />
             </div>
           </div>
         </div>

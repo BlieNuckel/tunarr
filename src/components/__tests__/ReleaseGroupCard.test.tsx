@@ -26,6 +26,9 @@ const mockFetchTracks = vi.fn();
 const mockStop = vi.fn();
 const mockAddToWanted = vi.fn();
 const mockRemoveFromWanted = vi.fn();
+const mockFollow = vi.fn();
+const mockUnfollow = vi.fn();
+const mockIsFollowing = vi.fn(() => false);
 
 vi.mock("../../hooks/useLidarr", () => ({
   default: () => ({
@@ -71,6 +74,18 @@ vi.mock("../../hooks/useAudioPreview", () => ({
   }),
 }));
 
+vi.mock("../../hooks/useFollowedArtists", () => ({
+  default: () => ({
+    items: [],
+    loading: false,
+    error: null,
+    isFollowing: mockIsFollowing,
+    follow: mockFollow,
+    unfollow: mockUnfollow,
+    refresh: vi.fn(),
+  }),
+}));
+
 vi.mock("../PurchaseLinksModal", () => ({
   default: ({
     isOpen,
@@ -112,6 +127,7 @@ const makeReleaseGroup = (
 describe("ReleaseGroupCard", () => {
   afterEach(() => {
     vi.clearAllMocks();
+    mockIsFollowing.mockReturnValue(false);
   });
 
   it("renders album title, artist name, and year", () => {
@@ -326,6 +342,60 @@ describe("ReleaseGroupCard", () => {
       fireEvent.click(moreButtons[0]);
 
       expect(expandContainer).toHaveAttribute("data-expanded", "false");
+    });
+
+    it("shows 'Follow artist' option when not following", () => {
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
+
+      const moreButtons = screen.getAllByLabelText("More options");
+      fireEvent.click(moreButtons[0]);
+
+      expect(screen.getByText("Follow artist")).toBeInTheDocument();
+    });
+
+    it("calls follow with artistMbid and artistName when clicked", () => {
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
+
+      const moreButtons = screen.getAllByLabelText("More options");
+      fireEvent.click(moreButtons[0]);
+      fireEvent.click(screen.getByText("Follow artist"));
+
+      expect(mockFollow).toHaveBeenCalledWith("a1", "Test Artist");
+    });
+
+    it("shows 'Unfollow artist' option when already following", () => {
+      mockIsFollowing.mockReturnValue(true);
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
+
+      const moreButtons = screen.getAllByLabelText("More options");
+      fireEvent.click(moreButtons[0]);
+
+      expect(screen.getByText("Unfollow artist")).toBeInTheDocument();
+    });
+
+    it("calls unfollow with artistMbid when 'Unfollow artist' clicked", () => {
+      mockIsFollowing.mockReturnValue(true);
+      render(<ReleaseGroupCard releaseGroup={makeReleaseGroup()} />);
+
+      const moreButtons = screen.getAllByLabelText("More options");
+      fireEvent.click(moreButtons[0]);
+      fireEvent.click(screen.getByText("Unfollow artist"));
+
+      expect(mockUnfollow).toHaveBeenCalledWith("a1");
+    });
+
+    it("hides follow option when artistMbid is missing", () => {
+      render(
+        <ReleaseGroupCard
+          releaseGroup={makeReleaseGroup({ "artist-credit": [] })}
+        />
+      );
+
+      const moreButtons = screen.getAllByLabelText("More options");
+      fireEvent.click(moreButtons[0]);
+
+      expect(screen.queryByText("Follow artist")).not.toBeInTheDocument();
+      expect(screen.queryByText("Unfollow artist")).not.toBeInTheDocument();
     });
   });
 });
